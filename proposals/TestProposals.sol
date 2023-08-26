@@ -55,11 +55,11 @@ contract TestProposals is Test {
 
     function printCalldata(
         uint256 index,
-        address temporalGovernor,
+        address executor,
         address wormholeCore
     ) public {
         CrossChainProposal(address(proposals[index])).printActions(
-            temporalGovernor,
+            executor,
             wormholeCore
         );
     }
