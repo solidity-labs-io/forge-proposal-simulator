@@ -1,0 +1,4 @@
+@forge-std/=lib/forge-std/src/
+@test=test/
+@proposals/=proposals/
+@addresses/=addresses/
