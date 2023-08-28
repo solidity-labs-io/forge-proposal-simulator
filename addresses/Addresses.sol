@@ -38,7 +38,10 @@ contract Addresses is Test {
     constructor() {
         chainId = block.chainid;
 
-        string memory addressesPath = vm.envString("ADDRESSES_PATH");
+        string memory addressesPath = vm.envOr(
+            "ADDRESSES_PATH",
+            "./addresses/addresses.json"
+        );
         bytes memory addressesData = abi.encodePacked(
             vm.readFile(addressesPath)
         );
@@ -49,6 +52,12 @@ contract Addresses is Test {
         );
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
+            require(
+                getAddress(savedAddresses[i].name, savedAddresses[i].chainId) ==
+                    address(0),
+                "Addresses: duplicate address in json"
+            );
+
             _addAddress(
                 savedAddresses[i].name,
                 savedAddresses[i].chainId,
