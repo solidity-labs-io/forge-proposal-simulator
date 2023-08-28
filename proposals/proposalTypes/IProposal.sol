@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 import {Addresses} from "@addresses/Addresses.sol";
 
 interface IProposal {
-    // Proposal name, e.g. "ZIP16"
+    // Proposal name, e.g. "BIP15"
     function name() external view returns (string memory);
 
     // Deploy contracts and add them to list of addresses
@@ -22,7 +22,8 @@ interface IProposal {
 
     // Actually run the proposal (e.g. queue actions in the Timelock,
     // or execute a serie of Multisig calls...).
-    // See contracts/test/proposals/proposalTypes for helper contracts.
+    // See proposals/proposalTypes for helper contracts.
+    // address param is the address of the proposal executor
     function run(Addresses, address) external;
 
     // After a proposal executed, if you mocked some behavior in the
