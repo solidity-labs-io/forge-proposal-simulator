@@ -99,5 +99,3 @@ The addresses contract is a contract that stores all the addresses of the deploy
 Deployed contract addresses, as well as their name and respective networks are stored in the [Addresses.json](./addresses/Addresses.json) file.
 
 Contracts with the same name can be stored in the Addresses.json as long as there is no overlap in the networks they are deployed on. For example, if there is a contract named `Foo` that is deployed on mainnet and a contract named `Foo` that is deployed on rinkeby, both can be stored in the Addresses.json file. However, if there is a contract named `Foo` that is deployed on mainnet twice, only one of them can be stored in the `Addresses.json` file, otherwise there will be a revert during construction.
-
-Environment variable. The path to the JSON file to be read in can be specified by setting the environment variable `ADDRESSES_PATH` to the path of the JSON file. If the environment variable is not set, the default path is `./addresses/Addresses.json`.
