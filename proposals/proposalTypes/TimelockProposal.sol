@@ -8,29 +8,10 @@ import {ITimelockController} from "@proposals/proposalTypes/ITimelockController.
 abstract contract TimelockProposal is Proposal {
     bool private DEBUG;
 
-    struct TimelockAction {
-        address target;
-        uint256 value;
-        bytes arguments;
-        string description;
-    }
-
-    TimelockAction[] public actions;
-
     /// @notice set the debug flag
     function setDebug(bool debug) public {
         DEBUG = debug;
     } 
-
-    /// @notice push an action to the Timelock proposal
-    function _pushTimelockAction(uint256 value, address target, bytes memory data, string memory description) internal {
-        actions.push(TimelockAction({value: value, target: target, arguments: data, description: description}));
-    }
-
-    /// @notice push an action to the Timelock proposal with a value of 0
-    function _pushTimelockAction(address target, bytes memory data, string memory description) internal {
-        _pushTimelockAction(0, target, data, description);
-    }
 
     /// @notice simulate timelock proposal
     /// @param timelockAddress to execute the proposal against

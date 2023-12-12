@@ -35,9 +35,11 @@ abstract contract CrossChainProposal is MultisigProposal {
         address target,
         bytes memory data,
         string memory description
-    ) internal {
+    ) internal override {
         require(value == 0, "Cross chain proposal cannot have value");
-        _pushMultisigAction(value, target, data, description);
+
+        // Call Proposal._pushAction
+        super(_pushAction(value, target, data, description));
     }
 
     /// @notice push a CrossChain proposal action with a value of 0
