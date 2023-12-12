@@ -1,7 +1,7 @@
 [profile.default]
 libs = ['lib']
 test = 'test'
-src = 'src'
+src = 'proposals/'
 fs_permissions = [{ access = "read", path = "./"}]
 solc = "0.8.19"
 evm_version = 'paris'
