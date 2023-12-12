@@ -3,6 +3,13 @@ pragma solidity 0.8.19;
 import {Addresses} from "@addresses/Addresses.sol";
 
 interface IProposal {
+    struct Action {
+        address target;
+        uint256 value;
+        bytes arguments;
+        string description;
+    }
+
     // Proposal name, e.g. "BIP15"
     function name() external view returns (string memory);
 

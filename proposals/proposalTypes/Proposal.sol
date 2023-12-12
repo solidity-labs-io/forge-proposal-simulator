@@ -5,13 +5,6 @@ import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {StandardProposal} from "@proposals/StandardProposal.s.sol";
 
 abstract contract Proposal is Test, StandardProposal, IProposal {
-    struct Action {
-        address target;
-        uint256 value;
-        bytes arguments;
-        string description;
-    }
-
     Action[] public actions;
 
     /// @notice push an action to the proposal
