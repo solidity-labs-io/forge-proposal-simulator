@@ -44,3 +44,4 @@ interface IAddresses {
 
     /// @notice get recorded addresses from a proposal's deployment
     function getRecordedAddresses() external view returns (string[] memory names, address[] memory addresses);
+}

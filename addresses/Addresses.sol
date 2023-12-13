@@ -2,11 +2,12 @@
 pragma solidity 0.8.19;
 
 import {Test} from "@forge-std/Test.sol";
+import {IAddresses} from "@addresses/IAddresses.sol";
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses
 /// for a given network.
-contract Addresses is Test {
+contract Addresses is IAddresses, Test {
     /// @notice mapping from contract name to network chain id to address
     mapping(string => mapping(uint256 => address)) _addresses;
 
