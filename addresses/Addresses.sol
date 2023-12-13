@@ -34,6 +34,9 @@ contract Addresses is Test {
 
     string public addressesPath;
 
+    error AddressNotFound(string name);
+    error AddressAlreadySet(string name, address currentAddr);
+
     constructor(string memory addressesPath) {
         addressesPath = addressesPath;
         chainId = block.chainid;
@@ -76,13 +79,30 @@ contract Addresses is Test {
 
     /// @notice add an address for the current chainId
     function _addAddress(string memory name, address addr) private {
+        address currentAddress = _addresses[name][chainId];
+
+        if(currentAddress != address(0)) {
+            revert AddressAlreadySet(name, currentAddress);
+        }
+
         _addresses[name][chainId] = addr;
         vm.label(addr, name);
+
+        recordedAddresses.push(RecordedAddress({name: name, addr: addr}));
+
+    }
+
+    function _getAddress(string memory name, uint256 _chainId) private view returns (address) {
+        if (_addresses[name][_chainId] == address(0)) {
+            revert AddressNotFound(name);
+        }
+
+        return _addresses[name][chainId];
     }
 
     /// @notice get an address for the current chainId
     function getAddress(string memory name) public view returns (address) {
-        return _addresses[name][chainId];
+        return _getAddress(name, chainId);
     }
 
     /// @notice get an address for a specific chainId
@@ -90,14 +110,18 @@ contract Addresses is Test {
         string memory name,
         uint256 _chainId
     ) public view returns (address) {
-        return _addresses[name][_chainId];
+        return _getAddress(name, _chainId);
+
     }
 
     /// @notice add an address for the current chainId
     function addAddress(string memory name, address addr) public {
-        _addAddress(name, addr);
+        _addAddress(name, chainId, addr);
+    }
 
-        recordedAddresses.push(RecordedAddress({name: name, addr: addr}));
+    function addAddress(string memory name, uint256 _chainId, address addr) public {
+        _addAddress(name, _chainId, addr);
+
     }
 
     /// @notice remove recorded addresses
