@@ -41,7 +41,7 @@ abstract contract StandardProposal is Script {
     bool private DO_PRINT;
 
     /// default to automatically setting all environment variables to true
-    constructor() {
+    constructor(string memory _addressesPath) {
         PRIVATE_KEY = uint256(vm.envBytes32("DEPLOYER_KEY"));
         DEBUG = vm.envOr("DEBUG", true);
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
@@ -53,7 +53,7 @@ abstract contract StandardProposal is Script {
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
 
-        addresses = new Addresses();
+        addresses = new Addresses(_addressesPath);
     }
 
     function run() public {

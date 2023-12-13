@@ -3,10 +3,7 @@ pragma solidity 0.8.19;
 
 import {Test} from "@forge-std/Test.sol";
 
-/// @notice in order for the Addresses contract to be able to read the addresses,
-/// the ADDRESSES_PATH environment variable must be set to the path of the json
-/// file containing the addresses.
-/// This is a contract that stores addresses for different networks.
+/// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses
 /// for a given network.
 contract Addresses is Test {
@@ -35,16 +32,20 @@ contract Addresses is Test {
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
-    constructor() {
+    string public addressesPath;
+
+    constructor(string memory addressesPath) {
+        addressesPath = addressesPath;
         chainId = block.chainid;
 
-        string memory addressesPath = "./addresses/addresses.json";
-        bytes memory addressesData = abi.encodePacked(
-            vm.readFile(addressesPath)
+        string memory addressesData = string(
+            abi.encodePacked(vm.readFile(addressesPath))
         );
 
+        bytes memory parsedJson = vm.parseJson(addressesData);
+
         SavedAddresses[] memory savedAddresses = abi.decode(
-            vm.parseJson(string(addressesData)),
+            parsedJson,
             (SavedAddresses[])
         );
 
