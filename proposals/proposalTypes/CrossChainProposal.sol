@@ -1,6 +1,5 @@
 pragma solidity 0.8.19;
 
-import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
 import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 
 import "@forge-std/Test.sol";
@@ -8,7 +7,7 @@ import "@forge-std/Test.sol";
 /// @notice Cross Chain Proposal is a type of proposal to execute and simulate
 /// cross chain calls within the context of a proposal.
 /// Reuse Multisig Proposal contract for readability and to avoid code duplication.
-abstract contract CrossChainProposal is MultisigProposal {
+abstract contract CrossChainProposal is Proposal {
     uint32 public nonce; /// nonce for wormhole
 
     /// instant finality on moonbeam https://book.wormhole.com/wormhole/3_coreLayerContracts.html?highlight=consiste#consistency-levels
@@ -39,7 +38,7 @@ abstract contract CrossChainProposal is MultisigProposal {
         require(value == 0, "Cross chain proposal cannot have value");
 
         // Call Proposal._pushAction
-        super(_pushAction(value, target, data, description));
+        super._pushAction(value, target, data, description);
     }
 
     /// @notice push a CrossChain proposal action with a value of 0
@@ -54,7 +53,7 @@ abstract contract CrossChainProposal is MultisigProposal {
     /// @notice simulate cross chain proposal
     /// @param timelockAddress address of the cross chain governor executing the calls
     function _simulateCrossChainActions(address timelockAddress) internal {
-        _simulateMultisigActions(timelockAddress);
+        _simulateActions(timelockAddress);
     }
 
     function getTargetsPayloadsValues()
