@@ -22,10 +22,8 @@ interface IAddresses {
         address addr;
     }
 
-    error AddressNotFound(string name);
-    error AddressAlreadySet(string name, address currentAddr);
-
-    event ResetAddresses(uint256 chainId);
+    /// @notice addresses were reset
+    event ResetAddresses();
 
     /// @notice get an address for the current chainId
     function getAddress(string memory name) external view returns (address);

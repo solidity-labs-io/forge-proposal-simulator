@@ -9,6 +9,10 @@ abstract contract Proposal is Test, StandardProposal, IProposal {
 
     bool internal DEBUG;
 
+    constructor(string memory addressesPath) StandardProposal(addressesPath) {
+        DEBUG = vm.envOr("DEBUG", true);
+    }
+
     /// @notice set the debug flag
     function setDebug(bool debug) public {
         DEBUG = debug;
@@ -33,6 +37,7 @@ abstract contract Proposal is Test, StandardProposal, IProposal {
     function _simulateActions(address caller) internal override {
         require(actions.length > 0, "Empty Multisig operation");
 
+        _before();
         vm.startPrank(caller);
 
         for (uint256 i = 0; i < actions.length; i++) {
@@ -44,9 +49,8 @@ abstract contract Proposal is Test, StandardProposal, IProposal {
         }
 
         vm.stopPrank();
+        _after();
     }
-
-    function _simulateActions(uint256 addr1, uint256 addr2, uint256 addr3) internal {}
 
     // @review maybe this should be public
     function _printActions() internal {
@@ -54,4 +58,14 @@ abstract contract Proposal is Test, StandardProposal, IProposal {
             log(actions[i].description);
         }
     }
+
+    // @notice use this function to make validations before the proposal is executed
+    // @dev optional to override, use to check the calldata ensure proposal doesn't doing anything unexpected
+    function _before() internal virtual {}
+
+    // @notice use this function to make validations after the proposal is executed
+    // @dev optional to override, use this to check the state of the contracts after the proposal is executed
+    // @dev usually is conventional of a certain pattern being found in calldata to do the additional checks
+    function _after() internal virtual {}
+
 }

@@ -35,9 +35,6 @@ contract Addresses is IAddresses, Test {
 
     string public addressesPath;
 
-    error AddressNotFound(string name);
-    error AddressAlreadySet(string name, address currentAddr);
-
     constructor(string memory addressesPath) {
         addressesPath = addressesPath;
         chainId = block.chainid;
@@ -74,31 +71,22 @@ contract Addresses is IAddresses, Test {
         uint256 _chainId,
         address addr
     ) private {
+        address currentAddress = _addresses[name][_chainId];
+
+        require(currentAddress == address(0), "Address already set");
+
         _addresses[name][_chainId] = addr;
-        vm.label(addr, name);
-    }
-
-    /// @notice add an address for the current chainId
-    function _addAddress(string memory name, address addr) private {
-        address currentAddress = _addresses[name][chainId];
-
-        if(currentAddress != address(0)) {
-            revert AddressAlreadySet(name, currentAddress);
-        }
-
-        _addresses[name][chainId] = addr;
         vm.label(addr, name);
 
         recordedAddresses.push(RecordedAddress({name: name, addr: addr}));
-
     }
 
-    function _getAddress(string memory name, uint256 _chainId) private view returns (address) {
-        if (_addresses[name][_chainId] == address(0)) {
-            revert AddressNotFound(name);
-        }
+    function _getAddress(string memory name, uint256 _chainId) private view returns (address addr) {
+        require(_chainId != 0, "ChainId cannot be 0");
 
-        return _addresses[name][chainId];
+        addr = _addresses[name][_chainId];
+
+        require(addr != address(0), "Address not found");
     }
 
     /// @notice get an address for the current chainId
@@ -120,6 +108,7 @@ contract Addresses is IAddresses, Test {
         _addAddress(name, chainId, addr);
     }
 
+    /// @notice add an address for a specific chainId
     function addAddress(string memory name, uint256 _chainId, address addr) public {
         _addAddress(name, _chainId, addr);
 
@@ -128,6 +117,8 @@ contract Addresses is IAddresses, Test {
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
         delete recordedAddresses;
+
+        emit ResetAddresses();
     }
 
     /// @notice get recorded addresses from a proposal's deployment
