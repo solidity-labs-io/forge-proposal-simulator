@@ -5,6 +5,13 @@ import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {Script} from "@forge-std/Script.sol";
 
 abstract contract Proposal is Test, Script, IProposal {
+    struct Action {
+        address target;
+        uint256 value;
+        bytes arguments;
+        string description;
+    }
+
     Action[] public actions;
 
     uint256 private PRIVATE_KEY;
@@ -76,85 +83,5 @@ abstract contract Proposal is Test, Script, IProposal {
 
         vm.stopPrank();
     }
-
-    // @review maybe this should be public
-    function _printActions() internal {
-        for (uint256 i = 0; i < actions.length; i++) {
-            log(actions[i].description);
-        }
-    }
-
-    // @notice use this function to make validations before the proposal is executed
-    // @dev optional to override, use to check the calldata ensure proposal doesn't doing anything unexpected
-    function _preCheck() internal virtual {}
-
-    // @notice use this function to make validations after the proposal is executed
-    // @dev optional to override, use this to check the state of the contracts after the proposal is executed
-    // @dev usually is conventional of a certain pattern being found in calldata to do the additional checks
-    function _posCheck() internal virtual {}
-
-    // @TODO add natspec
-    function execute() public {
-        executor = vm.addr(PRIVATE_KEY);
-
-        vm.startBroadcast(PRIVATE_KEY);
-        if (DO_DEPLOY) deploy();
-        if (DO_AFTER_DEPLOY) afterDeploy();
-        if (DO_AFTER_DEPLOY_SETUP) afterDeploySetup();
-        vm.stopBroadcast();
-
-        if (DO_BUILD) build();
-        if (DO_RUN) run();
-        if (DO_TEARDOWN) teardown();
-        if (DO_VALIDATE) validate();
-        if (DO_PRINT) {
-            printCalldata();
-            printProposalActionSteps();
-        }
-
-        delete executor;
-
-     //@TODO rethink this
-     //   if (DO_DEPLOY) {
-     //       (
-     //           string[] memory recordedNames,
-     //           address[] memory recordedAddresses
-     //       ) = addresses.getRecordedAddresses();
-     //       for (uint256 i = 0; i < recordedNames.length; i++) {
-     //           console.log("Deployed", recordedAddresses[i], recordedNames[i]);
-     //       }
-
-     //       console.log();
-
-     //       for (uint256 i = 0; i < recordedNames.length; i++) {
-     //           console.log('_addAddress("%s",', recordedNames[i]);
-     //           console.log(block.chainid);
-     //           console.log(", ");
-     //           console.log(recordedAddresses[i]);
-     //           console.log(");");
-     //       }
-     //   }
-     }
-
-
-        function deploy() public virtual;
-
-        function afterDeploy() public virtual;
-
-        function afterDeploySetup() public virtual;
-
-        function build() public virtual;
-
-        function run() public virtual;
-
-        function printCalldata() public virtual;
-
-        function teardown() public virtual;
-
-        function validate() public virtual;
-
-        function printProposalActionSteps() public virtual;
-
-
 
 }

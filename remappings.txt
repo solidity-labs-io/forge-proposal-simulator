@@ -2,4 +2,3 @@
 @test=test/
 @proposals/=proposals/
 @addresses/=addresses/
-@safe/=lib/safe-contracts/contracts/

@@ -29,7 +29,7 @@ abstract contract CrossChainProposal is MultisigProposal {
     }
 
     /// @notice push a CrossChain proposal action
-    function _pushCrossChainAction(
+    function _pushAction(
         uint256 value,
         address target,
         bytes memory data,
@@ -42,12 +42,12 @@ abstract contract CrossChainProposal is MultisigProposal {
     }
 
     /// @notice push a CrossChain proposal action with a value of 0
-    function _pushCrossChainAction(
+    function _pushAction(
         address target,
         bytes memory data,
         string memory description
     ) internal {
-        _pushCrossChainAction(0, target, data, description);
+        _pushAction(0, target, data, description);
     }
 
     function getTargetsPayloadsValues()

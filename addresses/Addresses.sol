@@ -30,8 +30,6 @@ contract Addresses is IAddresses, Test {
         address addr;
     }
 
-    error AddressAlreadySet(string name, uint256 chainId);
-
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
@@ -116,8 +114,6 @@ contract Addresses is IAddresses, Test {
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
         delete recordedAddresses;
-
-        emit ResetAddresses();
     }
 
     /// @notice get recorded addresses from a proposal's deployment
