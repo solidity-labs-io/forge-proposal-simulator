@@ -83,5 +83,4 @@ abstract contract Proposal is Test, Script, IProposal {
 
         vm.stopPrank();
     }
-
 }
