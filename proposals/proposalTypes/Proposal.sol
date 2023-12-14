@@ -32,6 +32,10 @@ abstract contract Proposal is Test, StandardProposal, IProposal {
         _pushAction(value, target, data, "");
     }
 
+    function _pushAction(address target, bytes memory data) internal {
+        _pushAction(0, target, data, "");
+    }
+
     /// @notice simulate proposal
     /// @param multisigAddress address of the account doing the calls
     function _simulateActions(address caller) internal override {

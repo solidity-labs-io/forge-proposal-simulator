@@ -86,7 +86,7 @@ contract Addresses is IAddresses, Test {
 
         addr = _addresses[name][_chainId];
 
-        require(addr != address(0), "Address not found");
+        require(addr != address(0), "Address not found for proposal %s and chain id %s", name, _chainId);
     }
 
     /// @notice get an address for the current chainId
