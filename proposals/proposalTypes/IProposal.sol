@@ -59,4 +59,7 @@ interface IProposal {
     /// print out proposal steps one by one
     /// print proposal description
     function printProposalActionSteps() external;
+
+    // Execuet steps defined in environment variables
+    function execute() external;
 }

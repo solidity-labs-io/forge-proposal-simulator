@@ -35,10 +35,7 @@ contract Addresses is IAddresses, Test {
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
-    string public addressesPath;
-
     constructor(string memory addressesPath) {
-        addressesPath = addressesPath;
         chainId = block.chainid;
 
         string memory addressesData = string(
