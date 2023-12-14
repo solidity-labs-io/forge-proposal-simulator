@@ -30,6 +30,8 @@ contract Addresses is IAddresses, Test {
         address addr;
     }
 
+    error AddressAlreadySet(string name, uint256 chainId);
+
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
@@ -86,7 +88,7 @@ contract Addresses is IAddresses, Test {
 
         addr = _addresses[name][_chainId];
 
-        require(addr != address(0), "Address not found for proposal %s and chain id %s", name, _chainId);
+        require(addr != address(0), "Address not set");
     }
 
     /// @notice get an address for the current chainId
