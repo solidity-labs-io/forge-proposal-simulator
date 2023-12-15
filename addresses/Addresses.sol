@@ -3,11 +3,14 @@ pragma solidity 0.8.19;
 
 import {Test} from "@forge-std/Test.sol";
 import {IAddresses} from "@addresses/IAddresses.sol";
+import {Strings} from "@utils/Strings.sol";
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses
 /// for a given network.
 contract Addresses is IAddresses, Test {
+    using Strings for uint256;
+
     /// @notice mapping from contract name to network chain id to address
     mapping(string => mapping(uint256 => address)) _addresses;
 
@@ -70,7 +73,7 @@ contract Addresses is IAddresses, Test {
     ) private {
         address currentAddress = _addresses[name][_chainId];
 
-        require(currentAddress == address(0), string(abi.encodePacked("Address for proposal ", name, "already set on chain ", _chainId)));
+        require(currentAddress == address(0), string(abi.encodePacked("Address for proposal ", name, "already set on chain ", _chainId.toString())));
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
@@ -83,7 +86,7 @@ contract Addresses is IAddresses, Test {
 
         addr = _addresses[name][_chainId];
 
-        require(addr != address(0), string(abi.encodePacked("Address for proposal ", name, "not set on chain ", _chainId)));
+        require(addr != address(0), string(abi.encodePacked("Address for proposal ", name, "not set on chain ", _chainId.toString())));
     }
 
     /// @notice get an address for the current chainId
