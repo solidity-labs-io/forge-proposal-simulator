@@ -4,6 +4,6 @@ artifacts/
 
 cache/
 
-lib/
-
 out/
+
+.env

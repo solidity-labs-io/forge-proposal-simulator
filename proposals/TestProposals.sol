@@ -40,7 +40,7 @@ contract TestProposals is Test {
         nProposals = _proposals.length;
     }
 
-    function setUp() public {
+    function setUp(string memory addressesPath) public {
         DEBUG = vm.envOr("DEBUG", true);
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
         DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
@@ -50,7 +50,7 @@ contract TestProposals is Test {
         DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
 
-        addresses = new Addresses();
+        addresses = new Addresses(addressesPath);
     }
 
     function printCalldata(
