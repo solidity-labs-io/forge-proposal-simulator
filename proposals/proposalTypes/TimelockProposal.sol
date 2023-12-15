@@ -6,13 +6,6 @@ import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {ITimelockController} from "@proposals/proposalTypes/ITimelockController.sol";
 
 abstract contract TimelockProposal is Proposal {
-    bool private DEBUG;
-
-    /// @notice set the debug flag
-    function setDebug(bool debug) public {
-        DEBUG = debug;
-    } 
-
     /// @notice simulate timelock proposal
     /// @param timelockAddress to execute the proposal against
     /// @param proposerAddress account to propose the proposal to the timelock

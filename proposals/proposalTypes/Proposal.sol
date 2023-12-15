@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 import {Test} from "@forge-std/Test.sol";
 import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {Script} from "@forge-std/Script.sol";
+import {Addresses} from "@addresses/Addresses.sol";
 
 abstract contract Proposal is Test, Script, IProposal {
     struct Action {
@@ -14,8 +15,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
     Action[] public actions;
 
+    bool internal DEBUG;
     uint256 private PRIVATE_KEY;
-    bool private DEBUG;
     bool private DO_DEPLOY;
     bool private DO_AFTER_DEPLOY;
     bool private DO_AFTER_DEPLOY_SETUP;
@@ -39,8 +40,6 @@ abstract contract Proposal is Test, Script, IProposal {
         DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
-
-        // @TODO maybe we could call execute here
     }
 
     /// @notice set the debug flag
@@ -66,21 +65,22 @@ abstract contract Proposal is Test, Script, IProposal {
         _pushAction(0, target, data, "");
     }
 
-    /// @notice simulate multisig proposal
-    /// @param multisigAddress address of the multisig doing the calls
-    function _simulateActions() internal {
-        require(actions.length > 0, "Empty operation");
+    function name() virtual external view returns(string memory) {}
 
-        vm.startPrank(executor);
+    function deploy(Addresses, address) external {}
 
-        for (uint256 i = 0; i < actions.length; i++) {
-            (bool success, bytes memory result) = actions[i].target.call{
-                value: actions[i].value
-            }(actions[i].arguments);
+    function afterDeploy(Addresses, address) external {}
 
-            require(success, string(result));
-        }
+    function afterDeploySetup(Addresses) external {}
 
-        vm.stopPrank();
-    }
+    function build(Addresses) external {}
+
+    function run(Addresses, address) external {}
+
+    function teardown(Addresses, address) external {}
+
+    function validate(Addresses, address) external {}
+
+    function printProposalActionSteps() external virtual {}
+
 }

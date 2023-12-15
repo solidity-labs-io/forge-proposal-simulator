@@ -73,7 +73,7 @@ contract Addresses is IAddresses, Test {
     ) private {
         address currentAddress = _addresses[name][_chainId];
 
-        require(currentAddress == address(0), string(abi.encodePacked("Address for proposal ", name, "already set on chain ", _chainId.toString())));
+        require(currentAddress == address(0), string(abi.encodePacked("Address:", name, "already set on chain:", _chainId.toString())));
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
@@ -86,7 +86,7 @@ contract Addresses is IAddresses, Test {
 
         addr = _addresses[name][_chainId];
 
-        require(addr != address(0), string(abi.encodePacked("Address for proposal ", name, "not set on chain ", _chainId.toString())));
+        require(addr != address(0), string(abi.encodePacked("Address:", name, "not set on chain:", _chainId.toString())));
     }
 
     /// @notice get an address for the current chainId

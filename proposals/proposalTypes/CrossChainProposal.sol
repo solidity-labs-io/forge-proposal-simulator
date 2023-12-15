@@ -28,28 +28,6 @@ abstract contract CrossChainProposal is MultisigProposal {
         nonce = _nonce;
     }
 
-    /// @notice push a CrossChain proposal action
-    function _pushAction(
-        uint256 value,
-        address target,
-        bytes memory data,
-        string memory description
-    ) internal override {
-        require(value == 0, "Cross chain proposal cannot have value");
-
-        // Call Proposal._pushAction
-        super._pushAction(value, target, data, description);
-    }
-
-    /// @notice push a CrossChain proposal action with a value of 0
-    function _pushAction(
-        address target,
-        bytes memory data,
-        string memory description
-    ) internal {
-        _pushAction(0, target, data, description);
-    }
-
     function getTargetsPayloadsValues()
         public
         view
