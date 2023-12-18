@@ -39,38 +39,21 @@ contract Addresses is IAddresses, Test {
     constructor(string memory addressesPath) {
         chainId = block.chainid;
 
-        string memory addressesData = string(
-            abi.encodePacked(vm.readFile(addressesPath))
-        );
+        string memory addressesData = string(abi.encodePacked(vm.readFile(addressesPath)));
 
         bytes memory parsedJson = vm.parseJson(addressesData);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(
-            parsedJson,
-            (SavedAddresses[])
-        );
+        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
-            require(
-                getAddress(savedAddresses[i].name, savedAddresses[i].chainId) ==
-                    address(0),
-                "Addresses: duplicate address in json"
-            );
+            require(getAddress(savedAddresses[i].name, savedAddresses[i].chainId) == address(0), "Addresses: duplicate address in json");
 
-            _addAddress(
-                savedAddresses[i].name,
-                savedAddresses[i].chainId,
-                savedAddresses[i].addr
-            );
+            _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
         }
     }
 
     /// @notice add an address for a specific chainId
-    function _addAddress(
-        string memory name,
-        uint256 _chainId,
-        address addr
-    ) private {
+    function _addAddress(string memory name, uint256 _chainId, address addr) private {
         address currentAddress = _addresses[name][_chainId];
 
         require(currentAddress == address(0), string(abi.encodePacked("Address:", name, "already set on chain:", _chainId.toString())));
@@ -95,10 +78,7 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get an address for a specific chainId
-    function getAddress(
-        string memory name,
-        uint256 _chainId
-    ) public view returns (address) {
+    function getAddress(string memory name, uint256 _chainId) public view returns (address) {
         return _getAddress(name, _chainId);
     }
 
@@ -110,7 +90,6 @@ contract Addresses is IAddresses, Test {
     /// @notice add an address for a specific chainId
     function addAddress(string memory name, uint256 _chainId, address addr) public {
         _addAddress(name, _chainId, addr);
-
     }
 
     /// @notice remove recorded addresses
@@ -119,11 +98,7 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get recorded addresses from a proposal's deployment
-    function getRecordedAddresses()
-        external
-        view
-        returns (string[] memory names, address[] memory addresses)
-    {
+    function getRecordedAddresses() external view returns (string[] memory names, address[] memory addresses) {
         names = new string[](recordedAddresses.length);
         addresses = new address[](recordedAddresses.length);
         for (uint256 i = 0; i < recordedAddresses.length; i++) {

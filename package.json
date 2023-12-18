@@ -1,30 +1,31 @@
 {
-    "name": "standard-repo",
-    "description": "Foundry-based library for proposals simulations",
-    "version": "1.0.0",
-    "devDependencies": {
-        "prettier": "^3.0.0"
-    },
-    "keywords": [
-        "blockchain",
-        "ethereum",
-        "forge",
-        "foundry",
-        "smart-contracts",
-        "solidity"
-    ],
-    "scripts": {
-        "clean": "rm -rf cache out",
-        "build": "forge build",
-        "lint": "pnpm lint:sol && pnpm prettier:check",
-        "lint:sol": "forge fmt --check && pnpm solhint {script,src,test}/**/*.sol",
-        "prettier:check": "prettier --check **/*.{json,md,yml} --ignore-path=.prettierignore",
-        "prettier:write": "prettier --write **/*.{json,md,yml} --ignore-path=.prettierignore",
-        "test": "forge test",
-        "test:coverage": "forge coverage",
-        "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
-    },
-    "dependencies": {
-        "solhint": "^3.6.2"
-    }
+  "name": "standard-repo",
+  "description": "Foundry-based library for proposals simulations",
+  "version": "1.0.0",
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "prettier": "^3.0.0",
+    "prettier-plugin-solidity": "^1.2.0"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "forge",
+    "foundry",
+    "smart-contracts",
+    "solidity"
+  ],
+  "scripts": {
+    "clean": "rm -rf cache out",
+    "build": "forge build",
+    "lint": "forge fmt --check && npm solhint {addresses,proposals,utils}/**/*.sol",
+    "prettier": "prettier {addresses,proposals,utils}/**/*.sol --list-different --ignore-path=.prettierignore",
+    "prettier:write": "prettier {addresses,proposals,utils}/**/*.sol -w --ignore-path=.prettierignore",
+    "test": "forge test",
+    "test:coverage": "forge coverage",
+    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
+  },
+  "dependencies": {
+    "solhint": "^3.6.2"
+  }
 }

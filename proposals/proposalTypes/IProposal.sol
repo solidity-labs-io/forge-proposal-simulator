@@ -52,5 +52,4 @@ interface IProposal {
     /// print out proposal steps one by one
     /// print proposal description
     function printProposalActionSteps() external;
-
 }
