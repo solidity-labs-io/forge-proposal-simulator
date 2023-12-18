@@ -1,7 +1,6 @@
 pragma solidity 0.8.19;
 
 import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
-import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 
 import "@forge-std/Test.sol";
 
@@ -27,32 +26,6 @@ abstract contract CrossChainProposal is MultisigProposal {
     /// @notice set the nonce for the cross chain proposal
     function _setNonce(uint32 _nonce) internal {
         nonce = _nonce;
-    }
-
-    /// @notice push a CrossChain proposal action
-    function _pushCrossChainAction(
-        uint256 value,
-        address target,
-        bytes memory data,
-        string memory description
-    ) internal {
-        require(value == 0, "Cross chain proposal cannot have value");
-        _pushMultisigAction(value, target, data, description);
-    }
-
-    /// @notice push a CrossChain proposal action with a value of 0
-    function _pushCrossChainAction(
-        address target,
-        bytes memory data,
-        string memory description
-    ) internal {
-        _pushCrossChainAction(0, target, data, description);
-    }
-
-    /// @notice simulate cross chain proposal
-    /// @param timelockAddress address of the cross chain governor executing the calls
-    function _simulateCrossChainActions(address timelockAddress) internal {
-        _simulateMultisigActions(timelockAddress);
     }
 
     function getTargetsPayloadsValues()

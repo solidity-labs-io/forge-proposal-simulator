@@ -2,3 +2,4 @@
 @test=test/
 @proposals/=proposals/
 @addresses/=addresses/
+@utils/=utils/
