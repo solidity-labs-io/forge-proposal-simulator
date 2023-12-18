@@ -61,7 +61,7 @@ contract Addresses is IAddresses, Test {
 
         require(
             currentAddress == address(0),
-            string(abi.encodePacked("Address:", name, "already set on chain:", _chainId.toString()))
+            string(abi.encodePacked("Address: ", name, "already set on chain: ", _chainId.toString()))
         );
 
         _addresses[name][_chainId] = addr;
@@ -77,7 +77,7 @@ contract Addresses is IAddresses, Test {
 
         require(
             addr != address(0),
-            string(abi.encodePacked("Address:", name, "not set on chain:", _chainId.toString()))
+            string(abi.encodePacked("Address: ", name, "not set on chain: ", _chainId.toString()))
         );
     }
 

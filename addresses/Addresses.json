@@ -1,22 +1,22 @@
 [
   {
-    "address": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
+    "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
     "name": "DEV_MULTISIG",
-    "chainid": 1
+    "chainId": 1
   },
   {
-    "address": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
+    "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
     "name": "TEAM_MULTISIG",
-    "chainid": 1
+    "chainId": 1
   },
   {
-    "address": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
+    "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
     "name": "PROTOCOL_TIMELOCK",
-    "chainid": 1
+    "chainId": 1
   },
   {
-    "address": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
+    "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
     "name": "DAO_MULTISIG",
-    "chainid": 1
+    "chainId": 1
   }
 ]
