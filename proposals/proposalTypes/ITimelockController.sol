@@ -135,7 +135,14 @@ interface ITimelockController {
      *
      * - the caller must have the 'proposer' role.
      */
-    function schedule(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt, uint256 delay) external;
+    function schedule(
+        address target,
+        uint256 value,
+        bytes calldata data,
+        bytes32 predecessor,
+        bytes32 salt,
+        uint256 delay
+    ) external;
 
     /**
      * @dev Schedule an operation containing a batch of transactions.
@@ -176,7 +183,13 @@ interface ITimelockController {
     // This function can reenter, but it doesn't pose a risk because _afterCall checks that the proposal is pending,
     // thus any modifications to the operation during reentrancy should be caught.
     // slither-disable-next-line reentrancy-eth
-    function execute(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt) external payable;
+    function execute(
+        address target,
+        uint256 value,
+        bytes calldata data,
+        bytes32 predecessor,
+        bytes32 salt
+    ) external payable;
 
     /**
      * @dev Execute an (ready) operation containing a batch of transactions.
@@ -220,5 +233,11 @@ interface ITimelockController {
     /**
      * @dev See {IERC1155Receiver-onERC1155BatchReceived}.
      */
-    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) external returns (bytes4);
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+    ) external returns (bytes4);
 }
