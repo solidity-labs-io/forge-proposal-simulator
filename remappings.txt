@@ -3,3 +3,5 @@
 @proposals/=proposals/
 @addresses/=addresses/
 @utils/=utils/
+@openzeppelin/=lib/openzeppelin-contracts/contracts/
+@safe/=lib/safe-contracts/contracts

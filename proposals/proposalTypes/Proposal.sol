@@ -1,5 +1,6 @@
 pragma solidity 0.8.19;
 
+import {console} from "@forge-std/console.sol";
 import {Test} from "@forge-std/Test.sol";
 import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {Script} from "@forge-std/Script.sol";
@@ -26,8 +27,6 @@ abstract contract Proposal is Test, Script, IProposal {
     bool private DO_VALIDATE;
     bool private DO_PRINT;
 
-    address public executor;
-
     /// default to automatically setting all environment variables to true
     constructor() {
         PRIVATE_KEY = uint256(vm.envBytes32("DEPLOYER_KEY"));
@@ -40,6 +39,27 @@ abstract contract Proposal is Test, Script, IProposal {
         DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
+    }
+
+    function run(Addresses addresses) public {
+        address deployerAddress = vm.addr(PRIVATE_KEY);
+
+        console.log("deployerAddress: ", deployerAddress);
+
+        vm.startBroadcast(PRIVATE_KEY);
+        if (DO_DEPLOY) deploy(addresses, deployerAddress);
+        if (DO_AFTER_DEPLOY) afterDeploy(addresses, deployerAddress);
+        if (DO_AFTER_DEPLOY_SETUP) afterDeploySetup(addresses);
+        vm.stopBroadcast();
+
+        if (DO_BUILD) build(addresses);
+        if (DO_RUN) run(addresses, deployerAddress);
+        if (DO_TEARDOWN) teardown(addresses, deployerAddress);
+        if (DO_VALIDATE) validate(addresses, deployerAddress);
+        if (DO_PRINT) {
+            printCalldata(addresses);
+            printProposalActionSteps();
+        }
     }
 
     /// @notice set the debug flag
@@ -67,20 +87,24 @@ abstract contract Proposal is Test, Script, IProposal {
 
     function name() virtual external view returns(string memory) {}
 
-    function deploy(Addresses, address) external {}
+    function deploy(Addresses, address) public virtual {}
 
-    function afterDeploy(Addresses, address) external {}
+    function afterDeploy(Addresses, address) public virtual {}
 
-    function afterDeploySetup(Addresses) external {}
+    function afterDeploySetup(Addresses) public virtual {}
 
-    function build(Addresses) external {}
+    function build(Addresses) public virtual {}
 
-    function run(Addresses, address) external {}
+    function run(Addresses, address) public virtual {
+	revert("You must override the run function");
+    }
 
-    function teardown(Addresses, address) external {}
+    function teardown(Addresses, address) public virtual {}
 
-    function validate(Addresses, address) external {}
+    function validate(Addresses, address) public virtual {}
 
-    function printProposalActionSteps() external virtual {}
+    function printProposalActionSteps() public virtual {}
 
+    // @TODO add this to IProposal
+    function printCalldata(Addresses) public virtual {}
 }
