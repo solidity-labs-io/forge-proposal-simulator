@@ -12,7 +12,7 @@ contract Addresses is IAddresses, Test {
     using Strings for uint256;
 
     /// @notice mapping from contract name to network chain id to address
-    mapping(string => mapping(uint256 => address)) _addresses;
+    mapping(string name => mapping(uint256 chainId => address addr)) public _addresses;
 
     /// @notice chainid of the network when contract is constructed
     uint256 public immutable chainId;
@@ -39,41 +39,30 @@ contract Addresses is IAddresses, Test {
     constructor(string memory addressesPath) {
         chainId = block.chainid;
 
-        string memory addressesData = string(
-            abi.encodePacked(vm.readFile(addressesPath))
-        );
+        string memory addressesData = string(abi.encodePacked(vm.readFile(addressesPath)));
 
         bytes memory parsedJson = vm.parseJson(addressesData);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(
-            parsedJson,
-            (SavedAddresses[])
-        );
+        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
             require(
-                getAddress(savedAddresses[i].name, savedAddresses[i].chainId) ==
-                    address(0),
+                getAddress(savedAddresses[i].name, savedAddresses[i].chainId) == address(0),
                 "Addresses: duplicate address in json"
             );
 
-            _addAddress(
-                savedAddresses[i].name,
-                savedAddresses[i].chainId,
-                savedAddresses[i].addr
-            );
+            _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
         }
     }
 
     /// @notice add an address for a specific chainId
-    function _addAddress(
-        string memory name,
-        uint256 _chainId,
-        address addr
-    ) private {
+    function _addAddress(string memory name, uint256 _chainId, address addr) private {
         address currentAddress = _addresses[name][_chainId];
 
-        require(currentAddress == address(0), string(abi.encodePacked("Address:", name, "already set on chain:", _chainId.toString())));
+        require(
+            currentAddress == address(0),
+            string(abi.encodePacked("Address: ", name, "already set on chain: ", _chainId.toString()))
+        );
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
@@ -86,7 +75,10 @@ contract Addresses is IAddresses, Test {
 
         addr = _addresses[name][_chainId];
 
-        require(addr != address(0), string(abi.encodePacked("Address:", name, "not set on chain:", _chainId.toString())));
+        require(
+            addr != address(0),
+            string(abi.encodePacked("Address: ", name, "not set on chain: ", _chainId.toString()))
+        );
     }
 
     /// @notice get an address for the current chainId
@@ -95,10 +87,7 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get an address for a specific chainId
-    function getAddress(
-        string memory name,
-        uint256 _chainId
-    ) public view returns (address) {
+    function getAddress(string memory name, uint256 _chainId) public view returns (address) {
         return _getAddress(name, _chainId);
     }
 
@@ -110,7 +99,6 @@ contract Addresses is IAddresses, Test {
     /// @notice add an address for a specific chainId
     function addAddress(string memory name, uint256 _chainId, address addr) public {
         _addAddress(name, _chainId, addr);
-
     }
 
     /// @notice remove recorded addresses
@@ -119,11 +107,7 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get recorded addresses from a proposal's deployment
-    function getRecordedAddresses()
-        external
-        view
-        returns (string[] memory names, address[] memory addresses)
-    {
+    function getRecordedAddresses() external view returns (string[] memory names, address[] memory addresses) {
         names = new string[](recordedAddresses.length);
         addresses = new address[](recordedAddresses.length);
         for (uint256 i = 0; i < recordedAddresses.length; i++) {

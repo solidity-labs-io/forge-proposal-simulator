@@ -57,7 +57,7 @@ abstract contract Proposal is Test, Script, IProposal {
         _pushAction(0, target, data, description);
     }
 
-    function _pushAction(uint256 value, address target, bytes memory data)  internal {
+    function _pushAction(uint256 value, address target, bytes memory data) internal {
         _pushAction(value, target, data, "");
     }
 
@@ -65,22 +65,21 @@ abstract contract Proposal is Test, Script, IProposal {
         _pushAction(0, target, data, "");
     }
 
-    function name() virtual external view returns(string memory) {}
+    function name() external view virtual returns (string memory) {}
 
-    function deploy(Addresses, address) external {}
+    function deploy(Addresses, address) external virtual {}
 
-    function afterDeploy(Addresses, address) external {}
+    function afterDeploy(Addresses, address) external virtual {}
 
-    function afterDeploySetup(Addresses) external {}
+    function afterDeploySetup(Addresses) external virtual {}
 
-    function build(Addresses) external {}
+    function build(Addresses) external virtual {}
 
-    function run(Addresses, address) external {}
+    function run(Addresses, address) external virtual {}
 
-    function teardown(Addresses, address) external {}
+    function teardown(Addresses, address) external virtual {}
 
-    function validate(Addresses, address) external {}
+    function validate(Addresses, address) external virtual {}
 
     function printProposalActionSteps() external virtual {}
-
 }

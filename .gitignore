@@ -6,4 +6,6 @@ cache/
 
 out/
 
+node_modules/
+
 .env
