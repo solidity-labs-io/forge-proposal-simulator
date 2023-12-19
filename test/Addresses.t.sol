@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.19;
 
-import {console} from "@forge-std/console.sol";
 import {Test} from "@forge-std/Test.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Strings} from "@utils/Strings.sol";
@@ -56,6 +55,16 @@ contract TestAddresses is Test {
 	assertEq(addresses.getAddress("TEST", chainId), addr);
     }
 
+    function test_addAddressDifferentChain() public {
+	address addr = vm.addr(1);
+	uint256 chainId = 123;
+	addresses.addAddress("DEV_MULTISIG", chainId, addr);
+
+	assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr);
+	// Validate that the 'DEV_MULTISIG' address for chain 31337 matches the address from Addresses.json.
+	assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41);
+    }
+
     function test_resetRecordingAddresses() public {
 	addresses.resetRecordingAddresses();
 
@@ -83,6 +92,32 @@ contract TestAddresses is Test {
 	    assertEq(chainIds[i], savedAddresses[i].chainId);
 	    assertEq(_addresses[i], savedAddresses[i].addr);
 	}
+    }
+
+    function test_revertGetAddressChainZero() public {
+	vm.expectRevert(bytes("ChainId cannot be 0"));
+	addresses.getAddress("DEV_MULTISIG", 0);
+    }
+
+    function test_reverGetAddressNotSet() public {
+	vm.expectRevert(bytes("Address: TEST not set on chain: 31337"));
+	addresses.getAddress("TEST");
+
+    }
+
+    function test_reverGetAddressNotSetOnChain() public {
+	vm.expectRevert(bytes("Address: DEV_MULTISIG not set on chain: 666"));
+	addresses.getAddress("DEV_MULTISIG", 666);
+    }
+
+    function test_revertAddAddressAlreadySet() public {
+	vm.expectRevert(bytes("Address: DEV_MULTISIG already set on chain: 31337"));
+	addresses.addAddress("DEV_MULTISIG", vm.addr(1));
+    }
+
+    function test_revertAddAddressChainAlreadySet() public {
+	vm.expectRevert(bytes("Address: DEV_MULTISIG already set on chain: 31337"));
+	addresses.addAddress("DEV_MULTISIG", 31337,  vm.addr(1));
     }
 
 }
