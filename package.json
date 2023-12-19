@@ -1,0 +1,29 @@
+{
+    "name": "standard-repo",
+    "description": "Foundry-based library for proposals simulations",
+    "version": "1.0.0",
+    "devDependencies": {
+	"husky": "8.0.3",
+	"prettier": "3.0.0",
+	"prettier-plugin-solidity": "1.2.0",
+	"solhint": "4.0.0"
+    },
+    "keywords": [
+	"blockchain",
+	"ethereum",
+	"forge",
+	"foundry",
+	"smart-contracts",
+	"solidity"
+    ],
+    "scripts": {
+	"clean": "rm -rf cache out",
+	"build": "forge build",
+	"lint": "solhint --config ./.solhintrc {addresses,proposals,utils}/**/*.sol",
+	"prettier": "prettier {addresses,proposals,utils}/**/*.sol --list-different",
+	"prettier:write": "prettier {addresses,proposals,utils}/**/*.sol -w",
+	"test": "forge test",
+	"test:coverage": "forge coverage",
+	"test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
+    }
+}
