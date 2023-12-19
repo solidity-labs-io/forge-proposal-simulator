@@ -79,7 +79,7 @@ contract TestProposals is Test {
             if (deploy) {
                 if (debug) {
                     console.log("Proposal", name, "deploy()");
-                    //addresses.resetRecordingAddresses();
+                    addresses.resetRecordingAddresses();
                 }
                 proposals[i].deploy(addresses, address(proposals[i]));
                 if (debug) {

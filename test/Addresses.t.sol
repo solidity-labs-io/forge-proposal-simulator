@@ -3,12 +3,11 @@ pragma solidity 0.8.19;
 
 import {Test} from "@forge-std/Test.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Strings} from "@utils/Strings.sol";
 
 contract TestAddresses is Test {
-    Addresses addresses; 
+    Addresses public addresses; 
 
-    bytes parsedJson;
+    bytes public parsedJson;
 
     /// @notice json structure to read addresses into storage from file
     struct SavedAddresses {
@@ -102,7 +101,6 @@ contract TestAddresses is Test {
     function test_reverGetAddressNotSet() public {
 	vm.expectRevert(bytes("Address: TEST not set on chain: 31337"));
 	addresses.getAddress("TEST");
-
     }
 
     function test_reverGetAddressNotSetOnChain() public {
