@@ -5,8 +5,8 @@ import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {CrossChainProposal} from "@proposals/proposalTypes/CrossChainProposal.sol";
-import {CreateCode} from "@utils/CreateCode.sol";
 import {Strings} from "@utils/Strings.sol";
+import {Test} from "@forge-std/Test.sol";
 
 /*
 How to use:
@@ -18,36 +18,19 @@ Or, from another Solidity file (for post-proposal integration testing):
     proposals.testProposals();
     Addresses addresses = proposals.addresses();
 */
-contract TestProposals is CreateCode {
+contract TestProposals is Test {
     using Strings for string;
 
     Addresses public addresses;
     Proposal[] public proposals;
 
-    function initialize(string memory addressesPath, string memory proposalArtifactPath) public {
+    constructor(string memory addressesPath, address[] memory _proposals) {
         addresses = new Addresses(addressesPath);
 
-        if (keccak256(bytes(proposalArtifactPath)) == '""' || bytes(proposalArtifactPath).length == 0) {
-            /// empty string on both mac and unix, no proposals to run
-            proposals = new Proposal[](0);
-        } else if (proposalArtifactPath.hasChar(",")) {
-            string[] memory proposalsPath = proposalArtifactPath.split(",");
-            if (proposalsPath.length < 2) {
-                revert(
-                    "Invalid path(s) provided. If you want to deploy a single proposal, do not use a comma."
-                );
-            }
-            /// guzzle all of the memory, quadratic cost, but we don't care
-            for (uint256 i = 0; i < proposalsPath.length; i++) {
-                /// deploy each mip and add it to the array
-                bytes memory code = getCode(proposalsPath[i]);
-
-                proposals[i] = Proposal(deployCode(code));
-            }
-        } else {
-            bytes memory code = getCode(proposalArtifactPath);
-            proposals[0] = Proposal(deployCode(code));
-        }
+	proposals = new Proposal[](_proposals.length);
+	for(uint256 i; i < _proposals.length; i++) {
+	    proposals[i] = Proposal(_proposals[i]);
+	}
     }
 
     function printCalldata(

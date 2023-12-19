@@ -46,11 +46,6 @@ contract Addresses is IAddresses, Test {
         SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
-            require(
-                getAddress(savedAddresses[i].name, savedAddresses[i].chainId) == address(0),
-                "Addresses: duplicate address in json"
-            );
-
             _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
         }
     }

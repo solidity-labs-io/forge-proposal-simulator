@@ -27,8 +27,7 @@ abstract contract Proposal is Test, Script, IProposal {
     bool private DO_VALIDATE;
     bool private DO_PRINT;
 
-    /// default to automatically setting all environment variables to true
-    constructor() {
+    function run(Addresses addresses) public {
         PRIVATE_KEY = uint256(vm.envBytes32("DEPLOYER_KEY"));
         DEBUG = vm.envOr("DEBUG", true);
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
@@ -39,9 +38,7 @@ abstract contract Proposal is Test, Script, IProposal {
         DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
-    }
 
-    function run(Addresses addresses) public {
         address deployerAddress = vm.addr(PRIVATE_KEY);
 
         console.log("deployerAddress: ", deployerAddress);
