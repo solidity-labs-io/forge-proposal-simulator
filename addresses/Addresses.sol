@@ -98,6 +98,10 @@ contract Addresses is IAddresses, Test {
 
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
+        for (uint256 i = 0; i < recordedAddresses.length; i++) {
+            delete _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
+        }
+
         delete recordedAddresses;
     }
 

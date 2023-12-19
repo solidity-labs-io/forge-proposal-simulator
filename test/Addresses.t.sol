@@ -9,8 +9,24 @@ import {Strings} from "@utils/Strings.sol";
 contract TestAddresses is Test {
     Addresses addresses; 
 
+    bytes parsedJson;
+
+    /// @notice json structure to read addresses into storage from file
+    struct SavedAddresses {
+        /// address to store
+        address addr;
+        /// chain id of network to store for
+        uint256 chainId;
+        /// name of contract to store
+        string name;
+    }
+
     function setUp() public {
-	addresses = new Addresses("./addresses/Addresses.json");
+	string memory addressesPath = "./addresses/Addresses.json";
+	addresses = new Addresses(addressesPath);
+
+        string memory addressesData = string(abi.encodePacked(vm.readFile(addressesPath)));
+        parsedJson = vm.parseJson(addressesData);
     }
 
     function test_getAddress() public {
@@ -23,6 +39,50 @@ contract TestAddresses is Test {
 	address addr = addresses.getAddress("TEAM_MULTISIG", block.chainid);
 
 	assertEq(addr, 0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9);
+    }
+
+    function test_addAddress() public {
+	address addr = vm.addr(1);
+	addresses.addAddress("TEST", addr);
+
+	assertEq(addresses.getAddress("TEST"), addr);
+    }
+
+    function test_addAddressChainId() public {
+	address addr = vm.addr(1);
+	uint256 chainId = 123;
+	addresses.addAddress("TEST", chainId, addr);
+
+	assertEq(addresses.getAddress("TEST", chainId), addr);
+    }
+
+    function test_resetRecordingAddresses() public {
+	addresses.resetRecordingAddresses();
+
+	(string[] memory names, uint256[] memory chainIds, address[] memory _addresses) = addresses.getRecordedAddresses();
+
+	assertEq(names.length, 0);
+	assertEq(chainIds.length, 0);
+	assertEq(_addresses.length, 0);
+
+        vm.expectRevert(bytes("Address: DEV_MULTISIG not set on chain: 31337"));
+	addresses.getAddress("DEV_MULTISIG");
+    }
+
+    function test_getRecordingAddresses() public {
+	(string[] memory names, uint256[] memory chainIds, address[] memory _addresses) = addresses.getRecordedAddresses();
+
+	assertEq(names.length, 4);
+	assertEq(chainIds.length, 4);
+	assertEq(_addresses.length, 4);
+
+        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
+
+	for(uint256 i = 0; i < savedAddresses.length; i++) {
+	    assertEq(names[i], savedAddresses[i].name);
+	    assertEq(chainIds[i], savedAddresses[i].chainId);
+	    assertEq(_addresses[i], savedAddresses[i].addr);
+	}
     }
 
 }
