@@ -4,9 +4,6 @@ import {console} from "@forge-std/console.sol";
 import {Test} from "@forge-std/Test.sol";
 import {Proposal} from "./Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {OwnerManager} from "@safe/base/OwnerManager.sol";
-import {SimulateTxAccessor} from "@safe/accessors/SimulateTxAccessor.sol";
-import {Enum} from "@safe/common/Enum.sol";
 
 contract MultisigProposal is Proposal {
     // Multicall3 address using CREATE2

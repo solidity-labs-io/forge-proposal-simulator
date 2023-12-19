@@ -1,12 +1,12 @@
 pragma solidity 0.8.19;
 
 import {console} from "@forge-std/console.sol";
-import {Test} from "@forge-std/Test.sol";
-
 import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {CrossChainProposal} from "@proposals/proposalTypes/CrossChainProposal.sol";
+import {CreateCode} from "@utils/CreateCode.sol";
+import {Strings} from "@utils/Strings.sol";
 
 /*
 How to use:
@@ -18,39 +18,36 @@ Or, from another Solidity file (for post-proposal integration testing):
     proposals.testProposals();
     Addresses addresses = proposals.addresses();
 */
+contract TestProposals is CreateCode {
+    using Strings for string;
 
-contract TestProposals is Test {
     Addresses public addresses;
     Proposal[] public proposals;
-    uint256 public nProposals;
-    bool public DEBUG;
-    bool public DO_DEPLOY;
-    bool public DO_AFTER_DEPLOY;
-    bool public DO_AFTER_DEPLOY_SETUP;
-    bool public DO_BUILD;
-    bool public DO_RUN;
-    bool public DO_TEARDOWN;
-    bool public DO_VALIDATE;
 
-    constructor(address[] memory _proposals) {
-        for (uint256 i = 0; i < _proposals.length; i++) {
-            proposals.push(Proposal(_proposals[i]));
-        }
-
-        nProposals = _proposals.length;
-    }
-
-    function setUp(string memory addressesPath) public {
-        DEBUG = vm.envOr("DEBUG", true);
-        DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
-        DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
-        DO_AFTER_DEPLOY_SETUP = vm.envOr("DO_AFTER_DEPLOY_SETUP", true);
-        DO_BUILD = vm.envOr("DO_BUILD", true);
-        DO_RUN = vm.envOr("DO_RUN", true);
-        DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
-        DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
-
+    function initialize(string memory addressesPath, string memory proposalArtifactPath) public {
         addresses = new Addresses(addressesPath);
+
+        if (keccak256(bytes(proposalArtifactPath)) == '""' || bytes(proposalArtifactPath).length == 0) {
+            /// empty string on both mac and unix, no proposals to run
+            proposals = new Proposal[](0);
+        } else if (proposalArtifactPath.hasChar(",")) {
+            string[] memory proposalsPath = proposalArtifactPath.split(",");
+            if (proposalsPath.length < 2) {
+                revert(
+                    "Invalid path(s) provided. If you want to deploy a single proposal, do not use a comma."
+                );
+            }
+            /// guzzle all of the memory, quadratic cost, but we don't care
+            for (uint256 i = 0; i < proposalsPath.length; i++) {
+                /// deploy each mip and add it to the array
+                bytes memory code = getCode(proposalsPath[i]);
+
+                proposals[i] = Proposal(deployCode(code));
+            }
+        } else {
+            bytes memory code = getCode(proposalArtifactPath);
+            proposals[0] = Proposal(deployCode(code));
+        }
     }
 
     function printCalldata(
@@ -156,22 +153,5 @@ contract TestProposals is Test {
         }
 
         return postProposalVmSnapshots;
-    }
-
-    function testProposals()
-        public
-        returns (uint256[] memory postProposalVmSnapshots)
-    {
-        return
-            testProposals(
-                DEBUG,
-                DO_DEPLOY,
-                DO_AFTER_DEPLOY,
-                DO_AFTER_DEPLOY_SETUP,
-                DO_BUILD,
-                DO_RUN,
-                DO_TEARDOWN,
-                DO_VALIDATE
-            );
     }
 }
