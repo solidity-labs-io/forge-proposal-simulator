@@ -1,9 +1,7 @@
 pragma solidity 0.8.19;
 
-import {console} from "@forge-std/console.sol";
-import {Test} from "@forge-std/Test.sol";
+import "@forge-std/console.sol";
 import {Proposal} from "./Proposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 
 enum Operation {
     Call,
@@ -13,7 +11,7 @@ enum Operation {
 
 contract MultisigProposal is Proposal {
     // Multicall3 address using CREATE2
-    address constant MULTICALL = 0xcA11bde05977b3631167028862bE2a173976CA11;
+    address constant public MULTICALL = 0xcA11bde05977b3631167028862bE2a173976CA11;
 
     struct Call {
         address target;
@@ -21,21 +19,24 @@ contract MultisigProposal is Proposal {
     }
 
     /// @notice log calldata
-    function _logCalldata() internal view returns(bytes memory data){
+    function printCalldata() public view override returns(bytes memory data){
         uint256 actionsLength = actions.length;
         Call[] memory calls = new Call[](actionsLength);
 
-        for(uint i; i < actionsLength; i++) {
+        for(uint256 i; i < actionsLength; i++) {
             calls[i] = Call({ target: actions[i].target, callData: actions[i].arguments });
         }
 
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
 
-	console.logBytes(data);
+	if(DEBUG) {
+	    console.log("Calldata:");
+	    console.logBytes(data);
+	}
     }
 
     function _simulateActions(address multisig) internal {
-	bytes memory data = _logCalldata();
+	bytes memory data = printCalldata();
 
 	vm.startPrank(multisig);
 
