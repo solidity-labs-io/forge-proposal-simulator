@@ -34,6 +34,41 @@ abstract contract Proposal is Test, Script, IProposal {
 	_validate(addresses, deployer);
     }
 
+    // @notice the main function, should not be override
+    function run(Addresses addresses, address deployer,
+		 bool doDeploy,
+		 bool doAfterDeploy,
+		 bool doBuild,
+		 bool doRun,
+		 bool doTeardown,
+		 bool doValidate) external {
+
+	vm.startBroadcast(deployer);
+
+	if(doDeploy) {
+	    _deploy(addresses, deployer);
+	}
+
+	if(doAfterDeploy) {
+        _afterDeploy(addresses, deployer);
+	}
+
+        vm.stopBroadcast();
+
+	if(doBuild) {
+	    _build(addresses);
+	}
+	if(doRun) {
+	    _run(addresses, deployer);
+	}
+	if(doTeardown) {
+	    _teardown(addresses, deployer);
+	}
+	if(doValidate) {
+	    _validate(addresses, deployer);
+	}
+    }
+
     // @dev set the debug flag
     function setDebug(bool debug) public {
         DEBUG = debug;

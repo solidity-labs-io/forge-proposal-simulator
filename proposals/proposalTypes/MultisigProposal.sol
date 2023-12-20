@@ -8,6 +8,58 @@ enum Operation {
     DelegateCall
 }
 
+/// @title Multicall3
+/// @notice Aggregate results from multiple function calls
+/// @dev Multicall & Multicall2 backwards-compatible
+/// @dev Aggregate methods are marked `payable` to save 24 gas per call
+/// @author Michael Elliot <mike@makerdao.com>
+/// @author Joshua Levine <joshua@makerdao.com>
+/// @author Nick Johnson <arachnid@notdot.net>
+/// @author Andreas Bigger <andreas@nascent.xyz>
+/// @author Matt Solomon <matt@mattsolomon.dev>
+contract Multicall3 {
+    struct Call {
+        address target;
+        bytes callData;
+    }
+
+    struct Call3 {
+        address target;
+        bool allowFailure;
+        bytes callData;
+    }
+
+    struct Call3Value {
+        address target;
+        bool allowFailure;
+        uint256 value;
+        bytes callData;
+    }
+
+    struct Result {
+        bool success;
+        bytes returnData;
+    }
+
+    /// @notice Backwards-compatible call aggregation with Multicall
+    /// @param calls An array of Call structs
+    /// @return blockNumber The block number where the calls were executed
+    /// @return returnData An array of bytes containing the responses
+    function aggregate(Call[] calldata calls) public payable returns (uint256 blockNumber, bytes[] memory returnData) {
+        blockNumber = block.number;
+        uint256 length = calls.length;
+        returnData = new bytes[](length);
+        Call calldata call;
+        for (uint256 i = 0; i < length;) {
+            bool success;
+            call = calls[i];
+            (success, returnData[i]) = call.target.call(call.callData);
+            require(success, "Multicall3: call failed");
+            unchecked { ++i; }
+        }
+    }
+}
+
 contract MultisigProposal is Proposal {
     // Multicall3 address using CREATE2
     address constant public MULTICALL = 0xcA11bde05977b3631167028862bE2a173976CA11;
@@ -44,6 +96,17 @@ contract MultisigProposal is Proposal {
 	require(multisig.code.length > 0, "Multisig must be a contract");
 
 	vm.etch(multisig, address(safe).code);
+	
+	uint256 multicallSize;
+	assembly {
+	    // retrieve the size of the code, this needs assembly
+            multicallSize := extcodesize(MULTICALL)
+	}
+	if(multicallSize == 0) {
+	    Multicall3 multicall = new Multicall3();
+	    vm.etch(MULTICALL, address(multicall).code);
+	}
+
 	safe.execute(MULTICALL, 0, data, Operation.DelegateCall, 10_000_000);
     }
 }

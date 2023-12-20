@@ -33,8 +33,16 @@ contract Addresses is IAddresses, Test {
         uint256 chainId;
     }
 
+     struct ChangedAddress {
+        string name;
+        uint256 chainId;
+	address oldAddress;
+    }
+
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
+
+    ChangedAddress[] private changedAddresses;
 
     constructor(string memory addressesPath) {
         chainId = block.chainid;
@@ -94,6 +102,21 @@ contract Addresses is IAddresses, Test {
     /// @notice add an address for a specific chainId
     function addAddress(string memory name, uint256 _chainId, address addr) public {
         _addAddress(name, _chainId, addr);
+    }
+
+    /// @notice change an address for a specific chainId
+    function changeAddress(string memory name, uint256 _chainId, address _addr) public {
+	address addr = _addresses[name][_chainId];
+	require(addr != address(0), "Address doesn't exist. Use addAddress instead");
+	
+        changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr }));
+	addr = _addr;
+        vm.label(_addr, name);
+    }
+
+    /// @notice change an address for the current chainId
+    function changeAddress(string memory name, address addr) public {
+	changeAddress(name, chainId, addr);
     }
 
     /// @notice remove recorded addresses

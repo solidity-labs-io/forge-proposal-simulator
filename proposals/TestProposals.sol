@@ -62,8 +62,9 @@ contract TestProposals is Test {
 	    if(debug) {
 		console.log("Proposal name:", name);
 	    }
+
             // Run the deploy for testing only workflow
-            proposals[i].run(addresses, address(this));
+            proposals[i].run(addresses, address(this), true, true, true, true, true, true);
 
             /// take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
