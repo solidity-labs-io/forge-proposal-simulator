@@ -2,14 +2,7 @@ pragma solidity 0.8.19;
 
 import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-
-contract Mock {
-    bool public deployed;
-
-    function setDeployed(bool _deployed) external {
-	deployed = _deployed;
-    }
-}
+import {Mock} from "@mocks/Mock.sol";
 
 contract MultisigProposalMock is MultisigProposal {
 
