@@ -23,14 +23,6 @@ contract TestProposals is Test {
     Addresses public addresses;
     Proposal[] public proposals;
     uint256 public nProposals;
-    bool public DEBUG;
-    bool public DO_DEPLOY;
-    bool public DO_AFTER_DEPLOY;
-    bool public DO_AFTER_DEPLOY_SETUP;
-    bool public DO_BUILD;
-    bool public DO_RUN;
-    bool public DO_TEARDOWN;
-    bool public DO_VALIDATE;
 
     constructor(address[] memory _proposals) {
         for (uint256 i = 0; i < _proposals.length; i++) {
@@ -41,15 +33,6 @@ contract TestProposals is Test {
     }
 
     function setUp(string memory addressesPath) public {
-        DEBUG = vm.envOr("DEBUG", true);
-        DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
-        DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
-        DO_AFTER_DEPLOY_SETUP = vm.envOr("DO_AFTER_DEPLOY_SETUP", true);
-        DO_BUILD = vm.envOr("DO_BUILD", true);
-        DO_RUN = vm.envOr("DO_RUN", true);
-        DO_TEARDOWN = vm.envOr("DO_TEARDOWN", true);
-        DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
-
         addresses = new Addresses(addressesPath);
     }
 
@@ -102,11 +85,12 @@ contract TestProposals is Test {
                 if (debug) {
                     (
                         string[] memory recordedNames,
+			uint256[] memory chainIds,
                         address[] memory recordedAddresses
                     ) = addresses.getRecordedAddresses();
                     for (uint256 j = 0; j < recordedNames.length; j++) {
                         console.log("_addAddress('%s',", recordedNames[j]);
-                        console.log(block.chainid);
+                        console.log(chainIds[j]);
                         console.log(", ");
                         console.log(recordedAddresses[j]);
                         console.log(");");
@@ -158,20 +142,4 @@ contract TestProposals is Test {
         return postProposalVmSnapshots;
     }
 
-    function testProposals()
-        public
-        returns (uint256[] memory postProposalVmSnapshots)
-    {
-        return
-            testProposals(
-                DEBUG,
-                DO_DEPLOY,
-                DO_AFTER_DEPLOY,
-                DO_AFTER_DEPLOY_SETUP,
-                DO_BUILD,
-                DO_RUN,
-                DO_TEARDOWN,
-                DO_VALIDATE
-            );
-    }
 }
