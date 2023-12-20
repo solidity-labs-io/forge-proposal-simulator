@@ -47,7 +47,7 @@ contract TestProposals is Test {
             console.log("TestProposals: running", proposals.length, "proposals.");
 
 		/// output deployed contract addresses and names
-		(string[] memory recordedNames, address[] memory recordedAddresses) = addresses.getRecordedAddresses();
+	    (string[] memory recordedNames, ,address[] memory recordedAddresses) = addresses.getRecordedAddresses();
 		for (uint256 j = 0; j < recordedNames.length; j++) {
 		    console.log("Deployed", recordedAddresses[j], recordedNames[j]);
 		}
@@ -62,14 +62,12 @@ contract TestProposals is Test {
 	    if(debug) {
 		console.log("Proposal name:", name);
 	    }
-
             // Run the deploy for testing only workflow
             proposals[i].run(addresses, address(this));
 
             /// take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
         }
-
 	return postProposalVmSnapshots;
     }
 }

@@ -30,7 +30,7 @@ contract Addresses is IAddresses, Test {
     /// @notice struct to record addresses deployed during a proposal
     struct RecordedAddress {
         string name;
-        address addr;
+        uint256 chainId;
     }
 
     /// @notice array of addresses deployed during a proposal
@@ -45,7 +45,7 @@ contract Addresses is IAddresses, Test {
 
         SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
-        for (uint256 i = 0; i < savedAddresses.length; i++) {
+	for (uint256 i = 0; i < savedAddresses.length; i++) {
             _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
         }
     }
@@ -56,13 +56,13 @@ contract Addresses is IAddresses, Test {
 
         require(
             currentAddress == address(0),
-            string(abi.encodePacked("Address: ", name, "already set on chain: ", _chainId.toString()))
+            string(abi.encodePacked("Address: ", name, " already set on chain: ", _chainId.toString()))
         );
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
 
-        recordedAddresses.push(RecordedAddress({name: name, addr: addr}));
+        recordedAddresses.push(RecordedAddress({name: name, chainId: _chainId}));
     }
 
     function _getAddress(string memory name, uint256 _chainId) private view returns (address addr) {
@@ -72,7 +72,7 @@ contract Addresses is IAddresses, Test {
 
         require(
             addr != address(0),
-            string(abi.encodePacked("Address: ", name, "not set on chain: ", _chainId.toString()))
+            string(abi.encodePacked("Address: ", name, " not set on chain: ", _chainId.toString()))
         );
     }
 
@@ -98,16 +98,24 @@ contract Addresses is IAddresses, Test {
 
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
+        for (uint256 i = 0; i < recordedAddresses.length; i++) {
+            delete _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
+        }
+
         delete recordedAddresses;
     }
 
     /// @notice get recorded addresses from a proposal's deployment
-    function getRecordedAddresses() external view returns (string[] memory names, address[] memory addresses) {
-        names = new string[](recordedAddresses.length);
-        addresses = new address[](recordedAddresses.length);
-        for (uint256 i = 0; i < recordedAddresses.length; i++) {
+    function getRecordedAddresses() external view returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses) {
+	uint256 length = recordedAddresses.length;
+        names = new string[](length);
+	chainIds = new uint256[](length);
+        addresses = new address[](length);
+
+        for (uint256 i = 0; i < length; i++) {
             names[i] = recordedAddresses[i].name;
-            addresses[i] = recordedAddresses[i].addr;
+	    chainIds[i] = recordedAddresses[i].chainId;
+            addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
         }
     }
 }

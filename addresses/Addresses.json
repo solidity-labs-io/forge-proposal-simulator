@@ -12,7 +12,7 @@
   {
     "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
     "name": "PROTOCOL_TIMELOCK",
-      "chainId":  31337
+    "chainId": 31337
   },
   {
     "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
