@@ -12,6 +12,7 @@ contract MultisigProposalMock is MultisigProposal {
     function _run(Addresses addresses, address) internal override {
 	address multisig = addresses.getAddress("DEV_MULTISIG");
 
+	// call etch on multisig address to pretend it is a contract
 	vm.etch(multisig, "0x01");
 	_simulateActions(multisig);
     }

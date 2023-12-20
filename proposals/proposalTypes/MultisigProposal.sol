@@ -8,7 +8,6 @@ enum Operation {
     DelegateCall
 }
 
-
 contract MultisigProposal is Proposal {
     // Multicall3 address using CREATE2
     address constant public MULTICALL = 0xcA11bde05977b3631167028862bE2a173976CA11;
