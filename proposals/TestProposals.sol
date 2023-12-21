@@ -3,8 +3,6 @@ pragma solidity 0.8.19;
 import {console} from "@forge-std/console.sol";
 import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
-import {CrossChainProposal} from "@proposals/proposalTypes/CrossChainProposal.sol";
 import {Strings} from "@utils/Strings.sol";
 import {Test} from "@forge-std/Test.sol";
 
@@ -24,7 +22,6 @@ contract TestProposals is Test {
     Addresses public addresses;
     Proposal[] public proposals;
     bool public debug;
-    uint256 privateKey;
 
     constructor(string memory addressesPath, address[] memory _proposals) {
         addresses = new Addresses(addressesPath);
