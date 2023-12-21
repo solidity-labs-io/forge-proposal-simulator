@@ -6,6 +6,30 @@ import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {ITimelockController} from "@proposals/proposalTypes/ITimelockController.sol";
 
 abstract contract TimelockProposal is Proposal {
+
+  /// @notice log calldata
+    function printCalldata() public view override returns(bytes memory data){
+        uint256 actionsLength = actions.length;
+	address[] targets = new address[](actionsLength);
+	uint256[] values = new uint256[](actionsLength);
+	uint256[] payloads = new uint256[](actionsLength);
+        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 predecessor = bytes32(0);
+
+        for(uint256 i; i < actionsLength; i++) {
+	    targets.push(actions[i].target);
+	    payloads.push(actions[i].arguments);
+	    values.push(0);
+        }
+
+	data = abi.encodeWithSignature("executeBatch(address[],uint256[],bytes[],bytes32,salt)", targets, payloads, values, salt, predecessor);
+
+	if(DEBUG) {
+	    console.log("Calldata:");
+	    console.logBytes(data);
+	}
+    }
+
     /// @notice simulate timelock proposal
     /// @param timelockAddress to execute the proposal against
     /// @param proposerAddress account to propose the proposal to the timelock
