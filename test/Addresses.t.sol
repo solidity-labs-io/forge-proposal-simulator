@@ -39,6 +39,25 @@ contract TestAddresses is Test {
 	assertEq(addr, 0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9);
     }
 
+    function test_changeAddress() public {
+	assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41, "Wrong current address");
+
+	address addr = vm.addr(1);
+	addresses.changeAddress("DEV_MULTISIG", addr);
+
+	assertEq(addresses.getAddress("DEV_MULTISIG"), addr, "Not updated correclty");
+    }
+
+    function test_changeAddressChainId() public {
+	assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41, "Wrong current address");
+	address addr = vm.addr(1);
+
+	uint256 chainId = 31337;
+	addresses.changeAddress("DEV_MULTISIG", chainId, addr);
+
+	assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr, "Not updated correclty");
+    }
+
     function test_addAddress() public {
 	address addr = vm.addr(1);
 	addresses.addAddress("TEST", addr);
@@ -72,9 +91,6 @@ contract TestAddresses is Test {
 	assertEq(names.length, 0);
 	assertEq(chainIds.length, 0);
 	assertEq(_addresses.length, 0);
-
-        vm.expectRevert(bytes("Address: DEV_MULTISIG not set on chain: 31337"));
-	addresses.getAddress("DEV_MULTISIG");
     }
 
     function test_getRecordingAddresses() public {
@@ -93,29 +109,64 @@ contract TestAddresses is Test {
 	}
     }
 
+    function test_resetChangedAddresses() public {
+	addresses.resetChangedAddresses();
+
+	(string[] memory names, uint256[] memory chainIds, address[] memory oldAddresses, address[] memory newAddresses) = addresses.getChangedAddresses();
+
+	assertEq(names.length, 0);
+	assertEq(chainIds.length, 0);
+	assertEq(oldAddresses.length, 0);
+	assertEq(newAddresses.length, 0);
+    }
+
+    function test_getChangedAddresses() public {
+	address addr = vm.addr(1);
+	addresses.changeAddress("DEV_MULTISIG", addr);
+	(string[] memory names, uint256[] memory chainIds, address[] memory oldAddresses, address [] memory newAddresses) = addresses.getChangedAddresses();
+
+	assertEq(names.length, 1);
+	assertEq(chainIds.length, 1);
+	assertEq(oldAddresses.length, 1);
+	assertEq(newAddresses.length, 1);
+
+        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
+
+	assertEq(names[0], savedAddresses[0].name);
+	assertEq(chainIds[0], savedAddresses[0].chainId);
+	assertEq(oldAddresses[0], savedAddresses[0].addr);
+	assertEq(newAddresses[0], addr);
+    }
+
     function test_revertGetAddressChainZero() public {
-	vm.expectRevert(bytes("ChainId cannot be 0"));
+	vm.expectRevert("ChainId cannot be 0");
 	addresses.getAddress("DEV_MULTISIG", 0);
     }
 
     function test_reverGetAddressNotSet() public {
-	vm.expectRevert(bytes("Address: TEST not set on chain: 31337"));
+	vm.expectRevert("Address: TEST not set on chain: 31337");
 	addresses.getAddress("TEST");
     }
 
     function test_reverGetAddressNotSetOnChain() public {
-	vm.expectRevert(bytes("Address: DEV_MULTISIG not set on chain: 666"));
+	vm.expectRevert("Address: DEV_MULTISIG not set on chain: 666");
 	addresses.getAddress("DEV_MULTISIG", 666);
     }
 
     function test_revertAddAddressAlreadySet() public {
-	vm.expectRevert(bytes("Address: DEV_MULTISIG already set on chain: 31337"));
+	vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
 	addresses.addAddress("DEV_MULTISIG", vm.addr(1));
     }
 
     function test_revertAddAddressChainAlreadySet() public {
-	vm.expectRevert(bytes("Address: DEV_MULTISIG already set on chain: 31337"));
+	vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
 	addresses.addAddress("DEV_MULTISIG", 31337,  vm.addr(1));
     }
+
+    function test_revertChangedAddressDoesNotExist() public {
+	vm.expectRevert("Address: TEST doesn't exist on chain: 31337. Use addAddress instead");
+	addresses.changeAddress("TEST", vm.addr(1));
+    }
+
 
 }
