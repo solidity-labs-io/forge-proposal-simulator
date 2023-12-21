@@ -18,6 +18,11 @@ interface IProposal {
 		 bool teardown,
 		 bool validate) external;
 
+    // @notice actually run the proposal
+    // @dev review the implementation to determine which internal functions
+    // might need overriding for you proposal
+    function run(Addresses addresses, address deployer) external;
+
     // @notice Print out proposal steps one by one
     // print proposal description
     function printProposalActionSteps() external;

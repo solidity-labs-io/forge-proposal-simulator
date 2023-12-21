@@ -9,3 +9,5 @@ out/
 node_modules/
 
 .env
+
+lcov.info
