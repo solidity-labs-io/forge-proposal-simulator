@@ -15,7 +15,7 @@ contract MultisigProposal is Proposal {
     }
 
     /// @notice log calldata
-    function printCalldata() public view override returns(bytes memory data){
+    function getCalldata() public view override returns(bytes memory data){
         uint256 actionsLength = actions.length;
         Call[] memory calls = new Call[](actionsLength);
 
@@ -45,7 +45,7 @@ contract MultisigProposal is Proposal {
 	    vm.etch(MULTICALL, address(multicall).code);
 	}
 
-	bytes memory data = printCalldata();
+	bytes memory data = getCalldata();
 	Safe(multisig).execute(MULTICALL, 0, data, Safe.Operation.DelegateCall, 10_000_000);
     }
 }

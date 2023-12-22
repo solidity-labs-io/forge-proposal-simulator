@@ -7,12 +7,12 @@ import {TimelockController} from "@utils/TimelockController.sol";
 abstract contract TimelockProposal is Proposal {
 
     /// @notice log calldata
-    function printTimelockCalldata(address timelock) public view returns(bytes memory scheduleCalldata, bytes memory executeCalldata){
+    function getTimelockCalldata(address timelock) public view returns(bytes memory scheduleCalldata, bytes memory executeCalldata){
 
         bytes32 salt = keccak256(abi.encode(actions[0].description));
         bytes32 predecessor = bytes32(0);
 
-	(address[] memory targets, uint256[] memory values, bytes[] memory payloads) = printProposalActionSteps();
+	(address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
         uint256 delay = TimelockController(payable(timelock)).getMinDelay();
 
 	scheduleCalldata = abi.encodeWithSignature("scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -52,10 +52,10 @@ abstract contract TimelockProposal is Proposal {
 	    console.logBytes32(salt);
         }
 
-        (bytes memory scheduleCalldata, bytes memory executeCalldata) = printTimelockCalldata(timelockAddress);
+        (bytes memory scheduleCalldata, bytes memory executeCalldata) = getTimelockCalldata(timelockAddress);
 
         TimelockController timelock = TimelockController(payable(timelockAddress));
-	(address[] memory targets, uint256[] memory values, bytes[] memory payloads) = printProposalActionSteps();
+	(address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
 
         bytes32 proposalId = timelock.hashOperationBatch(targets, values, payloads, predecessor, salt);
 
@@ -65,7 +65,7 @@ abstract contract TimelockProposal is Proposal {
 	    // Perform the low-level call
 	    (bool success,) = payable(timelockAddress).call(scheduleCalldata);
 
-	    // Optional: Check if the call was successful
+	    // Check if the call was successful
 	    require(success, "Call to schedule timelock failed");
 
             if (DEBUG) {
@@ -89,7 +89,7 @@ abstract contract TimelockProposal is Proposal {
 	    // Perform the low-level call
 	    (bool success,) = payable(timelockAddress).call(executeCalldata);
 
-	    // Optional: Check if the call was successful
+	    // Check if the call was successful
 	    require(success, "Call to execute timelock failed");
 
 

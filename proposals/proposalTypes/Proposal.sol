@@ -79,10 +79,10 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     // @notice Print proposal calldata
-    function printCalldata() public virtual returns(bytes memory data) {}
+    function getCalldata() public virtual returns(bytes memory data) {}
 
     // @notice Print out proposal actions
-    function printProposalActionSteps() public view override returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments) {
+    function getProposalActions() public view override returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments) {
 	uint256 actionsLength = actions.length;
 	require(actionsLength > 0, "No actions found");
 

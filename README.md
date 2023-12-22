@@ -29,7 +29,7 @@ A proposal type has multiple actions.
 
     function validate(Addresses, address) external;
 
-    function printProposalActionSteps() external;
+    function getProposalActions() external;
 ```
 
 `Deploy`, creates a new smart contract on whichever network the script is

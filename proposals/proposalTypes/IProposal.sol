@@ -24,8 +24,8 @@ interface IProposal {
     function run(Addresses addresses, address deployer) external;
 
     // @notice Print proposal actions
-    function printProposalActionSteps() external returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments);
+    function getProposalActions() external returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments);
 
     // @notice Print proposal calldata
-    function printCalldata() external returns(bytes memory data);
+    function getCalldata() external returns(bytes memory data);
 }
