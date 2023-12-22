@@ -50,7 +50,7 @@ abstract contract Proposal is Test, Script, IProposal {
 	}
 
 	if(doAfterDeploy) {
-        _afterDeploy(addresses, deployer);
+	    _afterDeploy(addresses, deployer);
 	}
 
         vm.stopBroadcast();

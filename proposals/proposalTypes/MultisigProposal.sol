@@ -3,11 +3,7 @@ pragma solidity 0.8.19;
 import "@forge-std/console.sol";
 import {Proposal} from "./Proposal.sol";
 import {Multicall3} from "@utils/Multicall3.sol";
-
-enum Operation {
-    Call,
-    DelegateCall
-}
+import {Safe} from "@utils/Safe.sol";
 
 contract MultisigProposal is Proposal {
     // Multicall3 address using CREATE2
@@ -40,7 +36,7 @@ contract MultisigProposal is Proposal {
 
 	vm.startPrank(multisig);
 
-	MockSafe safe = new MockSafe();
+	Safe safe = new Safe();
 
 	require(multisig.code.length > 0, "Multisig must be a contract");
 
@@ -56,43 +52,6 @@ contract MultisigProposal is Proposal {
 	    vm.etch(MULTICALL, address(multicall).code);
 	}
 
-	safe.execute(MULTICALL, 0, data, Operation.DelegateCall, 10_000_000);
-    }
-}
-
-contract MockSafe {
-    /**
-     * @notice Executes either a delegatecall or a call with provided parameters.
-     * @dev This method doesn't perform any sanity check of the transaction, such as:
-     *      - if the contract at `to` address has code or not
-     *      It is the responsibility of the caller to perform such checks.
-     * @param to Destination address.
-     * @param value Ether value.
-     * @param data Data payload.
-     * @param operation Operation type.
-     * @return success boolean flag indicating if the call succeeded.
-     */
-    function execute(
-        address to,
-        uint256 value,
-        bytes memory data,
-        Operation operation,
-        uint256 txGas
-    ) public returns (bool success) {
-        if (operation == Operation.DelegateCall) {
-            /* solhint-disable no-inline-assembly */
-            /// @solidity memory-safe-assembly
-            assembly {
-                success := delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)
-            }
-            /* solhint-enable no-inline-assembly */
-        } else {
-            /* solhint-disable no-inline-assembly */
-            /// @solidity memory-safe-assembly
-            assembly {
-                success := call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)
-            }
-            /* solhint-enable no-inline-assembly */
-        }
+	safe.execute(MULTICALL, 0, data, Safe.Operation.DelegateCall, 10_000_000);
     }
 }
