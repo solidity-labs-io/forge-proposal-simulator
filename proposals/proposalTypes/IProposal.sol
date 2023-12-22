@@ -23,9 +23,8 @@ interface IProposal {
     // might need overriding for you proposal
     function run(Addresses addresses, address deployer) external;
 
-    // @notice Print out proposal steps one by one
-    // print proposal description
-    function printProposalActionSteps() external;
+    // @notice Print proposal actions
+    function printProposalActionSteps() external returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments);
 
     // @notice Print proposal calldata
     function printCalldata() external returns(bytes memory data);

@@ -4,6 +4,7 @@ import {Test} from "@forge-std/Test.sol";
 import {IProposal} from "@proposals/proposalTypes/IProposal.sol";
 import {Script} from "@forge-std/Script.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {console} from "@forge-std/console.sol";
 
 abstract contract Proposal is Test, Script, IProposal {
     struct Action {
@@ -16,6 +17,9 @@ abstract contract Proposal is Test, Script, IProposal {
     Action[] public actions;
 
     bool internal DEBUG;
+
+    /// @notice hex encoded description of the proposal
+    bytes public PROPOSAL_DESCRIPTION;
 
     // @notice override this to set the proposal name
     function name() external view virtual returns (string memory) {}
@@ -74,12 +78,45 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = debug;
     }
 
-    // @notice Print out proposal steps one by one
-    // print proposal description
-    function printProposalActionSteps() public virtual {}
-
     // @notice Print proposal calldata
-    function printCalldata() public virtual returns(bytes memory data){}
+    function printCalldata() public virtual returns(bytes memory data) {}
+
+    // @notice Print out proposal actions
+    function printProposalActionSteps() public view override returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments) {
+	uint256 actionsLength = actions.length;
+	require(actionsLength > 0, "No actions found");
+
+	targets = new address[](actionsLength);
+	values = new uint256[](actionsLength);
+	arguments = new bytes[](actionsLength);
+
+        console.log("\n\nProposal Description:\n\n%s", string(PROPOSAL_DESCRIPTION));
+        console.log("\n\n------------------ Proposal Actions ------------------");
+
+	for(uint256 i; i < actionsLength; i++) {
+	    require(actions[i].target != address(0), "Invalid target for proposal");
+	    /// if there are no args and no eth, the action is not valid
+	    require(
+		    (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
+		    "Invalid arguments for proposal"
+	    );
+	    targets[i] = actions[i].target;
+	    arguments[i] = actions[i].arguments;
+	    values[i] = actions[i].value;
+
+	    if(DEBUG) {
+		console.log("%d). %s", i + 1, actions[i].description);
+		console.log("target: %s\npayload", actions[i].target);
+		console.logBytes(actions[i].arguments);
+		console.log("\n");
+	    }
+	}
+    }
+
+    /// @notice set the governance proposal's description
+    function _setProposalDescription(bytes memory newProposalDescription) internal {
+        PROPOSAL_DESCRIPTION = newProposalDescription;
+    }
 
     // @dev push an action to the proposal
     function _pushAction(uint256 value, address target, bytes memory data, string memory description) internal {

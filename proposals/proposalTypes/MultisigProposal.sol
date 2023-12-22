@@ -20,6 +20,7 @@ contract MultisigProposal is Proposal {
         Call[] memory calls = new Call[](actionsLength);
 
         for(uint256 i; i < actionsLength; i++) {
+            require(actions[i].target != address(0), "Invalid target for multisig");
             calls[i] = Call({ target: actions[i].target, callData: actions[i].arguments });
         }
 
@@ -32,15 +33,7 @@ contract MultisigProposal is Proposal {
     }
 
     function _simulateActions(address multisig) internal {
-	bytes memory data = printCalldata();
-
 	vm.startPrank(multisig);
-
-	Safe safe = new Safe();
-
-	require(multisig.code.length > 0, "Multisig must be a contract");
-
-	vm.etch(multisig, address(safe).code);
 	
 	uint256 multicallSize;
 	assembly {
@@ -52,6 +45,7 @@ contract MultisigProposal is Proposal {
 	    vm.etch(MULTICALL, address(multicall).code);
 	}
 
-	safe.execute(MULTICALL, 0, data, Safe.Operation.DelegateCall, 10_000_000);
+	bytes memory data = printCalldata();
+	Safe(multisig).execute(MULTICALL, 0, data, Safe.Operation.DelegateCall, 10_000_000);
     }
 }
