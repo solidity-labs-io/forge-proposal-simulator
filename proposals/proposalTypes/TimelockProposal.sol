@@ -5,10 +5,8 @@ import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {TimelockController} from "@utils/TimelockController.sol";
 
 abstract contract TimelockProposal is Proposal {
-    /// @notice log calldata
-    function getTimelockCalldata(
-        address timelock
-    ) public view returns (bytes memory scheduleCalldata, bytes memory executeCalldata) {
+    /// @notice get schedule calldata
+    function getScheduleCalldata(address timelock) public view returns (bytes memory scheduleCalldata) {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
         bytes32 predecessor = bytes32(0);
 
@@ -25,6 +23,19 @@ abstract contract TimelockProposal is Proposal {
             delay
         );
 
+        if (DEBUG) {
+            console.log("Calldata for scheduleBatch:");
+            console.logBytes(scheduleCalldata);
+        }
+    }
+
+    /// @notice get execute calldata
+    function getExecuteCalldata() public view returns (bytes memory executeCalldata) {
+        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 predecessor = bytes32(0);
+
+        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
+
         executeCalldata = abi.encodeWithSignature(
             "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
             targets,
@@ -35,9 +46,6 @@ abstract contract TimelockProposal is Proposal {
         );
 
         if (DEBUG) {
-            console.log("Calldata for scheduleBatch:");
-            console.logBytes(scheduleCalldata);
-
             console.log("Calldata for executeBatch:");
             console.logBytes(executeCalldata);
         }
@@ -56,7 +64,8 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(salt);
         }
 
-        (bytes memory scheduleCalldata, bytes memory executeCalldata) = getTimelockCalldata(timelockAddress);
+        bytes memory scheduleCalldata = getScheduleCalldata(timelockAddress);
+        bytes memory executeCalldata = getExecuteCalldata();
 
         TimelockController timelock = TimelockController(payable(timelockAddress));
         (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
