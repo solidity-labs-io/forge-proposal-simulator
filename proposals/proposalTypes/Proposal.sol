@@ -32,45 +32,47 @@ abstract contract Proposal is Test, Script, IProposal {
         _afterDeploySetup(addresses);
         vm.stopBroadcast();
 
-	_build(addresses);
-	_run(addresses, deployer);
-	_teardown(addresses, deployer);
-	_validate(addresses, deployer);
+        _build(addresses);
+        _run(addresses, deployer);
+        _teardown(addresses, deployer);
+        _validate(addresses, deployer);
     }
 
     // @notice the main function, should not be override
-    function run(Addresses addresses, address deployer,
-		 bool doDeploy,
-		 bool doAfterDeploy,
-		 bool doBuild,
-		 bool doRun,
-		 bool doTeardown,
-		 bool doValidate) external {
+    function run(
+        Addresses addresses,
+        address deployer,
+        bool doDeploy,
+        bool doAfterDeploy,
+        bool doBuild,
+        bool doRun,
+        bool doTeardown,
+        bool doValidate
+    ) external {
+        vm.startBroadcast(deployer);
 
-	vm.startBroadcast(deployer);
+        if (doDeploy) {
+            _deploy(addresses, deployer);
+        }
 
-	if(doDeploy) {
-	    _deploy(addresses, deployer);
-	}
-
-	if(doAfterDeploy) {
-	    _afterDeploy(addresses, deployer);
-	}
+        if (doAfterDeploy) {
+            _afterDeploy(addresses, deployer);
+        }
 
         vm.stopBroadcast();
 
-	if(doBuild) {
-	    _build(addresses);
-	}
-	if(doRun) {
-	    _run(addresses, deployer);
-	}
-	if(doTeardown) {
-	    _teardown(addresses, deployer);
-	}
-	if(doValidate) {
-	    _validate(addresses, deployer);
-	}
+        if (doBuild) {
+            _build(addresses);
+        }
+        if (doRun) {
+            _run(addresses, deployer);
+        }
+        if (doTeardown) {
+            _teardown(addresses, deployer);
+        }
+        if (doValidate) {
+            _validate(addresses, deployer);
+        }
     }
 
     // @dev set the debug flag
@@ -79,38 +81,43 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     // @notice Print proposal calldata
-    function getCalldata() public virtual returns(bytes memory data) {}
+    function getCalldata() public virtual returns (bytes memory data) {}
 
     // @notice Print out proposal actions
-    function getProposalActions() public view override returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments) {
-	uint256 actionsLength = actions.length;
-	require(actionsLength > 0, "No actions found");
+    function getProposalActions()
+        public
+        view
+        override
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments)
+    {
+        uint256 actionsLength = actions.length;
+        require(actionsLength > 0, "No actions found");
 
-	targets = new address[](actionsLength);
-	values = new uint256[](actionsLength);
-	arguments = new bytes[](actionsLength);
+        targets = new address[](actionsLength);
+        values = new uint256[](actionsLength);
+        arguments = new bytes[](actionsLength);
 
         console.log("\n\nProposal Description:\n\n%s", description());
         console.log("\n\n------------------ Proposal Actions ------------------");
 
-	for(uint256 i; i < actionsLength; i++) {
-	    require(actions[i].target != address(0), "Invalid target for proposal");
-	    /// if there are no args and no eth, the action is not valid
-	    require(
-		    (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
-		    "Invalid arguments for proposal"
-	    );
-	    targets[i] = actions[i].target;
-	    arguments[i] = actions[i].arguments;
-	    values[i] = actions[i].value;
+        for (uint256 i; i < actionsLength; i++) {
+            require(actions[i].target != address(0), "Invalid target for proposal");
+            /// if there are no args and no eth, the action is not valid
+            require(
+                (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
+                "Invalid arguments for proposal"
+            );
+            targets[i] = actions[i].target;
+            arguments[i] = actions[i].arguments;
+            values[i] = actions[i].value;
 
-	    if(DEBUG) {
-		console.log("%d). %s", i + 1, actions[i].description);
-		console.log("target: %s\npayload", actions[i].target);
-		console.logBytes(actions[i].arguments);
-		console.log("\n");
-	    }
-	}
+            if (DEBUG) {
+                console.log("%d). %s", i + 1, actions[i].description);
+                console.log("target: %s\npayload", actions[i].target);
+                console.logBytes(actions[i].arguments);
+                console.log("\n");
+            }
+        }
     }
 
     // @dev push an action to the proposal
@@ -152,7 +159,7 @@ abstract contract Proposal is Test, Script, IProposal {
     // See proposals/proposalTypes for helper contracts.
     // address param is the address of the proposal executor
     function _run(Addresses, address) internal virtual {
-	revert("You must override the run function");
+        revert("You must override the run function");
     }
 
     // @dev After a proposal executed, if you mocked some behavior in the

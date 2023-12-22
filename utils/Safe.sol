@@ -2,8 +2,8 @@ pragma solidity 0.8.19;
 
 contract Safe {
     enum Operation {
-	Call,
-	DelegateCall
+        Call,
+        DelegateCall
     }
 
     /**

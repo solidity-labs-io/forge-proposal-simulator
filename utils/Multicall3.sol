@@ -42,12 +42,14 @@ contract Multicall3 {
         uint256 length = calls.length;
         returnData = new bytes[](length);
         Call calldata call;
-        for (uint256 i = 0; i < length;) {
+        for (uint256 i = 0; i < length; ) {
             bool success;
             call = calls[i];
             (success, returnData[i]) = call.target.call(call.callData);
             require(success, "Multicall3: call failed");
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
     }
 }

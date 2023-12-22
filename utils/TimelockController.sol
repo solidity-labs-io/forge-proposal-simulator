@@ -86,7 +86,7 @@ contract TimelockController {
      */
     receive() external payable {}
 
-   /**
+    /**
      * @dev Returns whether an id corresponds to a registered operation. This
      * includes both Waiting, Ready, and Done operations.
      */
@@ -219,7 +219,7 @@ contract TimelockController {
         bytes32 predecessor,
         bytes32 salt,
         uint256 delay
-    ) public virtual  {
+    ) public virtual {
         if (targets.length != values.length || targets.length != payloads.length) {
             revert TimelockInvalidOperationLength(targets.length, payloads.length, values.length);
         }

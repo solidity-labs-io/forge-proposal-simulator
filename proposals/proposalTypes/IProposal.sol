@@ -14,13 +14,16 @@ interface IProposal {
     // @notice actually run the proposal
     // @dev review the implementation to determine which internal functions
     // might need overriding for you proposal
-    function run(Addresses addresses, address deployer,
- 		 bool deploy,
-		 bool afterDeploy,
-		 bool build,
-		 bool run,
-		 bool teardown,
-		 bool validate) external;
+    function run(
+        Addresses addresses,
+        address deployer,
+        bool deploy,
+        bool afterDeploy,
+        bool build,
+        bool run,
+        bool teardown,
+        bool validate
+    ) external;
 
     // @notice actually run the proposal
     // @dev review the implementation to determine which internal functions
@@ -28,8 +31,10 @@ interface IProposal {
     function run(Addresses addresses, address deployer) external;
 
     // @notice Print proposal actions
-    function getProposalActions() external returns(address[] memory targets, uint256[] memory values, bytes[] memory arguments);
+    function getProposalActions()
+        external
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments);
 
     // @notice Print proposal calldata
-    function getCalldata() external returns(bytes memory data);
+    function getCalldata() external returns (bytes memory data);
 }
