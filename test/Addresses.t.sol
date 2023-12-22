@@ -96,9 +96,9 @@ contract TestAddresses is Test {
     function test_getRecordingAddresses() public {
 	(string[] memory names, uint256[] memory chainIds, address[] memory _addresses) = addresses.getRecordedAddresses();
 
-	assertEq(names.length, 4);
-	assertEq(chainIds.length, 4);
-	assertEq(_addresses.length, 4);
+	assertEq(names.length, 6);
+	assertEq(chainIds.length, 6);
+	assertEq(_addresses.length, 6);
 
         SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
