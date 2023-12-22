@@ -33,8 +33,16 @@ contract Addresses is IAddresses, Test {
         uint256 chainId;
     }
 
+     struct ChangedAddress {
+        string name;
+        uint256 chainId;
+	address oldAddress;
+    }
+
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
+
+    ChangedAddress[] private changedAddresses;
 
     constructor(string memory addressesPath) {
         chainId = block.chainid;
@@ -96,12 +104,24 @@ contract Addresses is IAddresses, Test {
         _addAddress(name, _chainId, addr);
     }
 
+    /// @notice change an address for a specific chainId
+    function changeAddress(string memory name, uint256 _chainId, address _addr) public {
+	address addr = _addresses[name][_chainId];
+	require(addr != address(0), string(abi.encodePacked("Address: ", name, " doesn't exist on chain: ", _chainId.toString(), ". Use addAddress instead")));
+	
+        changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr }));
+
+	_addresses[name][_chainId] = _addr;
+        vm.label(_addr, name);
+    }
+
+    /// @notice change an address for the current chainId
+    function changeAddress(string memory name, address addr) public {
+	changeAddress(name, chainId, addr);
+    }
+
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
-        for (uint256 i = 0; i < recordedAddresses.length; i++) {
-            delete _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
-        }
-
         delete recordedAddresses;
     }
 
@@ -116,6 +136,28 @@ contract Addresses is IAddresses, Test {
             names[i] = recordedAddresses[i].name;
 	    chainIds[i] = recordedAddresses[i].chainId;
             addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
+        }
+    }
+
+    /// @notice remove changed addresses
+    function resetChangedAddresses() external {
+        delete changedAddresses;
+    }
+
+    /// @notice get changed addresses from a proposal's deployment
+    function getChangedAddresses() external view returns (string[] memory names, uint256[] memory chainIds,
+							  address[] memory oldAddresses, address[] memory newAddresses) {
+	uint256 length = changedAddresses.length;
+        names = new string[](length);
+	chainIds = new uint256[](length);
+        oldAddresses = new address[](length);
+	newAddresses = new address[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            names[i] = changedAddresses[i].name;
+	    chainIds[i] = changedAddresses[i].chainId;
+            oldAddresses[i] = changedAddresses[i].oldAddress;
+	    newAddresses[i] =_addresses[changedAddresses[i].name][changedAddresses[i].chainId];
         }
     }
 }
