@@ -1,147 +1,82 @@
 # Overview
 
-This is a standard template for creating and managing a smart contract system
-with foundry. It provides scaffolding for both managing and creating system
-deployments and governance proposals.
+This library is a powerful tool for developers aiming to test governance proposals in a simulated environment before deploying them to the mainnet.
 
 ## Design Philosophy
 
-This template aims to create a system to generate governance proposals and
-deployments in a unified framework so that integration and unit tests can
-leverage the system exactly as it will exist once deployed on mainnet. This way,
-entire categories of bugs can be eliminated such as deploy script errors and
-governance proposal errors.
+This library is primarily intended to help protocols in creating and validating governance proposals. Its main focus is on ensuring that any changes in the state are compatible and work seamlessly with the existing code and storage structures on the mainnet. Its versatility makes it easily adaptable to various governance models. Using this tool, developers can identify and eliminate potential issues that may arise in governance proposals, thereby enhancing the reliability and effectiveness of their governance processes.
 
-A proposal type has multiple actions.
+### A proposal has the following external functions
 
-```
-    function deploy(Addresses, address) external;
+-   `function name() external`: Override this function to define the name of the proposal
 
-    function afterDeploy(Addresses, address) external;
+-   `function description() external`: Override this function to define the description of the proposal
 
-    function afterDeploySetup(Addresses) external;
+-   `function run(Address, address) external`: This function simulates proposal execution against a forked mainnet or locally and should be used in integration tests or scripts. It is not meant to be overridden.
 
-    function build(Addresses) external;
+-   Same as above, but with more granular control over which actions to run.
 
-    function run(Addresses, address) external;
-
-    function teardown(Addresses, address) external;
-
-    function validate(Addresses, address) external;
-
-    function printProposalActionSteps() external;
-```
-
-`Deploy`, creates a new smart contract on whichever network the script is
-pointed at.
-
-`After deploy` actions such as wiring deployed contracts together, calling
-initialize, etc.
-
-`After deploy setup` is any setup that needs to be done after all contracts have
-been deployed and wired together, such as sending funds to a contract using
-forge's `deal` function. This step is usually only done for simulations and not
-run when a proposal is broadcast to a network.
-
-`Build` the proposal. This is where the proposal calldata is built.
-
-`Run` the proposal. This is where the proposal execution is simulated against a
-chainforked mainnet.
-
-`Teardown` the proposal. This is where any post proposal state changes are made
-if needed. This is a step that should only run when simulating a proposal, it
-should never be run during a script broadcast.
-
-`Validation` of the state after the proposal is run. This is where all deployed
-or modified contracts are checked to ensure they are in the correct state. For a
-deployment, this is where the deployed contract is checked to ensure all state
-variables were properly set. For a proposal, this is where the proposal targets
-are checked to ensure they are in the correct state. For a proposal that does a
-deployment and governance proposal/action, both the deployed contract(s) and the
-proposal target(s) are checked.
-
-`Print proposal action steps` This is a helper function to print out the steps
-that will be taken when a proposal is run. This step also logs any governance
-proposal calldata that is generated.
-
-Each action type in the system is loosely coupled or decoupled. Actions build
-and run are tightly coupled. If run is called, build must be called first. If
-build is called, run should be called after. All other actions are decoupled,
-but run sequentially in their declaration order.
-
-## Usage
-
-To deploy a new system, create a new contract that inherits the
-[Proposal](./proposals/proposalTypes/Proposal.sol) contract and implements the
-[IProposal](./proposals/proposalTypes/IProposal.sol) interface. Any actions that
-are unneeded should be left blank.
-
-Before running the script, environment variables should be set. The following
-environment variables are used in the system, all of them set to true by
-default:
-
-```
-DEBUG
-DO_DEPLOY
-DO_AFTER_DEPLOY
-DO_AFTER_DEPLOY_SETUP
-DO_BUILD
-DO_RUN
-DO_TEARDOWN
-DO_VALIDATE
-DO_PRINT
+```solidity
+function run(
+    Addresses addresses,
+    address deployer,
+    bool deploy,
+    bool afterDeploy,
+    bool build,
+    bool run,
+    bool teardown,
+    bool validate
+) external;
 ```
 
-to change them, set only the unneeded actions to false in the shell before
-running the script:
+-   `function getProposalActionSteps() external`: Retrieves the sequence of actions for a proposal. Do not override.
 
-```
-export DEBUG=false
-export DO_DEPLOY=false
-export DO_AFTER_DEPLOY=false
-export DO_AFTER_DEPLOY_SETUP=false
-export DO_BUILD=false
-export DO_RUN=false
-export DO_TEARDOWN=false
-export DO_VALIDATE=false
-export DO_PRINT=false
-```
+-   `function getCalldata() external`: Retrieves any generated governance proposal calldata.
 
-Actions build, run, teardown, validate and print will never be run when a
-proposal is broadcast to a network. They are only run when simulating a proposal
-or after the braodcast has been run.
+### A proposal has the following internal functions
 
-If deploying a new system, the following environment variables must be set.
+The following functions are optional and executed in their listing order. Override them in your proposal contract as needed. You can control their execution when using the run function with granular action control.
 
-- `ETH_RPC_URL` rpc provider endpoint.
-- `DEPLOYER_KEY` is the private key encoded in hex and should be 64 characters.
-- `ETHERSCAN_API_KEY` is the etherscan api key used to verify the deployed
-  contracts on etherscan after it is deployed.
+-   `function _deploy(Addresses, address) internal`: Defines new contract deployments.
 
-Then, once the proposal has been created, run the following command to deploy
-the system/generate the calldata for the proposal and validate if the flag is
-set to true:
+-   `function _afterDeploy(Addresses, address) internal`: Specifies post-deployment actions.
 
-```
-forge script PathToProposal.sol:ProposalContractName \
-    -vvvv \
-    --rpc-url $ETH_RPC_URL --broadcast --etherscan-api-key $ETHERSCAN_API_KEY --verify
-```
+-   `function _build(Addresses) internal`: Creates the proposal actions.
+
+-   `function _run(Addresses, address) internal`: Executes the proposal actions.
+
+-   `function _teardown(Addresses, address) internal`: Define actions to be taken after running the proposal.
+
+-   `function _validate(Addresses) internal`: Validates the state post-execution, ensuring correct setup of state variables and proposal targets.
+
+Actions in the system are either loosely or decoupled, with build and run being exceptions, requiring sequential execution.
 
 ## Addresses Contract
 
-The addresses contract is a contract that stores all the addresses of the
-deployed contracts. It is used to pass the addresses of the deployed contracts
-to the proposal contract. It is also used to store the addresses of the deployed
-contracts after the proposal has been run.
+The Addresses contract stores the addresses of deployed contracts, facilitating their access in proposal contracts and recording them post-execution.
+Deployed contract addresses, along with their names and networks, should be listed in a json file in the following format:
 
-Deployed contract addresses, as well as their name and respective networks are
-stored in the [Addresses.json](./addresses/Addresses.json) file.
+```json
+{
+    "addr": "0x1234567890123456789012345678901234567890",
+    "name": "ADDRESS_NAME",
+    "chainId": 1234
+}
+```
 
-Contracts with the same name can be stored in the Addresses.json as long as
-there is no overlap in the networks they are deployed on. For example, if there
-is a contract named `Foo` that is deployed on mainnet and a contract named `Foo`
-that is deployed on rinkeby, both can be stored in the Addresses.json file.
-However, if there is a contract named `Foo` that is deployed on mainnet twice,
-only one of them can be stored in the `Addresses.json` file, otherwise there
-will be a revert during construction.
+Contracts with identical names are acceptable provided they are deployed on different networks. Duplicates on the same network are not allowed and `Addresses.sol` prevents by reverting during construction.
+
+## Usage
+
+1. Integrate this library into your protocol repository as a submodule:
+
+    ```bash
+    forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
+    ```
+
+2. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposalTypes](./proposals/proposalTypes) directory. Omit any actions that are not relevant to your proposal. Explore our [mocks](./mocks) for practical examples.
+
+3. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+
+4. Develop a test to execute your proposal that invokes `testProposals()`on [TestProposals](./proposals/TestProposals.sol).
+   For guidance, check out the sample tests in our [test/integration](./test/integration) directory.
