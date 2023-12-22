@@ -8,8 +8,12 @@ import {Safe} from "@utils/Safe.sol";
 contract MultisigProposalMock is MultisigProposal {
 
     function name() public pure override returns(string memory) {
-	return "MULTISIG_PROPOSAL_MOCK_01";
+	return "MULTISIG_PROPOSAL_MOCK";
     }
+
+    function description() public pure override returns(string memory) {
+	return "Multisig proposal mock";
+     }
     
     function _run(Addresses addresses, address) internal override {
 	address multisig = addresses.getAddress("DEV_MULTISIG");

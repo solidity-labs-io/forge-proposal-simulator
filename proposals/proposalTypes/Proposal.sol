@@ -18,11 +18,11 @@ abstract contract Proposal is Test, Script, IProposal {
 
     bool internal DEBUG;
 
-    /// @notice hex encoded description of the proposal
-    bytes public PROPOSAL_DESCRIPTION;
-
     // @notice override this to set the proposal name
     function name() external view virtual returns (string memory) {}
+
+    // @notice override this to set the proposal description
+    function description() public view virtual returns (string memory) {}
 
     // @notice the main function, should not be override
     function run(Addresses addresses, address deployer) external {
@@ -90,7 +90,7 @@ abstract contract Proposal is Test, Script, IProposal {
 	values = new uint256[](actionsLength);
 	arguments = new bytes[](actionsLength);
 
-        console.log("\n\nProposal Description:\n\n%s", string(PROPOSAL_DESCRIPTION));
+        console.log("\n\nProposal Description:\n\n%s", description());
         console.log("\n\n------------------ Proposal Actions ------------------");
 
 	for(uint256 i; i < actionsLength; i++) {
@@ -113,19 +113,14 @@ abstract contract Proposal is Test, Script, IProposal {
 	}
     }
 
-    /// @notice set the governance proposal's description
-    function _setProposalDescription(bytes memory newProposalDescription) internal {
-        PROPOSAL_DESCRIPTION = newProposalDescription;
-    }
-
     // @dev push an action to the proposal
-    function _pushAction(uint256 value, address target, bytes memory data, string memory description) internal {
-        actions.push(Action({value: value, target: target, arguments: data, description: description}));
+    function _pushAction(uint256 value, address target, bytes memory data, string memory _description) internal {
+        actions.push(Action({value: value, target: target, arguments: data, description: _description}));
     }
 
     // @dev push an action to the proposal with a value of 0
-    function _pushAction(address target, bytes memory data, string memory description) internal {
-        _pushAction(0, target, data, description);
+    function _pushAction(address target, bytes memory data, string memory _description) internal {
+        _pushAction(0, target, data, _description);
     }
 
     // @dev push an action to the proposal with empty description

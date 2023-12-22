@@ -7,6 +7,10 @@ interface IProposal {
     // @dev override this to set the proposal name
     function name() external view returns (string memory);
 
+    // @notice proposal description
+    // @dev override this to set the proposal description
+    function description() external view returns (string memory);
+
     // @notice actually run the proposal
     // @dev review the implementation to determine which internal functions
     // might need overriding for you proposal

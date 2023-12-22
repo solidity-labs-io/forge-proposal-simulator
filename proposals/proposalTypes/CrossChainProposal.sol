@@ -78,7 +78,7 @@ abstract contract CrossChainProposal is MultisigProposal {
             values,
             signatures,
             payloads,
-            string(PROPOSAL_DESCRIPTION)
+            description()
         );
 
         return artemisPayload;

@@ -10,6 +10,10 @@ contract TimelockProposalMock is TimelockProposal {
     function name() public pure override returns(string memory) {
 	return "TIMELOCK_PROPOSAL_MOCK";
     }
+
+    function description() public pure override returns(string memory) {
+	return "Timelock proposal mock";
+     }
     
     function _run(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
