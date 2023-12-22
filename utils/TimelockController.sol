@@ -20,7 +20,7 @@ import {Address} from "@utils/Address.sol";
 contract TimelockController {
     uint256 internal constant _DONE_TIMESTAMP = uint256(1);
 
-    mapping(bytes32 id => uint256) private _timestamps;
+    mapping(bytes32 id => uint256 timestamp) private _timestamps;
     uint256 private _minDelay;
 
     enum OperationState {
@@ -140,6 +140,7 @@ contract TimelockController {
      */
     function getOperationState(bytes32 id) public view virtual returns (OperationState) {
         uint256 timestamp = getTimestamp(id);
+
         if (timestamp == 0) {
             return OperationState.Unset;
         } else if (timestamp == _DONE_TIMESTAMP) {
@@ -380,7 +381,7 @@ contract TimelockController {
      * - the caller must be the timelock itself. This can only be achieved by scheduling and later executing
      * an operation where the timelock is the target and the data is the ABI-encoded call to this function.
      */
-    function updateDelay(uint256 newDelay) external virtual {
+    function updateDelay(uint256 newDelay) external {
         emit MinDelayChange(_minDelay, newDelay);
         _minDelay = newDelay;
     }

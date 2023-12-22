@@ -24,7 +24,7 @@ abstract contract TimelockProposal is Proposal {
 					    delay);
 
 
-	executeCalldata = abi.encodeWithSignature("executeBatch(address[],uint256[],bytes[],bytes32,salt)", targets, payloads, values, salt, predecessor);
+	executeCalldata = abi.encodeWithSignature("executeBatch(address[],uint256[],bytes[],bytes32,bytes32)", targets, values, payloads, predecessor, salt);
 
 	if(DEBUG) {
 	    console.log("Calldata for scheduleBatch:");
@@ -48,8 +48,8 @@ abstract contract TimelockProposal is Proposal {
         bytes32 predecessor = bytes32(0);
 
         if (DEBUG) {
-            console.log("salt: ");
-            emit log_bytes32(salt);
+            console.log("salt:");
+	    console.logBytes32(salt);
         }
 
         (bytes memory scheduleCalldata, bytes memory executeCalldata) = printTimelockCalldata(timelockAddress);
@@ -72,7 +72,7 @@ abstract contract TimelockProposal is Proposal {
                 console.log(
                     "schedule batch calldata with ",
                     actions.length,
-                    (actions.length > 1 ? " actions" : " action")
+                    (actions.length > 1 ? "actions" : "action")
                 );
 	    }
         } else if (DEBUG) {
@@ -80,18 +80,22 @@ abstract contract TimelockProposal is Proposal {
             emit log_bytes32(proposalId);
         }
 
-        uint256 delay = TimelockController(payable(timelockAddress)).getMinDelay();
+        uint256 delay = timelock.getMinDelay();
         vm.warp(block.timestamp + delay);
 
         if (!timelock.isOperationDone(proposalId)) {
             vm.prank(executorAddress);
 
 	    // Perform the low-level call
-	    (bool success,) = timelockAddress.call(executeCalldata);
+	    (bool success,) = payable(timelockAddress).call(executeCalldata);
 
 	    // Optional: Check if the call was successful
 	    require(success, "Call to execute timelock failed");
 
+
+            if (DEBUG) {
+                console.log("executed batch calldata");
+	    }
             
         } else if (DEBUG) {
             console.log("proposal already executed");

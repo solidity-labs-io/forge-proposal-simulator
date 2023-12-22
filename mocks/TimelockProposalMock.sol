@@ -25,7 +25,7 @@ contract TimelockProposalMock is TimelockProposal {
 	    TimelockController timelockController = new TimelockController();
 	    vm.etch(timelock, address(timelockController).code);
 	    // set a delay if is running on a local instance 
-	    timelockController.updateDelay(10_000);
+	    TimelockController(payable(timelock)).updateDelay(10_000);
 	}
 
 	_simulateActions(timelock, proposer, executor);

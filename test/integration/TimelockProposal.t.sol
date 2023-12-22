@@ -16,14 +16,15 @@ contract TimelockProposalTest is Test {
 	address[] memory proposalsAddresses = new address[](1);
 	proposalsAddresses[0] = address(timelockProposal);
 	proposals = new TestProposals(ADDRESSES_PATH, proposalsAddresses); 
+
     }
 
   function test_runPoposals() public virtual {
-        preProposalsSnapshot = vm.snapshot();
+      preProposalsSnapshot = vm.snapshot();
 
-        proposals.setDebug(true);
-        proposals.testProposals();
-
-        postProposalsSnapshot = vm.snapshot();
+      proposals.setDebug(true);
+      proposals.testProposals();
+      
+      postProposalsSnapshot = vm.snapshot();
     }
 }
