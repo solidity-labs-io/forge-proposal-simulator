@@ -3,8 +3,11 @@ pragma solidity 0.8.19;
 import {console} from "@forge-std/console.sol";
 import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
 import {TimelockController} from "@utils/TimelockController.sol";
+import {Address} from "@utils/Address.sol";
 
 abstract contract TimelockProposal is Proposal {
+    using Address for address;
+
     /// @notice get schedule calldata
     function getScheduleCalldata(address timelock) public view returns (bytes memory scheduleCalldata) {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
@@ -76,10 +79,7 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            (bool success, ) = payable(timelockAddress).call(scheduleCalldata);
-
-            // Check if the call was successful
-            require(success, "Call to schedule timelock failed");
+            bytes memory returndata = address(payable(timelockAddress)).functionCall(scheduleCalldata);
 
             if (DEBUG) {
                 console.log(
@@ -87,10 +87,14 @@ abstract contract TimelockProposal is Proposal {
                     actions.length,
                     (actions.length > 1 ? "actions" : "action")
                 );
+
+                if (returndata.length > 0) {
+                    console.log("returndata", string(returndata));
+                }
             }
         } else if (DEBUG) {
             console.log("proposal already scheduled for id");
-            emit log_bytes32(proposalId);
+            console.logBytes32(proposalId);
         }
 
         uint256 delay = timelock.getMinDelay();
@@ -100,13 +104,14 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            (bool success, ) = payable(timelockAddress).call(executeCalldata);
-
-            // Check if the call was successful
-            require(success, "Call to execute timelock failed");
+            bytes memory returndata = address(payable(timelockAddress)).functionCall(executeCalldata);
 
             if (DEBUG) {
                 console.log("executed batch calldata");
+
+                if (returndata.length > 0) {
+                    console.log("returndata", string(returndata));
+                }
             }
         } else if (DEBUG) {
             console.log("proposal already executed");
