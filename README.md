@@ -1,18 +1,27 @@
 # Overview
 
-This library is a powerful tool for developers aiming to test governance proposals in a simulated environment before deploying them to the mainnet.
+The Forge Proposal Simulator is a tool for developers working on smart contract governance. Its main goal is to offer a simulated environment for testing and validating governance proposals before deployment on the mainnet. This library is compatible with Timelock Governance and Multisig Governance contracts (so far), making it a versatile tool. One of the key features that sets the Forge Proposal Simulator apart from others is its ability to generate proposal call data and check the protocol's state before and after executing the call data. By simulating the execution in a forked environment, developers can ensure that the proposal is free of bugs and ready for deployment.
+
+## Use cases
+
+### Timelock Governance 
+The simulator allows developers to test the time-delayed execution of governance proposals. It creates both the schedule and the execution calldata required for Timelock proposals. The library can also simulate the proposal schedule, proposal delay, and the execution function call. Developers can perform checks before, during, and after each step to ensure that the protocol behaves as intended at every step.
+
+### Multisig Governance
+
+In the case of Multisig Governance, the library generates the necessary Multicall calldata and executes it against a simulated environment, such as a fork of the mainnet. Developers can perform checks before and after the calldata execution. A significant feature is the use of Foundry cheat codes to perform a prank on the actual Multisig Governance address. This allows developers to mimic the real-world execution environment of the proposal within the governance structure.
 
 ## Design Philosophy
 
-This library is primarily intended to help protocols in creating and validating governance proposals. Its main focus is on ensuring that any changes in the state are compatible and work seamlessly with the existing code and storage structures on the mainnet. Its versatility makes it easily adaptable to various governance models. Using this tool, developers can identify and eliminate potential issues that may arise in governance proposals, thereby enhancing the reliability and effectiveness of their governance processes.
+Forge Proposal Simulator helps protocols with trusted actors create and validate governance proposals. Its main focus is on structuring and standardizing state changes to ensure they work as intended. Its versatility makes it easily adaptable to any governance model. Using this tool, developers can identify and eliminate entire categories of bugs that may arise in governance proposals, enhancing the reliability and security of their upgrades.
 
 ### A proposal has the following external functions
 
--   `function name() external`: Override this function to define the name of the proposal
+-   `function name() external`: Override this function to define the proposal name
 
--   `function description() external`: Override this function to define the description of the proposal
+-   `function description() external`: Override this function to define the proposal description
 
--   `function run(Address, address) external`: This function simulates proposal execution against a forked mainnet or locally and should be used in integration tests or scripts. It is not meant to be overridden.
+-   `function run(Address, address) external`: Simulates proposal execution against a forked mainnet or locally and can be used in integration tests or scripts. Do not override.
 
 -   Same as above, but with more granular control over which actions to run.
 
@@ -64,7 +73,7 @@ Deployed contract addresses, along with their names and networks, should be list
 }
 ```
 
-Contracts with identical names are acceptable provided they are deployed on different networks. Duplicates on the same network are not allowed and `Addresses.sol` prevents by reverting during construction.
+Contracts with identical names are acceptable if deployed on different networks. Duplicates on the same network are not allowed and Addresses.sol prevents by reverting during construction.
 
 ## Usage
 
