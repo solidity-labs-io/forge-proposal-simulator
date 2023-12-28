@@ -89,7 +89,8 @@ abstract contract TimelockProposal is Proposal {
                 );
 
                 if (returndata.length > 0) {
-                    console.log("returndata", string(returndata));
+                    console.log("returndata");
+                    console.logBytes(returndata);
                 }
             }
         } else if (DEBUG) {
@@ -110,7 +111,8 @@ abstract contract TimelockProposal is Proposal {
                 console.log("executed batch calldata");
 
                 if (returndata.length > 0) {
-                    console.log("returndata", string(returndata));
+                    console.log("returndata");
+                    console.logBytes(returndata);
                 }
             }
         } else if (DEBUG) {
