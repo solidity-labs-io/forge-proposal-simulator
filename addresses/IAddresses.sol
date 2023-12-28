@@ -21,5 +21,8 @@ interface IAddresses {
     function resetRecordingAddresses() external;
 
     /// @notice get recorded addresses from a proposal's deployment
-    function getRecordedAddresses() external view returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses);
+    function getRecordedAddresses()
+        external
+        view
+        returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses);
 }

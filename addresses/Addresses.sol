@@ -33,10 +33,10 @@ contract Addresses is IAddresses, Test {
         uint256 chainId;
     }
 
-     struct ChangedAddress {
+    struct ChangedAddress {
         string name;
         uint256 chainId;
-	address oldAddress;
+        address oldAddress;
     }
 
     /// @notice array of addresses deployed during a proposal
@@ -53,7 +53,7 @@ contract Addresses is IAddresses, Test {
 
         SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
-	for (uint256 i = 0; i < savedAddresses.length; i++) {
+        for (uint256 i = 0; i < savedAddresses.length; i++) {
             _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
         }
     }
@@ -106,18 +106,29 @@ contract Addresses is IAddresses, Test {
 
     /// @notice change an address for a specific chainId
     function changeAddress(string memory name, uint256 _chainId, address _addr) public {
-	address addr = _addresses[name][_chainId];
-	require(addr != address(0), string(abi.encodePacked("Address: ", name, " doesn't exist on chain: ", _chainId.toString(), ". Use addAddress instead")));
-	
-        changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr }));
+        address addr = _addresses[name][_chainId];
+        require(
+            addr != address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " doesn't exist on chain: ",
+                    _chainId.toString(),
+                    ". Use addAddress instead"
+                )
+            )
+        );
 
-	_addresses[name][_chainId] = _addr;
+        changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr}));
+
+        _addresses[name][_chainId] = _addr;
         vm.label(_addr, name);
     }
 
     /// @notice change an address for the current chainId
     function changeAddress(string memory name, address addr) public {
-	changeAddress(name, chainId, addr);
+        changeAddress(name, chainId, addr);
     }
 
     /// @notice remove recorded addresses
@@ -126,15 +137,19 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get recorded addresses from a proposal's deployment
-    function getRecordedAddresses() external view returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses) {
-	uint256 length = recordedAddresses.length;
+    function getRecordedAddresses()
+        external
+        view
+        returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses)
+    {
+        uint256 length = recordedAddresses.length;
         names = new string[](length);
-	chainIds = new uint256[](length);
+        chainIds = new uint256[](length);
         addresses = new address[](length);
 
         for (uint256 i = 0; i < length; i++) {
             names[i] = recordedAddresses[i].name;
-	    chainIds[i] = recordedAddresses[i].chainId;
+            chainIds[i] = recordedAddresses[i].chainId;
             addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
         }
     }
@@ -145,19 +160,27 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get changed addresses from a proposal's deployment
-    function getChangedAddresses() external view returns (string[] memory names, uint256[] memory chainIds,
-							  address[] memory oldAddresses, address[] memory newAddresses) {
-	uint256 length = changedAddresses.length;
+    function getChangedAddresses()
+        external
+        view
+        returns (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory oldAddresses,
+            address[] memory newAddresses
+        )
+    {
+        uint256 length = changedAddresses.length;
         names = new string[](length);
-	chainIds = new uint256[](length);
+        chainIds = new uint256[](length);
         oldAddresses = new address[](length);
-	newAddresses = new address[](length);
+        newAddresses = new address[](length);
 
         for (uint256 i = 0; i < length; i++) {
             names[i] = changedAddresses[i].name;
-	    chainIds[i] = changedAddresses[i].chainId;
+            chainIds[i] = changedAddresses[i].chainId;
             oldAddresses[i] = changedAddresses[i].oldAddress;
-	    newAddresses[i] =_addresses[changedAddresses[i].name][changedAddresses[i].chainId];
+            newAddresses[i] = _addresses[changedAddresses[i].name][changedAddresses[i].chainId];
         }
     }
 }

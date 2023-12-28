@@ -1,7 +1,6 @@
 pragma solidity 0.8.19;
 
 import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
-
 import "@forge-std/Test.sol";
 
 /// @notice Cross Chain Proposal is a type of proposal to execute and simulate
@@ -12,14 +11,6 @@ abstract contract CrossChainProposal is MultisigProposal {
 
     /// instant finality on moonbeam https://book.wormhole.com/wormhole/3_coreLayerContracts.html?highlight=consiste#consistency-levels
     uint16 public consistencyLevel = 200;
-
-    /// @notice hex encoded description of the proposal
-    bytes public PROPOSAL_DESCRIPTION;
-
-    /// @notice set the governance proposal's description
-    function _setProposalDescription(bytes memory newProposalDescription) internal {
-        PROPOSAL_DESCRIPTION = newProposalDescription;
-    }
 
     /// @notice set the nonce for the cross chain proposal
     function _setNonce(uint32 _nonce) internal {
@@ -87,7 +78,7 @@ abstract contract CrossChainProposal is MultisigProposal {
             values,
             signatures,
             payloads,
-            string(PROPOSAL_DESCRIPTION)
+            description()
         );
 
         return artemisPayload;
@@ -113,19 +104,5 @@ abstract contract CrossChainProposal is MultisigProposal {
 
         console.log("artemis governor queue governance calldata");
         emit log_bytes(artemisPayload);
-    }
-
-    function printProposalActionSteps() public override {
-        console.log("\n\nProposal Description:\n\n%s", string(PROPOSAL_DESCRIPTION));
-
-        console.log("\n\n------------------ Proposal Actions ------------------");
-
-        for (uint256 i = 0; i < actions.length; i++) {
-            console.log("%d). %s", i + 1, actions[i].description);
-            console.log("target: %s\npayload", actions[i].target);
-            emit log_bytes(actions[i].arguments);
-
-            console.log("\n");
-        }
     }
 }

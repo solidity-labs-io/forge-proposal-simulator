@@ -1,35 +1,38 @@
 pragma solidity 0.8.19;
 
-import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
+import {TimelockProposal} from "@proposals/proposalTypes/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Mock} from "@mocks/Mock.sol";
-import {Safe} from "@utils/Safe.sol";
+import {TimelockController} from "@utils/TimelockController.sol";
 
-contract MultisigProposalMock is MultisigProposal {
+contract TimelockProposalMock is TimelockProposal {
 
     function name() public pure override returns(string memory) {
-	return "MULTISIG_PROPOSAL_MOCK";
+	return "TIMELOCK_PROPOSAL_MOCK";
     }
 
     function description() public pure override returns(string memory) {
-	return "Multisig proposal mock";
+	return "Timelock proposal mock";
      }
     
     function _run(Addresses addresses, address) internal override {
-	address multisig = addresses.getAddress("DEV_MULTISIG");
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+	address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
+	address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-	uint256 multisigSize;
+	uint256 timelockSize;
 	assembly {
 	    // retrieve the size of the code, this needs assembly
-            multisigSize := extcodesize(multisig)
+            timelockSize := extcodesize(timelock)
 	}
-	if(multisigSize == 0) {
-	    Safe safe = new Safe();
-	    vm.etch(multisig, address(safe).code);
+	if(timelockSize == 0) {
+	    TimelockController timelockController = new TimelockController();
+	    vm.etch(timelock, address(timelockController).code);
+	    // set a delay if is running on a local instance 
+	    TimelockController(payable(timelock)).updateDelay(10_000);
 	}
 
-	// call etch on multisig address to pretend it is a contract
-	_simulateActions(multisig);
+	_simulateActions(timelock, proposer, executor);
     }
 
     function _deploy(Addresses addresses, address) internal override {

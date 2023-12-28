@@ -1,20 +1,20 @@
 pragma solidity 0.8.19;
 
 import {TestProposals} from "@proposals/TestProposals.sol";
-import {MultisigProposalMock} from "@mocks/MultisigProposalMock.sol";
+import {TimelockProposalMock} from "@mocks/TimelockProposalMock.sol";
 import "@forge-std/Test.sol";
 
-contract MultisigProposalTest is Test {
+contract TimelockProposalTest is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestProposals public proposals;
     uint256 public preProposalsSnapshot;
     uint256 public postProposalsSnapshot;
 
     function setUp() public {
-        MultisigProposalMock multisigProposal = new MultisigProposalMock();
+        TimelockProposalMock timelockProposal = new TimelockProposalMock();
 
         address[] memory proposalsAddresses = new address[](1);
-        proposalsAddresses[0] = address(multisigProposal);
+        proposalsAddresses[0] = address(timelockProposal);
         proposals = new TestProposals(ADDRESSES_PATH, proposalsAddresses);
     }
 
