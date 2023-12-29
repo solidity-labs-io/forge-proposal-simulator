@@ -5,10 +5,11 @@ import {Addresses} from "@addresses/Addresses.sol";
 import {Mock} from "@mocks/Mock.sol";
 import {Safe} from "@utils/Safe.sol";
 
-contract MultisigProposalMock is MultisigProposal {
+// This proposal only deploys 2 contracts 
+contract MULTISIG_02 is MultisigProposal {
 
     function name() public pure override returns(string memory) {
-	return "MULTISIG_PROPOSAL_MOCK";
+	return "MULTISIG_02";
     }
 
     function description() public pure override returns(string memory) {
@@ -40,19 +41,11 @@ contract MultisigProposalMock is MultisigProposal {
 	addresses.addAddress("MOCK_2", address(mock2));
     }
 
-    function _build(Addresses addresses) internal override {
-	address mock1 = addresses.getAddress("MOCK_1");
-	_pushAction(mock1, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
-
-	address mock2 = addresses.getAddress("MOCK_2");
-	_pushAction(mock2, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
-    }
-
     function _validate(Addresses addresses, address) internal override {
 	Mock mock1 = Mock(addresses.getAddress("MOCK_1"));
-	assertTrue(mock1.deployed());
+	assertFalse(mock1.deployed());
 
 	Mock mock2 = Mock(addresses.getAddress("MOCK_2"));
-	assertTrue(mock2.deployed());
+	assertFalse(mock2.deployed());
     }
 }

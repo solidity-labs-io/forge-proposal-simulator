@@ -8,15 +8,15 @@ import {Test} from "@forge-std/Test.sol";
 
 /*
 How to use:
-forge test --fork-url $ETH_RPC_URL --match-contract TestProposals -vvv
+forge test --fork-url $ETH_RPC_URL --match-contract TestSuite -vvv
 
 Or, from another Solidity file (for post-proposal integration testing):
-    TestProposals proposals = new TestProposals();
-    proposals.setUp();
-    proposals.testProposals();
+    TestSuite suite = new TestSuite();
+    suite.setUp();
+    suite.testProposals();
     Addresses addresses = proposals.addresses();
 */
-contract TestProposals is Test {
+contract TestSuite is Test {
     using Strings for string;
 
     Addresses public addresses;
@@ -41,7 +41,7 @@ contract TestProposals is Test {
 
     function testProposals() public returns (uint256[] memory postProposalVmSnapshots) {
        if (debug) {
-            console.log("TestProposals: running", proposals.length, "proposals.");
+            console.log("TestSuite: running", proposals.length, "proposals.");
 
 		/// output deployed contract addresses and names
 	    (string[] memory recordedNames, ,address[] memory recordedAddresses) = addresses.getRecordedAddresses();
