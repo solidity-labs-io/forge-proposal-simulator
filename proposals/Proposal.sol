@@ -30,7 +30,6 @@ abstract contract Proposal is Test, Script, IProposal {
         vm.startBroadcast(deployer);
         _deploy(addresses, deployer);
         _afterDeploy(addresses, deployer);
-        _afterDeploySetup(addresses);
         vm.stopBroadcast();
 
         _build(addresses);
@@ -45,7 +44,6 @@ abstract contract Proposal is Test, Script, IProposal {
         Addresses addresses,
         address deployer,
         bool doDeploy,
-        bool doAfterDeploy,
         bool doBuild,
         bool doRun,
         bool doTeardown,
@@ -55,10 +53,6 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (doDeploy) {
             _deploy(addresses, deployer);
-        }
-
-        if (doAfterDeploy) {
-            _afterDeploy(addresses, deployer);
         }
 
         vm.stopBroadcast();
@@ -148,11 +142,6 @@ abstract contract Proposal is Test, Script, IProposal {
 
     // @dev After deploying, call initializers and link contracts together
     function _afterDeploy(Addresses, address) internal virtual {}
-
-    // @dev After deploying, do setup for a testnet,
-    // e.g. if you deployed a contract that needs funds
-    // for a governance proposal, deal them funds
-    function _afterDeploySetup(Addresses) internal virtual {}
 
     /// @dev After finishing deploy and deploy cleanup, build the proposal
     function _build(Addresses) internal virtual {}
