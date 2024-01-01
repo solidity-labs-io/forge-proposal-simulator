@@ -54,12 +54,12 @@ contract Addresses is IAddresses, Test {
         SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
-            _addAddress(savedAddresses[i].name, savedAddresses[i].chainId, savedAddresses[i].addr);
+            _addAddress(savedAddresses[i].name, savedAddresses[i].addr, savedAddresses[i].chainId);
         }
     }
 
     /// @notice add an address for a specific chainId
-    function _addAddress(string memory name, uint256 _chainId, address addr) private {
+    function _addAddress(string memory name, address addr, uint256 _chainId) private {
         address currentAddress = _addresses[name][_chainId];
 
         require(
@@ -96,16 +96,16 @@ contract Addresses is IAddresses, Test {
 
     /// @notice add an address for the current chainId
     function addAddress(string memory name, address addr) public {
-        _addAddress(name, chainId, addr);
+        _addAddress(name, addr, chainId);
     }
 
     /// @notice add an address for a specific chainId
-    function addAddress(string memory name, uint256 _chainId, address addr) public {
-        _addAddress(name, _chainId, addr);
+    function addAddress(string memory name, address addr, uint256 _chainId) public {
+        _addAddress(name, addr, _chainId);
     }
 
     /// @notice change an address for a specific chainId
-    function changeAddress(string memory name, uint256 _chainId, address _addr) public {
+    function changeAddress(string memory name, address _addr, uint256 _chainId) public {
         address addr = _addresses[name][_chainId];
         require(
             addr != address(0),
@@ -120,6 +120,18 @@ contract Addresses is IAddresses, Test {
             )
         );
 
+        require(
+            addr != _addr,
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " already set to the same value on chain: ",
+                    _chainId.toString()
+                )
+            )
+        );
+
         changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr}));
 
         _addresses[name][_chainId] = _addr;
@@ -128,7 +140,7 @@ contract Addresses is IAddresses, Test {
 
     /// @notice change an address for the current chainId
     function changeAddress(string memory name, address addr) public {
-        changeAddress(name, chainId, addr);
+        changeAddress(name, addr, chainId);
     }
 
     /// @notice remove recorded addresses
