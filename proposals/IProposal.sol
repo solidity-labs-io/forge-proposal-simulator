@@ -37,4 +37,7 @@ interface IProposal {
 
     // @notice Print proposal calldata
     function getCalldata() external returns (bytes memory data);
+
+    // @notice set the debug flag
+    function setDebug(bool debug) external;
 }

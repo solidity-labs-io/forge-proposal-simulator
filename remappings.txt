@@ -4,3 +4,4 @@
 @addresses/=addresses/
 @utils/=utils/
 @examples/=examples/
+@script=script/

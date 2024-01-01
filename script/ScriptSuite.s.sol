@@ -8,15 +8,24 @@ contract ScriptSuite is Script {
     IProposal proposal;
     Addresses addresses;
 
-    constructor(string memory ADDRESS_PATH, address _proposal) {
+    constructor(string memory ADDRESS_PATH, IProposal _proposal) {
         addresses = new Addresses(ADDRESS_PATH);
-        proposal = IProposal(_proposal);
+        proposal = _proposal;
     }
 
-    function run() external virtual {
-        uint256 signerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(signerPrivateKey);
+    function run() public virtual {
+	console.log("Addresses before running proposal:");
+	(string[] memory recordedNames, , address[] memory recordedAddresses) = addresses.getRecordedAddresses();
+	for (uint256 j = 0; j < recordedNames.length; j++) {
+	    console.log(recordedNames[j], recordedAddresses[j]);
+	}
+
         proposal.run(addresses, msg.sender);
-        vm.stopBroadcast();
+
+	console.log("Addresses after running proposals:");
+	(recordedNames, , recordedAddresses) = addresses.getRecordedAddresses();
+	for (uint256 j = 0; j < recordedNames.length; j++) {
+	    console.log(recordedNames[j], recordedAddresses[j]);
+	}
     }
 }
