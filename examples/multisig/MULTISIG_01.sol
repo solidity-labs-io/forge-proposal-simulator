@@ -2,7 +2,7 @@ pragma solidity 0.8.19;
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Mock} from "@mocks/Mock.sol";
+import {SimpleContract} from "@examples/SimpleContract.sol";
 import {Safe} from "@utils/Safe.sol";
 
 // This proposal deploys 2 contracts and set deployed = true on both
@@ -34,8 +34,8 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     function _deploy(Addresses addresses, address) internal override {
-	Mock mock = new Mock();
-	Mock mock2 = new Mock();
+	SimpleContract mock = new SimpleContract();
+	SimpleContract mock2 = new SimpleContract();
 
 	addresses.addAddress("MOCK_1", address(mock));
 	addresses.addAddress("MOCK_2", address(mock2));
@@ -50,10 +50,10 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     function _validate(Addresses addresses, address) internal override {
-	Mock mock1 = Mock(addresses.getAddress("MOCK_1"));
+	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
 	assertTrue(mock1.deployed());
 
-	Mock mock2 = Mock(addresses.getAddress("MOCK_2"));
+	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
 	assertTrue(mock2.deployed());
     }
 }

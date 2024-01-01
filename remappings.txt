@@ -3,4 +3,4 @@
 @proposals/=proposals/
 @addresses/=addresses/
 @utils/=utils/
-@mocks/=mocks/
+@examples/=examples/

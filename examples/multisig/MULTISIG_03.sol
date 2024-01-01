@@ -2,14 +2,14 @@ pragma solidity 0.8.19;
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Mock} from "@mocks/Mock.sol";
+import {SimpleContract} from "@examples/SimpleContract.sol";
 import {Safe} from "@utils/Safe.sol";
 
-// This proposal only deploys 2 contracts 
-contract MULTISIG_02 is MultisigProposal {
+// This proposal set variable deployed = true on two contracts 
+contract MULTISIG_03 is MultisigProposal {
 
     function name() public pure override returns(string memory) {
-	return "MULTISIG_02";
+	return "MULTISIG_03";
     }
 
     function description() public pure override returns(string memory) {
@@ -33,19 +33,19 @@ contract MULTISIG_02 is MultisigProposal {
 	_simulateActions(multisig);
     }
 
-    function _deploy(Addresses addresses, address) internal override {
-	Mock mock = new Mock();
-	Mock mock2 = new Mock();
+    function _build(Addresses addresses) internal override {
+	address mock1 = addresses.getAddress("MOCK_3");
+	_pushAction(mock1, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
 
-	addresses.addAddress("MOCK_1", address(mock));
-	addresses.addAddress("MOCK_2", address(mock2));
+	address mock2 = addresses.getAddress("MOCK_4");
+	_pushAction(mock2, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
     }
 
     function _validate(Addresses addresses, address) internal override {
-	Mock mock1 = Mock(addresses.getAddress("MOCK_1"));
-	assertFalse(mock1.deployed());
+	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_3"));
+	assertTrue(mock1.deployed());
 
-	Mock mock2 = Mock(addresses.getAddress("MOCK_2"));
-	assertFalse(mock2.deployed());
+	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_4"));
+	assertTrue(mock2.deployed());
     }
 }

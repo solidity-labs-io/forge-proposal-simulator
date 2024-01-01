@@ -24,7 +24,8 @@ abstract contract Proposal is Test, Script, IProposal {
     // @notice override this to set the proposal description
     function description() public view virtual returns (string memory) {}
 
-    // @notice the main function, should not be override
+    // @notice main function
+    // @dev do not override
     function run(Addresses addresses, address deployer) external {
         vm.startBroadcast(deployer);
         _deploy(addresses, deployer);
@@ -38,7 +39,8 @@ abstract contract Proposal is Test, Script, IProposal {
         _validate(addresses, deployer);
     }
 
-    // @notice the main function, should not be override
+    // @notice main function with more granularity control
+    // @dev do not override
     function run(
         Addresses addresses,
         address deployer,
@@ -84,6 +86,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function getCalldata() public virtual returns (bytes memory data) {}
 
     // @notice Print out proposal actions
+    // @dev do not override
     function getProposalActions()
         public
         view
@@ -156,7 +159,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     // @dev Actually run the proposal (e.g. queue actions in the Timelock,
     // or execute a serie of Multisig calls...).
-    // See proposals/proposalTypes for helper contracts.
+    // See proposals for helper contracts.
     // address param is the address of the proposal executor
     function _run(Addresses, address) internal virtual {
         revert("You must override the run function");

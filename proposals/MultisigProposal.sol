@@ -47,5 +47,7 @@ contract MultisigProposal is Proposal {
 
         bytes memory data = getCalldata();
         Safe(multisig).execute(MULTICALL, 0, data, Safe.Operation.DelegateCall, 10_000_000);
+
+        vm.stopPrank();
     }
 }

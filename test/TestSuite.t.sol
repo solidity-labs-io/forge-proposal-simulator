@@ -26,13 +26,13 @@ contract TestSuite is Test {
     constructor(string memory addressesPath, address[] memory _proposals) {
         addresses = new Addresses(addressesPath);
 
-	proposals = new Proposal[](_proposals.length);
-	for(uint256 i; i < _proposals.length; i++) {
-	    proposals[i] = Proposal(_proposals[i]);
-	}
+        proposals = new Proposal[](_proposals.length);
+        for (uint256 i; i < _proposals.length; i++) {
+            proposals[i] = Proposal(_proposals[i]);
+        }
     }
 
-     function setDebug(bool value) public {
+    function setDebug(bool value) public {
         debug = value;
         for (uint256 i = 0; i < proposals.length; i++) {
             proposals[i].setDebug(value);
@@ -40,15 +40,15 @@ contract TestSuite is Test {
     }
 
     function testProposals() public returns (uint256[] memory postProposalVmSnapshots) {
-       if (debug) {
+        if (debug) {
             console.log("TestSuite: running", proposals.length, "proposals.");
 
-		/// output deployed contract addresses and names
-	    (string[] memory recordedNames, ,address[] memory recordedAddresses) = addresses.getRecordedAddresses();
-		for (uint256 j = 0; j < recordedNames.length; j++) {
-		    console.log("Deployed", recordedAddresses[j], recordedNames[j]);
-		}
-
+	    console.log("Addresses before running proposals");
+            /// output deployed contract addresses and names
+            (string[] memory recordedNames, , address[] memory recordedAddresses) = addresses.getRecordedAddresses();
+            for (uint256 j = 0; j < recordedNames.length; j++) {
+                console.log(recordedNames[j], recordedAddresses[j]);
+            }
         }
 
         /// evm snapshot array
@@ -56,16 +56,25 @@ contract TestSuite is Test {
 
         for (uint256 i = 0; i < proposals.length; i++) {
             string memory name = proposals[i].name();
-	    if(debug) {
-		console.log("Proposal name:", name);
-	    }
+            if (debug) {
+                console.log("Proposal name:", name);
+            }
 
-            // Run the deploy for testing only workflow
-            proposals[i].run(addresses, address(this), true, true, true, true, true, true);
+            proposals[i].run(addresses, address(this));
 
             /// take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
         }
-	return postProposalVmSnapshots;
+
+        if (debug) {
+	    console.log("Addresses before running proposals");
+            /// output deployed contract addresses and names
+            (string[] memory recordedNames, , address[] memory recordedAddresses) = addresses.getRecordedAddresses();
+            for (uint256 j = 0; j < recordedNames.length; j++) {
+                console.log(recordedNames[j], recordedAddresses[j]);
+	     }
+        }
+
+        return postProposalVmSnapshots;
     }
 }

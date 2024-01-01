@@ -1,7 +1,7 @@
 pragma solidity 0.8.19;
 
 import {TestSuite} from "@test/TestSuite.t.sol";
-import {TimelockProposalMock} from "@mocks/TimelockProposalMock.sol";
+import {TimelockProposalMock} from "@examples/TimelockProposalMock.sol";
 import "@forge-std/Test.sol";
 
 contract TimelockProposalTest is Test {
