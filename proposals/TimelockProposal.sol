@@ -1,7 +1,7 @@
 pragma solidity 0.8.19;
 
 import {console} from "@forge-std/console.sol";
-import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {TimelockController} from "@utils/TimelockController.sol";
 import {Address} from "@utils/Address.sol";
 

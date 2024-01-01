@@ -1,6 +1,6 @@
 pragma solidity 0.8.19;
 
-import {TimelockProposal} from "@proposals/proposalTypes/TimelockProposal.sol";
+import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Mock} from "@mocks/Mock.sol";
 import {TimelockController} from "@utils/TimelockController.sol";

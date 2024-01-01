@@ -1,6 +1,6 @@
 pragma solidity 0.8.19;
 
-import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Mock} from "@mocks/Mock.sol";
 import {Safe} from "@utils/Safe.sol";

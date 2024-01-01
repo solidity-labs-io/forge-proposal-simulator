@@ -39,5 +39,10 @@ interface IAddresses {
     function getChangedAddresses()
         external
         view
-        returns (string[] memory names, uint256[] memory chainIds, address[] memory oldAddresses, address[] memory newAddresses);
+        returns (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory oldAddresses,
+            address[] memory newAddresses
+        );
 }

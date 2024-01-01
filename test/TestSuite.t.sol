@@ -1,14 +1,14 @@
 pragma solidity 0.8.19;
 
 import {console} from "@forge-std/console.sol";
-import {Proposal} from "@proposals/proposalTypes/Proposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Strings} from "@utils/Strings.sol";
 import {Test} from "@forge-std/Test.sol";
 
 /*
 How to use:
-forge test --fork-url $ETH_RPC_URL --match-contract TestSuite -vvv
+forge test --fork-url $ETH_RPC_URL --match-contract -vvv
 
 Or, from another Solidity file (for post-proposal integration testing):
     TestSuite suite = new TestSuite();

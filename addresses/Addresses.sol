@@ -123,12 +123,7 @@ contract Addresses is IAddresses, Test {
         require(
             addr != _addr,
             string(
-                abi.encodePacked(
-                    "Address: ",
-                    name,
-                    " already set to the same value on chain: ",
-                    _chainId.toString()
-                )
+                abi.encodePacked("Address: ", name, " already set to the same value on chain: ", _chainId.toString())
             )
         );
 

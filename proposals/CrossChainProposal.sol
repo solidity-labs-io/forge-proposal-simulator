@@ -1,6 +1,6 @@
 pragma solidity 0.8.19;
 
-import {MultisigProposal} from "@proposals/proposalTypes/MultisigProposal.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import "@forge-std/Test.sol";
 
 /// @notice Cross Chain Proposal is a type of proposal to execute and simulate
