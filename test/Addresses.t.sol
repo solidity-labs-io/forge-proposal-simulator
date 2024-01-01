@@ -48,12 +48,20 @@ contract TestAddresses is Test {
 	assertEq(addresses.getAddress("DEV_MULTISIG"), addr, "Not updated correclty");
     }
 
+    function test_changeAddressToSameAddressFails() public {
+	assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41, "Wrong current address");
+
+	address addr = addresses.getAddress("DEV_MULTISIG");
+	vm.expectRevert("Address: DEV_MULTISIG already set to the same value on chain: 31337");
+	addresses.changeAddress("DEV_MULTISIG", addr);
+    }
+
     function test_changeAddressChainId() public {
 	assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41, "Wrong current address");
 	address addr = vm.addr(1);
 
 	uint256 chainId = 31337;
-	addresses.changeAddress("DEV_MULTISIG", chainId, addr);
+	addresses.changeAddress("DEV_MULTISIG", addr, chainId);
 
 	assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr, "Not updated correclty");
     }
@@ -68,7 +76,7 @@ contract TestAddresses is Test {
     function test_addAddressChainId() public {
 	address addr = vm.addr(1);
 	uint256 chainId = 123;
-	addresses.addAddress("TEST", chainId, addr);
+	addresses.addAddress("TEST", addr, chainId);
 
 	assertEq(addresses.getAddress("TEST", chainId), addr);
     }
@@ -76,7 +84,7 @@ contract TestAddresses is Test {
     function test_addAddressDifferentChain() public {
 	address addr = vm.addr(1);
 	uint256 chainId = 123;
-	addresses.addAddress("DEV_MULTISIG", chainId, addr);
+	addresses.addAddress("DEV_MULTISIG", addr, chainId);
 
 	assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr);
 	// Validate that the 'DEV_MULTISIG' address for chain 31337 matches the address from Addresses.json.
@@ -160,7 +168,7 @@ contract TestAddresses is Test {
 
     function test_revertAddAddressChainAlreadySet() public {
 	vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
-	addresses.addAddress("DEV_MULTISIG", 31337,  vm.addr(1));
+	addresses.addAddress("DEV_MULTISIG",  vm.addr(1), 31337);
     }
 
     function test_revertChangedAddressDoesNotExist() public {
