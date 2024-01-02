@@ -28,4 +28,20 @@ contract ScriptSuite is Script {
 	    console.log(recordedNames[j], recordedAddresses[j]);
 	}
     }
+
+    function run(uint256 proposalId) public virtual {
+	console.log("Addresses before running proposal:");
+	(string[] memory recordedNames, , address[] memory recordedAddresses) = addresses.getRecordedAddresses();
+	for (uint256 j = 0; j < recordedNames.length; j++) {
+	    console.log(recordedNames[j], recordedAddresses[j]);
+	}
+
+       proposal.run(addresses, msg.sender, proposalId);
+
+	console.log("Addresses after running proposals:");
+	(recordedNames, , recordedAddresses) = addresses.getRecordedAddresses();
+	for (uint256 j = 0; j < recordedNames.length; j++) {
+	    console.log(recordedNames[j], recordedAddresses[j]);
+	}
+    }
 }

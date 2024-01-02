@@ -13,7 +13,7 @@ contract MultisigProposal is Proposal {
         address target;
         bytes callData;
     }
-
+    
     /// @notice log calldata
     function getCalldata() public view override returns (bytes memory data) {
         uint256 actionsLength = actions.length;

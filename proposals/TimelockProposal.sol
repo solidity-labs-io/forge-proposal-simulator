@@ -8,6 +8,23 @@ import {Address} from "@utils/Address.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
+    struct GovernorProposal {
+        /// @notice The timestamp that the proposal will be available for execution, set once the vote succeeds
+        uint eta;
+
+        /// @notice the ordered list of target addresses for calls to be made
+        address[] targets;
+
+        /// @notice The ordered list of values (i.e. msg.value) to be passed to the calls to be made
+        uint[] values;
+
+        /// @notice The ordered list of function signatures to be called
+        string[] signatures;
+
+        /// @notice The ordered list of calldata to be passed to each call
+        bytes[] calldatas;
+    }
+
     /// @notice get schedule calldata
     function getScheduleCalldata(address timelock) public view returns (bytes memory scheduleCalldata) {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
@@ -53,7 +70,7 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes(executeCalldata);
         }
     }
-
+    
     /// @notice simulate timelock proposal
     /// @param timelockAddress to execute the proposal against
     /// @param proposerAddress account to propose the proposal to the timelock

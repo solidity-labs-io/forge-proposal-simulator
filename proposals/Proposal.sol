@@ -38,6 +38,14 @@ abstract contract Proposal is Test, Script, IProposal {
         _validate(addresses, deployer);
     }
 
+    // @dev do not override
+    function run(Addresses addresses, address deployer, uint256 proposalId) external {
+        _build(addresses, proposalId);
+        _run(addresses, deployer);
+        _teardown(addresses, deployer);
+        _validate(addresses, deployer);
+    }
+
     // @notice main function with more granularity control
     // @dev do not override
     function run(
@@ -145,6 +153,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @dev After finishing deploy and deploy cleanup, build the proposal
     function _build(Addresses) internal virtual {}
+
+    function _build(Addresses, uint256 proposalId) internal virtual {}
 
     // @dev Actually run the proposal (e.g. queue actions in the Timelock,
     // or execute a serie of Multisig calls...).

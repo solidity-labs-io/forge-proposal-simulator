@@ -29,6 +29,11 @@ interface IProposal {
     // might need overriding for you proposal
     function run(Addresses addresses, address deployer) external;
 
+    // @notice actually run the proposal
+    // @dev review the implementation to determine which internal functions
+    // might need overriding for you proposal
+    function run(Addresses addresses, address deployer, uint256 proposalId) external;
+
     // @notice Print proposal actions
     function getProposalActions()
         external
