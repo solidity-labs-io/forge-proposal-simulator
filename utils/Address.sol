@@ -155,4 +155,10 @@ library Address {
             revert FailedInnerCall();
         }
     }
+
+    function getContractHash(address a) internal view returns (bytes32 hash) {
+        assembly {
+            hash := extcodehash(a)
+        }
+    }
 }

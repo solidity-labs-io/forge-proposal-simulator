@@ -5,6 +5,7 @@ import {TestSuite} from "@test/TestSuite.t.sol";
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 import {MULTISIG_02} from "@examples/multisig/MULTISIG_02.sol";
 import {MULTISIG_03} from "@examples/multisig/MULTISIG_03.sol";
+import {Constants} from "@utils/Constants.sol";
 
 contract MultisigProposalTest is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
@@ -22,6 +23,16 @@ contract MultisigProposalTest is Test {
         proposalsAddresses[1] = address(multisigProposal2);
         proposalsAddresses[2] = address(multisigProposal3);
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+
+	address multisig = suite.addresses().getAddress("DEV_MULTISIG");
+        uint256 multisigSize;
+        assembly {
+            multisigSize := extcodesize(multisig)
+        }
+        if (multisigSize == 0) {
+	    vm.etch(multisig, Constants.SAFE_BYTECODE);
+        }
+
     }
 
     function test_runPoposals() public virtual {

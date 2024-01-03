@@ -3,7 +3,6 @@ pragma solidity 0.8.19;
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
-import {Safe} from "@utils/Safe.sol";
 
 // MULTISIG_01: A proposal contract for deploying and manipulating two mock contracts.
 contract MULTISIG_01 is MultisigProposal {
@@ -39,15 +38,6 @@ contract MULTISIG_01 is MultisigProposal {
     // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
     function _run(Addresses addresses, address) internal override {
         address multisig = addresses.getAddress("DEV_MULTISIG");
-
-        uint256 multisigSize;
-        assembly {
-            multisigSize := extcodesize(multisig)
-        }
-        if (multisigSize == 0) {
-            Safe safe = new Safe();
-            vm.etch(multisig, address(safe).code);
-        }
 
         _simulateActions(multisig);
     }
