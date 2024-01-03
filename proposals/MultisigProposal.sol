@@ -9,7 +9,8 @@ contract MultisigProposal is Proposal {
     using Address for address;
     // Multicall3 address using CREATE2
     address public constant MULTICALL = 0xcA11bde05977b3631167028862bE2a173976CA11;
-    bytes32 public constant MULTISIG_BYTECODE_HASH = bytes32(0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000);
+    bytes32 public constant MULTISIG_BYTECODE_HASH =
+        bytes32(0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000);
 
     struct Call {
         address target;
@@ -35,7 +36,7 @@ contract MultisigProposal is Proposal {
     }
 
     function _simulateActions(address multisig) internal {
-	require(multisig.getContractHash() == MULTISIG_BYTECODE_HASH, "Invalid multisig bytecode hash");
+        require(multisig.getContractHash() == MULTISIG_BYTECODE_HASH, "Invalid multisig bytecode hash");
 
         vm.startPrank(multisig);
 
@@ -49,15 +50,13 @@ contract MultisigProposal is Proposal {
         }
 
         bytes memory data = getCalldata();
-	bytes memory result = MULTICALL.functionCall(data); 
+        bytes memory result = MULTICALL.functionCall(data);
 
-	if (DEBUG && result.length > 0) {
-	    console.log("Multicall result:");
-	    console.logBytes(result);
-	}
+        if (DEBUG && result.length > 0) {
+            console.log("Multicall result:");
+            console.logBytes(result);
+        }
 
         vm.stopPrank();
     }
-
-
 }

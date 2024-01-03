@@ -24,15 +24,14 @@ contract MultisigProposalTest is Test {
         proposalsAddresses[2] = address(multisigProposal3);
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
-	address multisig = suite.addresses().getAddress("DEV_MULTISIG");
+        address multisig = suite.addresses().getAddress("DEV_MULTISIG");
         uint256 multisigSize;
         assembly {
             multisigSize := extcodesize(multisig)
         }
         if (multisigSize == 0) {
-	    vm.etch(multisig, Constants.SAFE_BYTECODE);
+            vm.etch(multisig, Constants.SAFE_BYTECODE);
         }
-
     }
 
     function test_runPoposals() public virtual {
