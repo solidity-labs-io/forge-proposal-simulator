@@ -3,53 +3,38 @@ pragma solidity 0.8.19;
 import {Addresses} from "@addresses/Addresses.sol";
 
 interface IProposal {
-    // Proposal name, e.g. "BIP15"
+    // @notice proposal name, e.g. "BIP15"
+    // @dev override this to set the proposal name
     function name() external view returns (string memory);
 
-    // Deploy contracts and add them to list of addresses
-    function deploy(Addresses, address) external;
+    // @notice proposal description
+    // @dev override this to set the proposal description
+    function description() external view returns (string memory);
 
-    // After deploying, call initializers and link contracts together
-    function afterDeploy(Addresses, address) external;
+    // @notice actually run the proposal
+    // @dev review the implementation to determine which internal functions
+    // might need overriding for you proposal
+    function run(
+        Addresses addresses,
+        address deployer,
+        bool deploy,
+        bool afterDeploy,
+        bool build,
+        bool run,
+        bool teardown,
+        bool validate
+    ) external;
 
-    // After deploying, do setup for a testnet,
-    // e.g. if you deployed a contract that needs funds
-    // for a governance proposal, deal them funds
-    function afterDeploySetup(Addresses) external;
+    // @notice actually run the proposal
+    // @dev review the implementation to determine which internal functions
+    // might need overriding for you proposal
+    function run(Addresses addresses, address deployer) external;
 
-    /// After finishing deploy and deploy cleanup, build the proposal
-    function build(Addresses) external;
+    // @notice Print proposal actions
+    function getProposalActions()
+        external
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments);
 
-    // Actually run the proposal (e.g. queue actions in the Timelock,
-    // or execute a serie of Multisig calls...).
-    // See proposals/proposalTypes for helper contracts.
-    // address param is the address of the proposal executor
-    function run(Addresses, address) external;
-
-    // After a proposal executed, if you mocked some behavior in the
-    // afterDeploy step, you might want to tear down the mocks here.
-    // For instance, in afterDeploy() you could impersonate the multisig
-    // of another protocol to do actions in their protocol (in anticipation
-    // of changes that must happen before your proposal execution), and here
-    // you could revert these changes, to make sure the integration tests
-    // run on a state that is as close to mainnet as possible.
-    function teardown(Addresses, address) external;
-
-    // For small post-proposal checks, e.g. read state variables of the
-    // contracts you deployed, to make sure your deploy() and afterDeploy()
-    // steps have deployed contracts in a correct configuration, or read
-    // states that are expected to have change during your run() step.
-    // Note that there is a set of tests that run post-proposal in
-    // contracts/test/integration/post-proposal-checks, as well as
-    // tests that read state before proposals & after, in
-    // contracts/test/integration/proposal-checks, so this validate()
-    // step should only be used for small checks.
-    // If you want to add extensive validation of a new component
-    // deployed by your proposal, you might want to add a post-proposal
-    // test file instead.
-    function validate(Addresses, address) external;
-
-    /// print out proposal steps one by one
-    /// print proposal description
-    function printProposalActionSteps() external;
+    // @notice Print proposal calldata
+    function getCalldata() external returns (bytes memory data);
 }

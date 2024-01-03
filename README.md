@@ -2,7 +2,7 @@
 
 The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
 
-For guidance on how to use the library check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
+For guidance on how to use the library please check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
 
 ## Usage
 
