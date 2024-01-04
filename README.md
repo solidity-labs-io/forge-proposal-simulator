@@ -1,147 +1,27 @@
 # Overview
 
-This is a standard template for creating and managing a smart contract system
-with foundry. It provides scaffolding for both managing and creating system
-deployments and governance proposals.
+The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
 
-## Design Philosophy
-
-This template aims to create a system to generate governance proposals and
-deployments in a unified framework so that integration and unit tests can
-leverage the system exactly as it will exist once deployed on mainnet. This way,
-entire categories of bugs can be eliminated such as deploy script errors and
-governance proposal errors.
-
-A proposal type has multiple actions.
-
-```
-    function deploy(Addresses, address) external;
-
-    function afterDeploy(Addresses, address) external;
-
-    function afterDeploySetup(Addresses) external;
-
-    function build(Addresses) external;
-
-    function run(Addresses, address) external;
-
-    function teardown(Addresses, address) external;
-
-    function validate(Addresses, address) external;
-
-    function getProposalActions() external;
-```
-
-`Deploy`, creates a new smart contract on whichever network the script is
-pointed at.
-
-`After deploy` actions such as wiring deployed contracts together, calling
-initialize, etc.
-
-`After deploy setup` is any setup that needs to be done after all contracts have
-been deployed and wired together, such as sending funds to a contract using
-forge's `deal` function. This step is usually only done for simulations and not
-run when a proposal is broadcast to a network.
-
-`Build` the proposal. This is where the proposal calldata is built.
-
-`Run` the proposal. This is where the proposal execution is simulated against a
-chainforked mainnet.
-
-`Teardown` the proposal. This is where any post proposal state changes are made
-if needed. This is a step that should only run when simulating a proposal, it
-should never be run during a script broadcast.
-
-`Validation` of the state after the proposal is run. This is where all deployed
-or modified contracts are checked to ensure they are in the correct state. For a
-deployment, this is where the deployed contract is checked to ensure all state
-variables were properly set. For a proposal, this is where the proposal targets
-are checked to ensure they are in the correct state. For a proposal that does a
-deployment and governance proposal/action, both the deployed contract(s) and the
-proposal target(s) are checked.
-
-`Print proposal action steps` This is a helper function to print out the steps
-that will be taken when a proposal is run. This step also logs any governance
-proposal calldata that is generated.
-
-Each action type in the system is loosely coupled or decoupled. Actions build
-and run are tightly coupled. If run is called, build must be called first. If
-build is called, run should be called after. All other actions are decoupled,
-but run sequentially in their declaration order.
+For guidance on how to use the library please check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
 
 ## Usage
 
-To deploy a new system, create a new contract that inherits the
-[Proposal](./proposals/proposalTypes/Proposal.sol) contract and implements the
-[IProposal](./proposals/proposalTypes/IProposal.sol) interface. Any actions that
-are unneeded should be left blank.
+1. Integrate this library into your protocol repository as a submodule:
 
-Before running the script, environment variables should be set. The following
-environment variables are used in the system, all of them set to true by
-default:
+    ```bash
+    forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
+    ```
 
-```
-DEBUG
-DO_DEPLOY
-DO_AFTER_DEPLOY
-DO_AFTER_DEPLOY_SETUP
-DO_BUILD
-DO_RUN
-DO_TEARDOWN
-DO_VALIDATE
-DO_PRINT
-```
+2. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal. Explore our [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator) for practical examples.
 
-to change them, set only the unneeded actions to false in the shell before
-running the script:
+3. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
 
-```
-export DEBUG=false
-export DO_DEPLOY=false
-export DO_AFTER_DEPLOY=false
-export DO_AFTER_DEPLOY_SETUP=false
-export DO_BUILD=false
-export DO_RUN=false
-export DO_TEARDOWN=false
-export DO_VALIDATE=false
-export DO_PRINT=false
-```
+4. Create scripts and/or tests using the methodology on [Design Philosophy](https://solidity-labs.gitbook.io/forge-proposal-simulator/overview/architecture/design-philosophy)
 
-Actions build, run, teardown, validate and print will never be run when a
-proposal is broadcast to a network. They are only run when simulating a proposal
-or after the braodcast has been run.
+## Contribute
 
-If deploying a new system, the following environment variables must be set.
+There are many ways you can participate and help build high quality software. Check out the [contribution guide](CONTRIBUTING.md)!
 
-- `ETH_RPC_URL` rpc provider endpoint.
-- `DEPLOYER_KEY` is the private key encoded in hex and should be 64 characters.
-- `ETHERSCAN_API_KEY` is the etherscan api key used to verify the deployed
-  contracts on etherscan after it is deployed.
+## License
 
-Then, once the proposal has been created, run the following command to deploy
-the system/generate the calldata for the proposal and validate if the flag is
-set to true:
-
-```
-forge script PathToProposal.sol:ProposalContractName \
-    -vvvv \
-    --rpc-url $ETH_RPC_URL --broadcast --etherscan-api-key $ETHERSCAN_API_KEY --verify
-```
-
-## Addresses Contract
-
-The addresses contract is a contract that stores all the addresses of the
-deployed contracts. It is used to pass the addresses of the deployed contracts
-to the proposal contract. It is also used to store the addresses of the deployed
-contracts after the proposal has been run.
-
-Deployed contract addresses, as well as their name and respective networks are
-stored in the [Addresses.json](./addresses/Addresses.json) file.
-
-Contracts with the same name can be stored in the Addresses.json as long as
-there is no overlap in the networks they are deployed on. For example, if there
-is a contract named `Foo` that is deployed on mainnet and a contract named `Foo`
-that is deployed on rinkeby, both can be stored in the Addresses.json file.
-However, if there is a contract named `Foo` that is deployed on mainnet twice,
-only one of them can be stored in the `Addresses.json` file, otherwise there
-will be a revert during construction.
+Forge Proposal Simulator is made available under the MIT License, which disclaims all warranties in relation to the project and which limits the liability of those that contribute and maintain the project. As set out further in the Terms, you acknowledge that you are solely responsible for any use of Forge Proposal Simulator contracts and you assume all risks associated with any such use.
