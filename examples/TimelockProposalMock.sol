@@ -20,42 +20,34 @@ contract TimelockProposalMock is TimelockProposal {
 	address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
 	address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-	uint256 timelockSize;
-	assembly {
-	    // retrieve the size of the code, this needs assembly
-            timelockSize := extcodesize(timelock)
-	}
-	if(timelockSize == 0) {
-	    TimelockController timelockController = new TimelockController();
-	    vm.etch(timelock, address(timelockController).code);
-	    // set a delay if is running on a local instance 
-	    TimelockController(payable(timelock)).updateDelay(10_000);
-	}
-
 	_simulateActions(timelock, proposer, executor);
     }
 
     function _deploy(Addresses addresses, address) internal override {
-	SimpleContract mock = new SimpleContract();
+	SimpleContract mock1 = new SimpleContract();
 	SimpleContract mock2 = new SimpleContract();
 
-	addresses.addAddress("MOCK_1", address(mock));
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+	mock1.transferOwnership(timelock);
+	mock2.transferOwnership(timelock);
+
+	addresses.addAddress("MOCK_1", address(mock1));
 	addresses.addAddress("MOCK_2", address(mock2));
     }
 
     function _build(Addresses addresses) internal override {
 	address mock1 = addresses.getAddress("MOCK_1");
-	_pushAction(mock1, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
 
 	address mock2 = addresses.getAddress("MOCK_2");
-	_pushAction(mock2, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
     }
 
     function _validate(Addresses addresses, address) internal override {
 	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
-	assertTrue(mock1.deployed());
+	assertTrue(mock1.active());
 
 	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
-	assertTrue(mock2.deployed());
+	assertTrue(mock2.active());
     }
 }

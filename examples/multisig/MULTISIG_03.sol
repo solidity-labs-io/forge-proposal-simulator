@@ -17,13 +17,13 @@ contract MULTISIG_03 is MultisigProposal {
 	return "Multisig proposal mock";
      }
     
-    // Sets up actions for the proposal, marking the mock contracts as deployed.
+    // Sets up actions for the proposal, marking the mock contracts as active.
     function _build(Addresses addresses) internal override {
 	address mock1 = addresses.getAddress("MOCK_3");
-	_pushAction(mock1, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
 
 	address mock2 = addresses.getAddress("MOCK_4");
-	_pushAction(mock2, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
     }
 
     // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
@@ -37,9 +37,9 @@ contract MULTISIG_03 is MultisigProposal {
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
 	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_3"));
-	assertTrue(mock1.deployed());
+	assertTrue(mock1.active());
 
 	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_4"));
-	assertTrue(mock2.deployed());
+	assertTrue(mock2.active());
     }
 }

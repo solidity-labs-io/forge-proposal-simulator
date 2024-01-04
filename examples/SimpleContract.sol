@@ -1,10 +1,14 @@
 pragma solidity 0.8.19;
 
-contract SimpleContract {
-    bool public deployed;
+import {Ownable} from "@utils/Ownable.sol";
 
-    function setDeployed(bool _deployed) external {
-	deployed = _deployed;
+contract SimpleContract is Ownable {
+    bool public active;
+
+    constructor() Ownable(msg.sender) {}
+
+    function setActive(bool _active) external onlyOwner {
+	active = _active;
     }
 }
 

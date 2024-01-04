@@ -22,17 +22,21 @@ contract MULTISIG_01 is MultisigProposal {
         SimpleContract mock1 = new SimpleContract();
         SimpleContract mock2 = new SimpleContract();
 
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+	mock1.transferOwnership(devMultisig);
+	mock2.transferOwnership(devMultisig);
+
         addresses.addAddress("MOCK_1", address(mock1));
         addresses.addAddress("MOCK_2", address(mock2));
     }
 
-    // Sets up actions for the proposal, marking the mock contracts as deployed.
+    // Sets up actions for the proposal, marking the mock contracts as active.
     function _build(Addresses addresses) internal override {
         address mock1 = addresses.getAddress("MOCK_1");
-        _pushAction(mock1, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+        _pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
 
         address mock2 = addresses.getAddress("MOCK_2");
-        _pushAction(mock2, abi.encodeWithSignature("setDeployed(bool)", true), "Set deployed to true");
+        _pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
     }
 
     // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
@@ -45,9 +49,9 @@ contract MULTISIG_01 is MultisigProposal {
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
         SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
-        assertTrue(mock1.deployed());
+        assertTrue(mock1.active());
 
         SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
-        assertTrue(mock2.deployed());
+        assertTrue(mock2.active());
     }
 }

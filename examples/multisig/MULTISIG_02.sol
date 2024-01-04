@@ -19,11 +19,15 @@ contract MULTISIG_02 is MultisigProposal {
     
     // Deploys two mock contracts and registers their addresses.
     function _deploy(Addresses addresses, address) internal override {
-	SimpleContract mock = new SimpleContract();
-	SimpleContract mock2 = new SimpleContract();
+	SimpleContract mock3 = new SimpleContract();
+	SimpleContract mock4 = new SimpleContract();
 
-	addresses.addAddress("MOCK_3", address(mock));
-	addresses.addAddress("MOCK_4", address(mock2));
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+	mock3.transferOwnership(devMultisig);
+	mock4.transferOwnership(devMultisig);
+
+	addresses.addAddress("MOCK_3", address(mock3));
+	addresses.addAddress("MOCK_4", address(mock4));
     }
 
     // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
@@ -37,9 +41,9 @@ contract MULTISIG_02 is MultisigProposal {
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
 	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_3"));
-	assertFalse(mock1.deployed());
+	assertFalse(mock1.active());
 
 	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_4"));
-	assertFalse(mock2.deployed());
+	assertFalse(mock2.active());
     }
 }
