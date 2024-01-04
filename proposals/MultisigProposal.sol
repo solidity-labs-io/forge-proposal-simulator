@@ -37,8 +37,8 @@ contract MultisigProposal is Proposal {
         require(multisig.getContractHash() == MULTISIG_BYTECODE_HASH, "Invalid multisig bytecode hash");
         vm.startPrank(multisig);
 
-	// this is a hack because multisig execTransaction requires owners signatures so we can't simulate it
-	vm.etch(multisig, Constants.MULTICALL_BYTECODE);
+        // this is a hack because multisig execTransaction requires owners signatures so we can't simulate it
+        vm.etch(multisig, Constants.MULTICALL_BYTECODE);
 
         bytes memory data = getCalldata();
         bytes memory result = multisig.functionCall(data);
@@ -48,8 +48,8 @@ contract MultisigProposal is Proposal {
             console.logBytes(result);
         }
 
-	// revert contract code to original safe bytecode
-	vm.etch(multisig, Constants.SAFE_BYTECODE);
+        // revert contract code to original safe bytecode
+        vm.etch(multisig, Constants.SAFE_BYTECODE);
 
         vm.stopPrank();
     }

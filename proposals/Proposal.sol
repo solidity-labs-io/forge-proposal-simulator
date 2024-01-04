@@ -94,10 +94,10 @@ abstract contract Proposal is Test, Script, IProposal {
         values = new uint256[](actionsLength);
         arguments = new bytes[](actionsLength);
 
-	if(DEBUG) {
-        console.log("\n\nProposal Description:\n\n%s", description());
-        console.log("\n\n------------------ Proposal Actions ------------------");
-	}
+        if (DEBUG) {
+            console.log("\n\nProposal Description:\n\n%s", description());
+            console.log("\n\n------------------ Proposal Actions ------------------");
+        }
 
         for (uint256 i; i < actionsLength; i++) {
             require(actions[i].target != address(0), "Invalid target for proposal");

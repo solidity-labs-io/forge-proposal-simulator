@@ -4,7 +4,6 @@ import {TestSuite} from "@test/TestSuite.t.sol";
 import {TimelockProposalMock} from "@examples/TimelockProposalMock.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
-import {Constants} from "@utils/Constants.sol";
 import "@forge-std/Test.sol";
 
 contract TimelockProposalTest is Test {
@@ -20,27 +19,26 @@ contract TimelockProposalTest is Test {
         proposalsAddresses[0] = address(timelockProposal);
 
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
-	Addresses addresses = suite.addresses();
+        Addresses addresses = suite.addresses();
 
-	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	uint256 timelockSize;
-	assembly {
-	    // retrieve the size of the code, this needs assembly
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        uint256 timelockSize;
+        assembly {
+            // retrieve the size of the code, this needs assembly
             timelockSize := extcodesize(timelock)
-	}
-	if(timelockSize == 0) {
-	    address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-	    address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        }
+        if (timelockSize == 0) {
+            address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
+            address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-	    address[] memory proposers = new address[](1);
-	    proposers[0] = proposer;
-	    address[] memory executors = new address[](1);
-	    executors[0] = executor;
+            address[] memory proposers = new address[](1);
+            proposers[0] = proposer;
+            address[] memory executors = new address[](1);
+            executors[0] = executor;
 
-	    TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
-	    addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
-	}
-
+            TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
+            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
+        }
     }
 
     function test_runPoposals() public virtual {
