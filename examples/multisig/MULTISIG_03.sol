@@ -4,7 +4,7 @@ import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
 
-// MULTISIG_03: A proposal contract for manipulating two mock contracts.
+// Mock proposal that sets the active state of two mock contracts to true.
 contract MULTISIG_03 is MultisigProposal {
 
     // Returns the name of the proposal.

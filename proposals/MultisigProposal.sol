@@ -34,10 +34,13 @@ contract MultisigProposal is Proposal {
     }
 
     function _simulateActions(address multisig) internal {
-        require(multisig.getContractHash() == MULTISIG_BYTECODE_HASH, "Invalid multisig bytecode hash");
+        require(
+            multisig.getContractHash() == MULTISIG_BYTECODE_HASH,
+            "Multisig address doesn't match Gnosis Safe contract bytecode"
+        );
         vm.startPrank(multisig);
 
-        // this is a hack because multisig execTransaction requires owners signatures so we can't simulate it
+        // this is a hack because multisig execTransaction requires owners signatures so we can't use to simulate it
         vm.etch(multisig, Constants.MULTICALL_BYTECODE);
 
         bytes memory data = getCalldata();

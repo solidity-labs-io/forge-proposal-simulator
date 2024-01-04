@@ -45,6 +45,7 @@ abstract contract Proposal is Test, Script, IProposal {
         address deployer,
         bool doDeploy,
         bool doBuild,
+        bool doAfterDeploy,
         bool doRun,
         bool doTeardown,
         bool doValidate
@@ -53,6 +54,9 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (doDeploy) {
             _deploy(addresses, deployer);
+        }
+        if (doAfterDeploy) {
+            _afterDeploy(addresses, deployer);
         }
 
         vm.stopBroadcast();
@@ -152,9 +156,7 @@ abstract contract Proposal is Test, Script, IProposal {
     // or execute a serie of Multisig calls...).
     // See proposals for helper contracts.
     // address param is the address of the proposal executor
-    function _run(Addresses, address) internal virtual {
-        revert("You must override the run function");
-    }
+    function _run(Addresses, address) internal virtual {}
 
     // @dev After a proposal executed, if you mocked some behavior in the
     // afterDeploy step, you might want to tear down the mocks here.

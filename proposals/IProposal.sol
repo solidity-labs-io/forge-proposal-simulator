@@ -18,6 +18,7 @@ interface IProposal {
         Addresses addresses,
         address deployer,
         bool deploy,
+        bool afterDeploy,
         bool build,
         bool run,
         bool teardown,

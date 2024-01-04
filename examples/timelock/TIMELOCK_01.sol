@@ -5,36 +5,39 @@ import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-contract TimelockProposalMock is TimelockProposal {
+// Mock proposal that deploys two SimpleContract instances, transfers ownership to the timelock, and sets active to true.
+contract TIMELOCK_01 is TimelockProposal {
 
+    // Returns the name of the proposal.
     function name() public pure override returns(string memory) {
 	return "TIMELOCK_PROPOSAL_MOCK";
     }
 
+    // Provides a brief description of the proposal.
     function description() public pure override returns(string memory) {
 	return "Timelock proposal mock";
      }
     
-    function _run(Addresses addresses, address) internal override {
-	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-	address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
-
-	_simulateActions(timelock, proposer, executor);
-    }
-
+    // Deploys two mock contracts and registers their addresses.
     function _deploy(Addresses addresses, address) internal override {
 	SimpleContract mock1 = new SimpleContract();
 	SimpleContract mock2 = new SimpleContract();
-
-	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	mock1.transferOwnership(timelock);
-	mock2.transferOwnership(timelock);
 
 	addresses.addAddress("MOCK_1", address(mock1));
 	addresses.addAddress("MOCK_2", address(mock2));
     }
 
+    // Transfers ownership of the mock contracts to the timelock.
+    function _afterDeploy(Addresses addresses, address) internal override {
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
+	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));				      
+
+	mock1.transferOwnership(timelock);
+	mock2.transferOwnership(timelock);
+    }
+	
+    // Sets up actions for the proposal, marking the mock contracts as active.
     function _build(Addresses addresses) internal override {
 	address mock1 = addresses.getAddress("MOCK_1");
 	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
@@ -43,11 +46,24 @@ contract TimelockProposalMock is TimelockProposal {
 	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
     }
 
+    // Executes the proposal actions.
+    function _run(Addresses addresses, address) internal override {
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+	address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
+	address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+
+	_simulateActions(timelock, proposer, executor);
+    }
+
+    // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
 	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
+	assertEq(mock1.owner(), timelock);
 	assertTrue(mock1.active());
 
 	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
+	assertEq(mock2.owner(), timelock);
 	assertTrue(mock2.active());
     }
 }

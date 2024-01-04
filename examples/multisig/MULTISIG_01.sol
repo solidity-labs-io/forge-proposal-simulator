@@ -4,7 +4,7 @@ import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
 
-// MULTISIG_01: A proposal contract for deploying and manipulating two mock contracts.
+// Mock proposal that deploys two SimpleContract instances, transfers ownership to the dev multisig and marks them as active.
 contract MULTISIG_01 is MultisigProposal {
 
     // Returns the name of the proposal.
@@ -22,12 +22,18 @@ contract MULTISIG_01 is MultisigProposal {
         SimpleContract mock1 = new SimpleContract();
         SimpleContract mock2 = new SimpleContract();
 
-	address devMultisig = addresses.getAddress("DEV_MULTISIG");
-	mock1.transferOwnership(devMultisig);
-	mock2.transferOwnership(devMultisig);
-
+	
         addresses.addAddress("MOCK_1", address(mock1));
         addresses.addAddress("MOCK_2", address(mock2));
+    }
+
+    // Transfers ownership of the mock contracts to the dev multisig.
+    function _afterDeploy(Addresses addresses, address) internal override {
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
+	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
+	mock1.transferOwnership(devMultisig);
+	mock2.transferOwnership(devMultisig);
     }
 
     // Sets up actions for the proposal, marking the mock contracts as active.
@@ -48,10 +54,13 @@ contract MULTISIG_01 is MultisigProposal {
 
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
         SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
         assertTrue(mock1.active());
+	assertEq(mock1.owner(), devMultisig);
 
         SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
         assertTrue(mock2.active());
+	assertEq(mock2.owner(), devMultisig);
     }
 }

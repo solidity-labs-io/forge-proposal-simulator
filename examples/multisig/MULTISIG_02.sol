@@ -4,7 +4,7 @@ import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
 
-// MULTISIG_02: A proposal contract for deploying two mock contracts.
+// Mock proposal that deploys two SimpleContract instances and transfers ownership to the dev multisig.
 contract MULTISIG_02 is MultisigProposal {
 
     // Returns the name of the proposal.
@@ -22,12 +22,17 @@ contract MULTISIG_02 is MultisigProposal {
 	SimpleContract mock3 = new SimpleContract();
 	SimpleContract mock4 = new SimpleContract();
 
-	address devMultisig = addresses.getAddress("DEV_MULTISIG");
-	mock3.transferOwnership(devMultisig);
-	mock4.transferOwnership(devMultisig);
-
 	addresses.addAddress("MOCK_3", address(mock3));
 	addresses.addAddress("MOCK_4", address(mock4));
+    }
+
+    // Transfers ownership of the mock contracts to the dev multisig.
+    function _afterDeploy(Addresses addresses, address) internal override {
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+	SimpleContract mock3 = SimpleContract(addresses.getAddress("MOCK_3"));
+	SimpleContract mock4 = SimpleContract(addresses.getAddress("MOCK_4"));
+	mock3.transferOwnership(devMultisig);
+	mock4.transferOwnership(devMultisig);
     }
 
     // Executes the proposal actions. 
@@ -39,10 +44,13 @@ contract MULTISIG_02 is MultisigProposal {
 
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
 	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_3"));
+	assertEq(mock1.owner(), devMultisig);
 	assertFalse(mock1.active());
 
 	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_4"));
+	assertEq(mock2.owner(), devMultisig);
 	assertFalse(mock2.active());
     }
 }
