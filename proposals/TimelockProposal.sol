@@ -2,13 +2,13 @@ pragma solidity 0.8.19;
 
 import {console} from "@forge-std/console.sol";
 import {Proposal} from "@proposals/Proposal.sol";
-import {TimelockController} from "@utils/TimelockController.sol";
+import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 import {Address} from "@utils/Address.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
     bytes32 public constant TIMELOCK_BYTECODE_HASH =
-        bytes32(0x00c75284b72844568fe6ec7f3dd1f1b9ae4a8db71c4e29b3fc898168d0743c84);
+        bytes32(0xbb9e6e324d876e09c8c79c2132baf1b2a0bc37e8a0bf14c2c4bee7f718a40451);
 
     /// @notice get schedule calldata
     function getScheduleCalldata(address timelock) public view returns (bytes memory scheduleCalldata) {
@@ -61,7 +61,6 @@ abstract contract TimelockProposal is Proposal {
     /// @param proposerAddress account to propose the proposal to the timelock
     /// @param executorAddress account to execute the proposal on the timelock
     function _simulateActions(address timelockAddress, address proposerAddress, address executorAddress) internal {
-	console.logBytes32(timelockAddress.getContractHash());
         require(timelockAddress.getContractHash() == TIMELOCK_BYTECODE_HASH, "Invalid timelock bytecode hash");
         bytes32 salt = keccak256(abi.encode(actions[0].description));
         bytes32 predecessor = bytes32(0);

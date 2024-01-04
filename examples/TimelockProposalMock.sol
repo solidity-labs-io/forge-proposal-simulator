@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {SimpleContract} from "@examples/SimpleContract.sol";
-import {TimelockController} from "@utils/TimelockController.sol";
+import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
 contract TimelockProposalMock is TimelockProposal {
 

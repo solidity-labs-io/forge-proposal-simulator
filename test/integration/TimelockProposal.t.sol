@@ -2,7 +2,8 @@ pragma solidity 0.8.19;
 
 import {TestSuite} from "@test/TestSuite.t.sol";
 import {TimelockProposalMock} from "@examples/TimelockProposalMock.sol";
-import {TimelockController} from "@utils/TimelockController.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 import {Constants} from "@utils/Constants.sol";
 import "@forge-std/Test.sol";
 
@@ -19,17 +20,25 @@ contract TimelockProposalTest is Test {
         proposalsAddresses[0] = address(timelockProposal);
 
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
-	address timelock = suite.addresses().getAddress("PROTOCOL_TIMELOCK");
+	Addresses addresses = suite.addresses();
 
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
 	uint256 timelockSize;
 	assembly {
 	    // retrieve the size of the code, this needs assembly
             timelockSize := extcodesize(timelock)
 	}
 	if(timelockSize == 0) {
-	    vm.etch(timelock, Constants.TIMELOCK_BYTECODE);
-	    // set a delay if is running on a local instance 
-	    //TimelockController(payable(timelock)).updateDelay(10_000);
+	    address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
+	    address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+
+	    address[] memory proposers = new address[](1);
+	    proposers[0] = proposer;
+	    address[] memory executors = new address[](1);
+	    executors[0] = executor;
+
+	    TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
+	    addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
 	}
 
     }
