@@ -39,7 +39,7 @@ contract MULTISIG_01 is MultisigProposal {
         _pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
     }
 
-    // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
+    // Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
         address multisig = addresses.getAddress("DEV_MULTISIG");
 

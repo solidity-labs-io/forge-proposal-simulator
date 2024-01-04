@@ -30,11 +30,10 @@ contract MULTISIG_02 is MultisigProposal {
 	addresses.addAddress("MOCK_4", address(mock4));
     }
 
-    // Executes the proposal actions. If the multisig address is not a contract, it deploys a new Safe contract.
+    // Executes the proposal actions. 
     function _run(Addresses addresses, address) internal override {
 	address multisig = addresses.getAddress("DEV_MULTISIG");
 
-	// call etch on multisig address to pretend it is a contract
 	_simulateActions(multisig);
     }
 
