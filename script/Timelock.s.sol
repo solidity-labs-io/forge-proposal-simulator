@@ -9,6 +9,9 @@ import {Constants} from "@utils/Constants.sol";
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
+// @dev Use this script to simulates or run a single proposal
+// Use this as a template to create your own script
+// `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract TimelockScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     
