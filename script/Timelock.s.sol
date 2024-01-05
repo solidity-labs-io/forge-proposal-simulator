@@ -5,6 +5,10 @@ import {TimelockController} from "@openzeppelin/governance/TimelockController.so
 import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {Constants} from "@utils/Constants.sol";
 
+// @notice TimelockScript is a script that run TIMELOCK_01 proposal
+// TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
+// Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
+// Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TimelockScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     

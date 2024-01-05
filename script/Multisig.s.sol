@@ -4,6 +4,10 @@ import {ScriptSuite} from "@script/ScriptSuite.s.sol";
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 import {Constants} from "@utils/Constants.sol";
 
+// @notice MultisigScript is a script that run MULTISIG_01 proposal
+// MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
+// Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
+// Finally the proposal whitelist the ERC20 token in the Vault contract
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     

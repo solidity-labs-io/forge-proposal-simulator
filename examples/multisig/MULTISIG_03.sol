@@ -24,7 +24,7 @@ contract MULTISIG_03 is MultisigProposal {
 	address timelockVault= addresses.getAddress("VAULT");
 	address token = addresses.getAddress("TOKEN_1");
 	uint256 balance = MockToken(token).balanceOf(address(timelockVault));
-	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, devMultisig, balance), "Deposit MockToken into Vault");
+	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, devMultisig, balance), "Withdraw tokens from Vault");
     }
 
     // Executes the proposal actions.

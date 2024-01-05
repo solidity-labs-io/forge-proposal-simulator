@@ -25,7 +25,7 @@ contract TIMELOCK_03 is TimelockProposal {
 	address timelockVault= addresses.getAddress("VAULT");
 	address token = addresses.getAddress("TOKEN_1");
 	uint256 balance = MockToken(token).balanceOf(address(timelockVault));
-	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, timelock, balance), "Deposit MockToken into Vault");
+	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, timelock, balance), "Withdraw tokens from Vault");
     }
 
     // Executes the proposal actions.

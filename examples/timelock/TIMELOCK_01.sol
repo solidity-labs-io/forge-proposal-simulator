@@ -6,7 +6,9 @@ import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-// Mock proposal that deploys a Vault contract and an ERC20 token contract.
+// TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
+// Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
+// Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
 
     // Returns the name of the proposal.
