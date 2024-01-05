@@ -18,7 +18,7 @@ contract Vault is Ownable, Pausable {
     constructor() Ownable() Pausable() {
     }
 
-    function setToken(address token, bool active) external onlyOwner {
+    function whitelistToken(address token, bool active) external onlyOwner {
 	tokenWhitelist[token] = active;
     }
 

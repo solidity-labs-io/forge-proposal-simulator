@@ -27,7 +27,7 @@ contract MultisigProposalTest is Test {
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
         // Verify if the multisig address is a contract; if is not (e.g. running on a empty blockchain node), etch Gnosis Safe bytecode onto it.
-	addresses = suite.addresses();
+        addresses = suite.addresses();
         address multisig = addresses.getAddress("DEV_MULTISIG");
         uint256 multisigSize;
         assembly {
@@ -42,26 +42,25 @@ contract MultisigProposalTest is Test {
     }
 
     function test_vaultIsPausable() public {
-	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-	address multisig = addresses.getAddress("DEV_MULTISIG");
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address multisig = addresses.getAddress("DEV_MULTISIG");
 
-	vm.prank(multisig);
+        vm.prank(multisig);
 
-	timelockVault.pause();
+        timelockVault.pause();
 
-	assertTrue(timelockVault.paused(), "Vault should be paused");
+        assertTrue(timelockVault.paused(), "Vault should be paused");
     }
 
     function test_addTokenToWhitelist() public {
-	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-	address multisig = addresses.getAddress("DEV_MULTISIG");
-	MockToken token = new MockToken();
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address multisig = addresses.getAddress("DEV_MULTISIG");
+        MockToken token = new MockToken();
 
-	vm.prank(multisig);
+        vm.prank(multisig);
 
-	timelockVault.setToken(address(token), true);
+        timelockVault.whitelistToken(address(token), true);
 
-	assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
+        assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
     }
-
 }

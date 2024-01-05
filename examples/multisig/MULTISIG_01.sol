@@ -1,6 +1,5 @@
 pragma solidity 0.8.19;
 
-import {console} from "@forge-std/console.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
@@ -45,7 +44,7 @@ contract MULTISIG_01 is MultisigProposal {
     function _build(Addresses addresses) internal override {
         address timelockVault= addresses.getAddress("VAULT");
 	address token = addresses.getAddress("TOKEN_1");
-	_pushAction(timelockVault, abi.encodeWithSignature("setToken(address,bool)", token, true), "Set token to active");
+	_pushAction(timelockVault, abi.encodeWithSignature("whitelistToken(address,bool)", token, true), "Set token to active");
     }
 
     // Executes the proposal actions.

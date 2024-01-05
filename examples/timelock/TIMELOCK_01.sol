@@ -45,7 +45,7 @@ contract TIMELOCK_01 is TimelockProposal {
     function _build(Addresses addresses) internal override {
         address timelockVault= addresses.getAddress("VAULT");
 	address token = addresses.getAddress("TOKEN_1");
-	_pushAction(timelockVault, abi.encodeWithSignature("setToken(address,bool)", token, true), "Set token to active");
+	_pushAction(timelockVault, abi.encodeWithSignature("whitelistToken(address,bool)", token, true), "Set token to active");
     }
 
     // Executes the proposal actions.

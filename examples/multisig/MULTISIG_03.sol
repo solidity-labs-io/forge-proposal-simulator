@@ -1,6 +1,5 @@
 pragma solidity 0.8.19;
 
-import {console} from "@forge-std/console.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";

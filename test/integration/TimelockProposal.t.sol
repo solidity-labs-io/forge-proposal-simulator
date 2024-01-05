@@ -23,8 +23,8 @@ contract TimelockProposalTest is Test {
 
         address[] memory proposalsAddresses = new address[](3);
         proposalsAddresses[0] = address(timelockProposal);
-	proposalsAddresses[1] = address(timelockProposal2);
-	proposalsAddresses[2] = address(timelockProposal3);
+        proposalsAddresses[1] = address(timelockProposal2);
+        proposalsAddresses[2] = address(timelockProposal3);
 
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
         addresses = suite.addresses();
@@ -48,31 +48,31 @@ contract TimelockProposalTest is Test {
             TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
             addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
 
-	    suite.setDebug(true);
-	    suite.testProposals();
+            suite.setDebug(true);
+            suite.testProposals();
         }
     }
 
     function test_vaultIsPausable() public {
-	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
 
-	vm.prank(timelock);
+        vm.prank(timelock);
 
-	timelockVault.pause();
+        timelockVault.pause();
 
-	assertTrue(timelockVault.paused(), "Vault should be paused");
+        assertTrue(timelockVault.paused(), "Vault should be paused");
     }
 
     function test_addTokenToWhitelist() public {
-	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	MockToken token = new MockToken();
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        MockToken token = new MockToken();
 
-	vm.prank(timelock);
+        vm.prank(timelock);
 
-	timelockVault.setToken(address(token), true);
+        timelockVault.whitelistToken(address(token), true);
 
-	assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
+        assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
     }
 }
