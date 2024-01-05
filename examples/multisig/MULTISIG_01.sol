@@ -1,10 +1,12 @@
 pragma solidity 0.8.19;
 
+import {console} from "@forge-std/console.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {SimpleContract} from "@examples/SimpleContract.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
 
-// Mock proposal that deploys two SimpleContract instances, transfers ownership to the dev multisig and marks them as active.
+// Mock proposal that deploys a Vault contract and an ERC20 token contract.
 contract MULTISIG_01 is MultisigProposal {
 
     // Returns the name of the proposal.
@@ -14,35 +16,35 @@ contract MULTISIG_01 is MultisigProposal {
 
     // Provides a brief description of the proposal.
     function description() public pure override returns(string memory) {
-        return "Multisig proposal mock";
+	return "Deploy Vault contract";
     }
 
-    // Deploys two mock contracts and registers their addresses.
+    // Deploys a vault contract and an ERC20 token contract.
     function _deploy(Addresses addresses, address) internal override {
-        SimpleContract mock1 = new SimpleContract();
-        SimpleContract mock2 = new SimpleContract();
+        Vault timelockVault = new Vault();
+	MockToken token = new MockToken();
 
-	
-        addresses.addAddress("MOCK_1", address(mock1));
-        addresses.addAddress("MOCK_2", address(mock2));
+        addresses.addAddress("VAULT", address(timelockVault));
+	addresses.addAddress("TOKEN_1", address(token));
     }
 
-    // Transfers ownership of the mock contracts to the dev multisig.
-    function _afterDeploy(Addresses addresses, address) internal override {
+    // Transfers ownership of the vault contracts to dev multisig.
+    // Transfers all tokens to dev multisig.
+    function _afterDeploy(Addresses addresses, address deployer) internal override {
 	address devMultisig = addresses.getAddress("DEV_MULTISIG");
-	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
-	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
-	mock1.transferOwnership(devMultisig);
-	mock2.transferOwnership(devMultisig);
+	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
+
+	timelockVault.transferOwnership(devMultisig);
+	token.transferOwnership(devMultisig);
+	token.transfer(devMultisig, token.balanceOf(address(deployer)));
     }
 
-    // Sets up actions for the proposal, marking the mock contracts as active.
+    // Sets up actions for the proposal, in this case, setting the MockToken to active.
     function _build(Addresses addresses) internal override {
-        address mock1 = addresses.getAddress("MOCK_1");
-        _pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
-
-        address mock2 = addresses.getAddress("MOCK_2");
-        _pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
+        address timelockVault= addresses.getAddress("VAULT");
+	address token = addresses.getAddress("TOKEN_1");
+	_pushAction(timelockVault, abi.encodeWithSignature("setToken(address,bool)", token, true), "Set token to active");
     }
 
     // Executes the proposal actions.
@@ -52,15 +54,17 @@ contract MULTISIG_01 is MultisigProposal {
         _simulateActions(multisig);
     }
 
-    // Validates the post-execution state of the mock contracts.
+    // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
 	address devMultisig = addresses.getAddress("DEV_MULTISIG");
-        SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
-        assertTrue(mock1.active());
-	assertEq(mock1.owner(), devMultisig);
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
-        assertTrue(mock2.active());
-	assertEq(mock2.owner(), devMultisig);
+	assertEq(timelockVault.owner(), devMultisig);
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+	assertFalse(timelockVault.paused());
+
+	assertEq(token.owner(), devMultisig);
+	assertEq(token.balanceOf(devMultisig), token.totalSupply());
     }
 }

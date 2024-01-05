@@ -2,7 +2,7 @@ pragma solidity 0.8.19;
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {SimpleContract} from "@examples/SimpleContract.sol";
+import {Vault} from "@examples/Vault.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
 // Mock proposal that sets the active state of two mock contracts to true.
@@ -39,12 +39,10 @@ contract TIMELOCK_03 is TimelockProposal {
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_1"));
+	Vault mock1 = Vault(addresses.getAddress("MOCK_1"));
 	assertEq(mock1.owner(), timelock);
-	assertTrue(mock1.active());
 
-	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_2"));
+	Vault mock2 = Vault(addresses.getAddress("MOCK_2"));
 	assertEq(mock2.owner(), timelock);
-	assertTrue(mock2.active());
     }
 }

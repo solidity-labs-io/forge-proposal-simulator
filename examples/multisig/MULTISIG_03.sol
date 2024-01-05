@@ -1,44 +1,55 @@
 pragma solidity 0.8.19;
 
+import {console} from "@forge-std/console.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {SimpleContract} from "@examples/SimpleContract.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
 
-// Mock proposal that sets the active state of two mock contracts to true.
+// Mock proposal that withdraw tokens from Vault
 contract MULTISIG_03 is MultisigProposal {
 
     // Returns the name of the proposal.
     function name() public pure override returns(string memory) {
-	return "MULTISIG_03";
+        return "MULTISIG_03";
     }
 
     // Provides a brief description of the proposal.
     function description() public pure override returns(string memory) {
-	return "Multisig proposal mock";
-     }
-    
-    // Sets up actions for the proposal, marking the mock contracts as active.
+	return "Withdraw tokens from Vault";
+    }
+
+    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build(Addresses addresses) internal override {
-	address mock1 = addresses.getAddress("MOCK_3");
-	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
-
-	address mock2 = addresses.getAddress("MOCK_4");
-	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set active to true");
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+	address timelockVault= addresses.getAddress("VAULT");
+	address token = addresses.getAddress("TOKEN_1");
+	uint256 balance = MockToken(token).balanceOf(address(timelockVault));
+	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, devMultisig, balance), "Deposit MockToken into Vault");
     }
 
-    // Executes the proposal actions. 
+    // Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
-	address multisig = addresses.getAddress("DEV_MULTISIG");
+        address multisig = addresses.getAddress("DEV_MULTISIG");
 
-	_simulateActions(multisig);
+	// Simulate time passing, vault time lock is 1 week
+	vm.warp(block.timestamp + 1 weeks + 1);
+
+        _simulateActions(multisig);
     }
 
-    // Validates the post-execution state of the mock contracts.
+    // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
-	SimpleContract mock1 = SimpleContract(addresses.getAddress("MOCK_3"));
-	assertTrue(mock1.active());
+	address devMultisig = addresses.getAddress("DEV_MULTISIG");
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-	SimpleContract mock2 = SimpleContract(addresses.getAddress("MOCK_4"));
-	assertTrue(mock2.active());
+	assertEq(timelockVault.owner(), devMultisig);
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+	assertFalse(timelockVault.paused());
+
+	assertEq(token.owner(), devMultisig);
+	assertEq(token.balanceOf(address(timelockVault)), 0);
+	assertEq(token.balanceOf(devMultisig), 10_000_000e18);
     }
 }

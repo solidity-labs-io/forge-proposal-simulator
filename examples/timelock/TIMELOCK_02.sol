@@ -2,10 +2,10 @@ pragma solidity 0.8.19;
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {SimpleContract} from "@examples/SimpleContract.sol";
+import {Vault} from "@examples/Vault.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-// Mock proposal that deploys two SimpleContract instances and transfers ownership to the timelock.
+// Mock proposal that deploys two Vault instances and transfers ownership to the timelock.
 contract TIMELOCK_02 is TimelockProposal {
 
     // Returns the name of the proposal.
@@ -20,8 +20,8 @@ contract TIMELOCK_02 is TimelockProposal {
     
     // Deploys two mock contracts and registers their addresses.
     function _deploy(Addresses addresses, address) internal override {
-	SimpleContract mock3 = new SimpleContract();
-	SimpleContract mock4 = new SimpleContract();
+	Vault mock3 = new Vault();
+	Vault mock4 = new Vault();
 
 	addresses.addAddress("MOCK_3", address(mock3));
 	addresses.addAddress("MOCK_4", address(mock4));
@@ -30,8 +30,8 @@ contract TIMELOCK_02 is TimelockProposal {
     // Transfers ownership of the mock contracts to the timelock.
     function _afterDeploy(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	SimpleContract mock3 = SimpleContract(addresses.getAddress("MOCK_3"));
-	SimpleContract mock4 = SimpleContract(addresses.getAddress("MOCK_4"));				      
+	Vault mock3 = Vault(addresses.getAddress("MOCK_3"));
+	Vault mock4 = Vault(addresses.getAddress("MOCK_4"));				      
 
 	mock3.transferOwnership(timelock);
 	mock4.transferOwnership(timelock);
@@ -40,12 +40,10 @@ contract TIMELOCK_02 is TimelockProposal {
     // Validates the post-execution state of the mock contracts.
     function _validate(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	SimpleContract mock3 = SimpleContract(addresses.getAddress("MOCK_3"));
+	Vault mock3 = Vault(addresses.getAddress("MOCK_3"));
 	assertEq(mock3.owner(), timelock);
-	assertFalse(mock3.active());
 
-	SimpleContract mock4 = SimpleContract(addresses.getAddress("MOCK_4"));
+	Vault mock4 = Vault(addresses.getAddress("MOCK_4"));
 	assertEq(mock4.owner(), timelock);
-	assertFalse(mock4.active());
     }
 }
