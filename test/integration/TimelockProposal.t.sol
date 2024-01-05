@@ -1,7 +1,5 @@
 pragma solidity 0.8.19;
 
-import {Addresses} from "@addresses/Addresses.sol";
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {TimelockPostProposalCheck} from "@test/TimelockPostProposalCheck.sol";

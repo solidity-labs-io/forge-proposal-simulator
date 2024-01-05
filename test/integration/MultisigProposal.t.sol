@@ -2,7 +2,6 @@ pragma solidity 0.8.19;
 
 import "@forge-std/Test.sol";
 import {Vault} from "@examples/Vault.sol";
-import {Constants} from "@utils/Constants.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {MultisigPostProposalCheck} from "@test/MultisigPostProposalCheck.sol";
 
