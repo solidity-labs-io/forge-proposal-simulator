@@ -53,6 +53,8 @@ contract TIMELOCK_03 is TimelockProposal {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
+        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
+        assertEq(amount, 0);
         assertEq(timelockVault.owner(), timelock);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());

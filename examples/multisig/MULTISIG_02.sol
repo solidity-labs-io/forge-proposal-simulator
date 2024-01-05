@@ -52,11 +52,18 @@ contract MULTISIG_02 is MultisigProposal {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
+        uint256 balance = token.balanceOf(address(timelockVault));
+        (uint256 amount, ) = timelockVault.deposits(
+            address(token),
+            devMultisig
+        );
+        assertEq(amount, balance);
+
         assertEq(timelockVault.owner(), devMultisig);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());
 
         assertEq(token.owner(), devMultisig);
-        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
+        assertEq(balance, token.totalSupply());
     }
 }

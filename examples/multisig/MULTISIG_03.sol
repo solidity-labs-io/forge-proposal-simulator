@@ -51,6 +51,12 @@ contract MULTISIG_03 is MultisigProposal {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
+        (uint256 amount, ) = timelockVault.deposits(
+            address(token),
+            devMultisig
+        );
+        assertEq(amount, 0);
+
         assertEq(timelockVault.owner(), devMultisig);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());
