@@ -1,16 +1,17 @@
 pragma solidity 0.8.19;
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-// Mock proposal that deploys two Vault instances, transfers ownership to the timelock, and sets active to true.
+// Mock proposal that deploys a Vault contract and an ERC20 token contract.
 contract TIMELOCK_01 is TimelockProposal {
 
     // Returns the name of the proposal.
     function name() public pure override returns(string memory) {
-	return "TIMELOCK_PROPOSAL_MOCK";
+	return "TIMELOCK_01";
     }
 
     // Provides a brief description of the proposal.
@@ -18,32 +19,33 @@ contract TIMELOCK_01 is TimelockProposal {
 	return "Timelock proposal mock";
      }
     
-    // Deploys two mock contracts and registers their addresses.
+    // Deploys a vault contract and an ERC20 token contract.
     function _deploy(Addresses addresses, address) internal override {
-	Vault mock1 = new Vault();
-	Vault mock2 = new Vault();
+        Vault timelockVault = new Vault();
+	MockToken token = new MockToken();
 
-	addresses.addAddress("MOCK_1", address(mock1));
-	addresses.addAddress("MOCK_2", address(mock2));
+        addresses.addAddress("VAULT", address(timelockVault));
+	addresses.addAddress("TOKEN_1", address(token));
     }
 
-    // Transfers ownership of the mock contracts to the timelock.
-    function _afterDeploy(Addresses addresses, address) internal override {
+    // Transfers vault ownership to timelock.
+    // Transfer token ownership to timelock.
+    // Transfers all tokens to timelock.
+    function _afterDeploy(Addresses addresses, address deployer) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	Vault mock1 = Vault(addresses.getAddress("MOCK_1"));
-	Vault mock2 = Vault(addresses.getAddress("MOCK_2"));				      
+	Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-	mock1.transferOwnership(timelock);
-	mock2.transferOwnership(timelock);
+	timelockVault.transferOwnership(timelock);
+	token.transferOwnership(timelock);
+	token.transfer(timelock, token.balanceOf(address(deployer)));
     }
-	
-    // Sets up actions for the proposal, marking the mock contracts as active.
-    function _build(Addresses addresses) internal override {
-	address mock1 = addresses.getAddress("MOCK_1");
-	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
 
-	address mock2 = addresses.getAddress("MOCK_2");
-	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
+    // Sets up actions for the proposal, in this case, setting the MockToken to active.
+    function _build(Addresses addresses) internal override {
+        address timelockVault= addresses.getAddress("VAULT");
+	address token = addresses.getAddress("TOKEN_1");
+	_pushAction(timelockVault, abi.encodeWithSignature("setToken(address,bool)", token, true), "Set token to active");
     }
 
     // Executes the proposal actions.
@@ -55,13 +57,17 @@ contract TIMELOCK_01 is TimelockProposal {
 	_simulateActions(timelock, proposer, executor);
     }
 
-    // Validates the post-execution state of the mock contracts.
+    // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	Vault mock1 = Vault(addresses.getAddress("MOCK_1"));
-	assertEq(mock1.owner(), timelock);
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-	Vault mock2 = Vault(addresses.getAddress("MOCK_2"));
-	assertEq(mock2.owner(), timelock);
+	assertEq(timelockVault.owner(), timelock);
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+	assertFalse(timelockVault.paused());
+
+	assertEq(token.owner(), timelock);
+	assertEq(token.balanceOf(timelock), token.totalSupply());
     }
 }

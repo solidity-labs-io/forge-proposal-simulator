@@ -3,9 +3,10 @@ pragma solidity 0.8.19;
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-// Mock proposal that sets the active state of two mock contracts to true.
+// Mock proposal that withdraws MockToken from Vault.
 contract TIMELOCK_03 is TimelockProposal {
 
     // Returns the name of the proposal.
@@ -15,16 +16,16 @@ contract TIMELOCK_03 is TimelockProposal {
 
     // Provides a brief description of the proposal.
     function description() public pure override returns(string memory) {
-	return "Timelock proposal mock";
-     }
-	
-    // Sets up actions for the proposal, marking the mock contracts as active.
-    function _build(Addresses addresses) internal override {
-	address mock1 = addresses.getAddress("MOCK_1");
-	_pushAction(mock1, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
+	return "Withdraw tokens from Vault";
+    }
 
-	address mock2 = addresses.getAddress("MOCK_2");
-	_pushAction(mock2, abi.encodeWithSignature("setActive(bool)", true), "Set deployed to true");
+    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    function _build(Addresses addresses) internal override {
+	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+	address timelockVault= addresses.getAddress("VAULT");
+	address token = addresses.getAddress("TOKEN_1");
+	uint256 balance = MockToken(token).balanceOf(address(timelockVault));
+	_pushAction(timelockVault, abi.encodeWithSignature("withdraw(address,address,uint256)", token, timelock, balance), "Deposit MockToken into Vault");
     }
 
     // Executes the proposal actions.
@@ -33,16 +34,24 @@ contract TIMELOCK_03 is TimelockProposal {
 	address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
 	address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-	_simulateActions(timelock, proposer, executor);
+	// Simulate time passing, vault time lock is 1 week
+	vm.warp(block.timestamp + 1 weeks + 1);
+
+        _simulateActions(timelock, proposer, executor);
     }
 
-    // Validates the post-execution state of the mock contracts.
+    // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
 	address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-	Vault mock1 = Vault(addresses.getAddress("MOCK_1"));
-	assertEq(mock1.owner(), timelock);
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+	MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-	Vault mock2 = Vault(addresses.getAddress("MOCK_2"));
-	assertEq(mock2.owner(), timelock);
+	assertEq(timelockVault.owner(), timelock);
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+	assertFalse(timelockVault.paused());
+
+	assertEq(token.owner(), timelock);
+	assertEq(token.balanceOf(address(timelockVault)), 0);
+	assertEq(token.balanceOf(timelock), 10_000_000e18);
     }
 }

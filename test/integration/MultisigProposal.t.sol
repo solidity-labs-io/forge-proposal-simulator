@@ -61,7 +61,7 @@ contract MultisigProposalTest is Test {
 
 	timelockVault.setToken(address(token), true);
 
-	assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be active");
+	assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
     }
 
 }

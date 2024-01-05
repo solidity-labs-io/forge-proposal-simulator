@@ -28,7 +28,8 @@ contract MULTISIG_01 is MultisigProposal {
 	addresses.addAddress("TOKEN_1", address(token));
     }
 
-    // Transfers ownership of the vault contracts to dev multisig.
+    // Transfers vault ownership to dev multisig.
+    // Transfer token ownership to dev multisig.
     // Transfers all tokens to dev multisig.
     function _afterDeploy(Addresses addresses, address deployer) internal override {
 	address devMultisig = addresses.getAddress("DEV_MULTISIG");
