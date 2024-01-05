@@ -5,7 +5,7 @@
             "files": "*.sol",
             "options": {
                 "parser": "solidity-parse",
-                "printWidth": 120,
+                "printWidth": 80,
                 "tabWidth": 4,
                 "useTabs": false,
                 "singleQuote": false,
@@ -14,7 +14,7 @@
         }
     ],
     "tabWidth": 4,
-    "printWidth": 120,
+    "printWidth": 80,
     "trailingComma": "all",
     "singleQuote": false,
     "semi": true

@@ -15,6 +15,7 @@
 	"no-global-import": "off",
 	"reason-string": "off",
 	"immutable-vars-naming": "off",
-	"avoid-low-level-calls": "off"
+	"avoid-low-level-calls": "off",
+	"contract-name-camelcase": "off"
     }
 }

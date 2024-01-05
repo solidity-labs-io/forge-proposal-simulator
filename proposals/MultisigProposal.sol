@@ -8,7 +8,9 @@ import {Constants} from "@utils/Constants.sol";
 contract MultisigProposal is Proposal {
     using Address for address;
     bytes32 public constant MULTISIG_BYTECODE_HASH =
-        bytes32(0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000);
+        bytes32(
+            0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
+        );
 
     struct Call {
         address target;
@@ -21,8 +23,14 @@ contract MultisigProposal is Proposal {
         Call[] memory calls = new Call[](actionsLength);
 
         for (uint256 i; i < actionsLength; i++) {
-            require(actions[i].target != address(0), "Invalid target for multisig");
-            calls[i] = Call({target: actions[i].target, callData: actions[i].arguments});
+            require(
+                actions[i].target != address(0),
+                "Invalid target for multisig"
+            );
+            calls[i] = Call({
+                target: actions[i].target,
+                callData: actions[i].arguments
+            });
         }
 
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);

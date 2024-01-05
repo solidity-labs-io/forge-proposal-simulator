@@ -19,9 +19,9 @@
     "scripts": {
 	"clean": "rm -rf cache out",
 	"build": "forge build",
-	"lint": "solhint --config ./.solhintrc {addresses,proposals,utils,test}/**/*.sol",
-	"prettier": "prettier {addresses,proposals,utils,test}/**/*.sol --list-different",
-	"prettier:write": "prettier {addresses,proposals,utils,test}/**/*.sol -w",
+	"lint": "solhint --config ./.solhintrc {addresses,proposals,utils,test,examples}/**/*.sol",
+	"prettier": "prettier {addresses,proposals,utils,test,examples}/**/*.sol --list-different",
+	"prettier:write": "prettier {addresses,proposals,utils,test,examples}/**/*.sol -w",
 	"test": "forge test",
 	"test:coverage": "forge coverage",
 	"test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"

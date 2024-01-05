@@ -12,7 +12,8 @@ contract Addresses is IAddresses, Test {
     using Strings for uint256;
 
     /// @notice mapping from contract name to network chain id to address
-    mapping(string name => mapping(uint256 chainId => address addr)) public _addresses;
+    mapping(string name => mapping(uint256 chainId => address addr))
+        public _addresses;
 
     /// @notice chainid of the network when contract is constructed
     uint256 public immutable chainId;
@@ -47,40 +48,72 @@ contract Addresses is IAddresses, Test {
     constructor(string memory addressesPath) {
         chainId = block.chainid;
 
-        string memory addressesData = string(abi.encodePacked(vm.readFile(addressesPath)));
+        string memory addressesData = string(
+            abi.encodePacked(vm.readFile(addressesPath))
+        );
 
         bytes memory parsedJson = vm.parseJson(addressesData);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
+        SavedAddresses[] memory savedAddresses = abi.decode(
+            parsedJson,
+            (SavedAddresses[])
+        );
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
-            _addAddress(savedAddresses[i].name, savedAddresses[i].addr, savedAddresses[i].chainId);
+            _addAddress(
+                savedAddresses[i].name,
+                savedAddresses[i].addr,
+                savedAddresses[i].chainId
+            );
         }
     }
 
     /// @notice add an address for a specific chainId
-    function _addAddress(string memory name, address addr, uint256 _chainId) private {
+    function _addAddress(
+        string memory name,
+        address addr,
+        uint256 _chainId
+    ) private {
         address currentAddress = _addresses[name][_chainId];
 
         require(
             currentAddress == address(0),
-            string(abi.encodePacked("Address: ", name, " already set on chain: ", _chainId.toString()))
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " already set on chain: ",
+                    _chainId.toString()
+                )
+            )
         );
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
 
-        recordedAddresses.push(RecordedAddress({name: name, chainId: _chainId}));
+        recordedAddresses.push(
+            RecordedAddress({name: name, chainId: _chainId})
+        );
     }
 
-    function _getAddress(string memory name, uint256 _chainId) private view returns (address addr) {
+    function _getAddress(
+        string memory name,
+        uint256 _chainId
+    ) private view returns (address addr) {
         require(_chainId != 0, "ChainId cannot be 0");
 
         addr = _addresses[name][_chainId];
 
         require(
             addr != address(0),
-            string(abi.encodePacked("Address: ", name, " not set on chain: ", _chainId.toString()))
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " not set on chain: ",
+                    _chainId.toString()
+                )
+            )
         );
     }
 
@@ -90,7 +123,10 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get an address for a specific chainId
-    function getAddress(string memory name, uint256 _chainId) public view returns (address) {
+    function getAddress(
+        string memory name,
+        uint256 _chainId
+    ) public view returns (address) {
         return _getAddress(name, _chainId);
     }
 
@@ -100,12 +136,20 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice add an address for a specific chainId
-    function addAddress(string memory name, address addr, uint256 _chainId) public {
+    function addAddress(
+        string memory name,
+        address addr,
+        uint256 _chainId
+    ) public {
         _addAddress(name, addr, _chainId);
     }
 
     /// @notice change an address for a specific chainId
-    function changeAddress(string memory name, address _addr, uint256 _chainId) public {
+    function changeAddress(
+        string memory name,
+        address _addr,
+        uint256 _chainId
+    ) public {
         address addr = _addresses[name][_chainId];
         require(
             addr != address(0),
@@ -123,11 +167,18 @@ contract Addresses is IAddresses, Test {
         require(
             addr != _addr,
             string(
-                abi.encodePacked("Address: ", name, " already set to the same value on chain: ", _chainId.toString())
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " already set to the same value on chain: ",
+                    _chainId.toString()
+                )
             )
         );
 
-        changedAddresses.push(ChangedAddress({name: name, chainId: _chainId, oldAddress: addr}));
+        changedAddresses.push(
+            ChangedAddress({name: name, chainId: _chainId, oldAddress: addr})
+        );
 
         _addresses[name][_chainId] = _addr;
         vm.label(_addr, name);
@@ -147,7 +198,11 @@ contract Addresses is IAddresses, Test {
     function getRecordedAddresses()
         external
         view
-        returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses)
+        returns (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory addresses
+        )
     {
         uint256 length = recordedAddresses.length;
         names = new string[](length);
@@ -157,7 +212,9 @@ contract Addresses is IAddresses, Test {
         for (uint256 i = 0; i < length; i++) {
             names[i] = recordedAddresses[i].name;
             chainIds[i] = recordedAddresses[i].chainId;
-            addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i].chainId];
+            addresses[i] = _addresses[recordedAddresses[i].name][
+                recordedAddresses[i].chainId
+            ];
         }
     }
 
@@ -187,7 +244,9 @@ contract Addresses is IAddresses, Test {
             names[i] = changedAddresses[i].name;
             chainIds[i] = changedAddresses[i].chainId;
             oldAddresses[i] = changedAddresses[i].oldAddress;
-            newAddresses[i] = _addresses[changedAddresses[i].name][changedAddresses[i].chainId];
+            newAddresses[i] = _addresses[changedAddresses[i].name][
+                changedAddresses[i].chainId
+            ];
         }
     }
 }

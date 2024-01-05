@@ -89,7 +89,11 @@ abstract contract Proposal is Test, Script, IProposal {
         public
         view
         override
-        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments)
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory arguments
+        )
     {
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
@@ -100,14 +104,20 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (DEBUG) {
             console.log("\n\nProposal Description:\n\n%s", description());
-            console.log("\n\n------------------ Proposal Actions ------------------");
+            console.log(
+                "\n\n------------------ Proposal Actions ------------------"
+            );
         }
 
         for (uint256 i; i < actionsLength; i++) {
-            require(actions[i].target != address(0), "Invalid target for proposal");
+            require(
+                actions[i].target != address(0),
+                "Invalid target for proposal"
+            );
             /// if there are no args and no eth, the action is not valid
             require(
-                (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
+                (actions[i].arguments.length == 0 && actions[i].value > 0) ||
+                    actions[i].arguments.length > 0,
                 "Invalid arguments for proposal"
             );
             targets[i] = actions[i].target;
@@ -124,17 +134,37 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     // @dev push an action to the proposal
-    function _pushAction(uint256 value, address target, bytes memory data, string memory _description) internal {
-        actions.push(Action({value: value, target: target, arguments: data, description: _description}));
+    function _pushAction(
+        uint256 value,
+        address target,
+        bytes memory data,
+        string memory _description
+    ) internal {
+        actions.push(
+            Action({
+                value: value,
+                target: target,
+                arguments: data,
+                description: _description
+            })
+        );
     }
 
     // @dev push an action to the proposal with a value of 0
-    function _pushAction(address target, bytes memory data, string memory _description) internal {
+    function _pushAction(
+        address target,
+        bytes memory data,
+        string memory _description
+    ) internal {
         _pushAction(0, target, data, _description);
     }
 
     // @dev push an action to the proposal with empty description
-    function _pushAction(uint256 value, address target, bytes memory data) internal {
+    function _pushAction(
+        uint256 value,
+        address target,
+        bytes memory data
+    ) internal {
         _pushAction(value, target, data, "");
     }
 

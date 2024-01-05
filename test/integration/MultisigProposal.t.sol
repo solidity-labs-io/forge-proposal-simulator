@@ -26,7 +26,10 @@ contract MultisigProposalTest is MultisigPostProposalCheck {
 
         timelockVault.whitelistToken(address(token), true);
 
-        assertTrue(timelockVault.tokenWhitelist(address(token)), "Token should be whitelisted");
+        assertTrue(
+            timelockVault.tokenWhitelist(address(token)),
+            "Token should be whitelisted"
+        );
     }
 
     function test_depositToVaut() public {
