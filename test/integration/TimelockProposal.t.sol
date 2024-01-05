@@ -1,29 +1,48 @@
 pragma solidity 0.8.19;
 
-import {TestProposals} from "@proposals/TestProposals.sol";
-import {TimelockProposalMock} from "@mocks/TimelockProposalMock.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
+import {TimelockPostProposalCheck} from "@test/TimelockPostProposalCheck.sol";
 import "@forge-std/Test.sol";
 
-contract TimelockProposalTest is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    TestProposals public proposals;
-    uint256 public preProposalsSnapshot;
-    uint256 public postProposalsSnapshot;
+contract TimelockProposalTest is TimelockPostProposalCheck {
+    function test_vaultIsPausable() public {
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
 
-    function setUp() public {
-        TimelockProposalMock timelockProposal = new TimelockProposalMock();
+        vm.prank(timelock);
 
-        address[] memory proposalsAddresses = new address[](1);
-        proposalsAddresses[0] = address(timelockProposal);
-        proposals = new TestProposals(ADDRESSES_PATH, proposalsAddresses);
+        timelockVault.pause();
+
+        assertTrue(timelockVault.paused(), "Vault should be paused");
     }
 
-    function test_runPoposals() public virtual {
-        preProposalsSnapshot = vm.snapshot();
+    function test_addTokenToWhitelist() public {
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        MockToken token = new MockToken();
 
-        proposals.setDebug(true);
-        proposals.testProposals();
+        vm.prank(timelock);
 
-        postProposalsSnapshot = vm.snapshot();
+        timelockVault.whitelistToken(address(token), true);
+
+        assertTrue(
+            timelockVault.tokenWhitelist(address(token)),
+            "Token should be whitelisted"
+        );
+    }
+
+    function test_depositToVaut() public {
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address token = addresses.getAddress("TOKEN_1");
+
+        vm.startPrank(timelock);
+        MockToken(token).mint(address(this), 100);
+        MockToken(token).approve(address(timelockVault), 100);
+        timelockVault.deposit(address(token), 100);
+
+        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
+        assertTrue(amount == 100, "Token should be deposited");
     }
 }

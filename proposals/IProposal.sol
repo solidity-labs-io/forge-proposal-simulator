@@ -33,8 +33,15 @@ interface IProposal {
     // @notice Print proposal actions
     function getProposalActions()
         external
-        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments);
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory arguments
+        );
 
     // @notice Print proposal calldata
     function getCalldata() external returns (bytes memory data);
+
+    // @notice set the debug flag
+    function setDebug(bool debug) external;
 }

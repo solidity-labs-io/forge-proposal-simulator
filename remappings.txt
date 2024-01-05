@@ -3,4 +3,6 @@
 @proposals/=proposals/
 @addresses/=addresses/
 @utils/=utils/
-@mocks/=mocks/
+@examples/=examples/
+@script=script/
+@openzeppelin=lib/openzeppelin-contracts/contracts

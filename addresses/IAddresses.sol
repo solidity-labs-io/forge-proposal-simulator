@@ -9,19 +9,30 @@ interface IAddresses {
     function getAddress(string memory name) external view returns (address);
 
     /// @notice get an address for a specific chainId
-    function getAddress(string memory name, uint256 _chainId) external view returns (address);
+    function getAddress(
+        string memory name,
+        uint256 _chainId
+    ) external view returns (address);
 
     /// @notice add an address for the current chainId
     function addAddress(string memory name, address addr) external;
 
     /// @notice add an address for a specific chainId
-    function addAddress(string memory name, address addr, uint256 _chainId) external;
+    function addAddress(
+        string memory name,
+        address addr,
+        uint256 _chainId
+    ) external;
 
     /// @notice change an address for the current chainId
     function changeAddress(string memory name, address addr) external;
 
     /// @notice change an address for a specific chainId
-    function changeAddress(string memory name, address _addr, uint256 _chainId) external;
+    function changeAddress(
+        string memory name,
+        address _addr,
+        uint256 _chainId
+    ) external;
 
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external;
@@ -33,11 +44,20 @@ interface IAddresses {
     function getRecordedAddresses()
         external
         view
-        returns (string[] memory names, uint256[] memory chainIds, address[] memory addresses);
+        returns (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory addresses
+        );
 
     /// @notice get changed addresses from a proposal
     function getChangedAddresses()
         external
         view
-        returns (string[] memory names, uint256[] memory chainIds, address[] memory oldAddresses, address[] memory newAddresses);
+        returns (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory oldAddresses,
+            address[] memory newAddresses
+        );
 }
