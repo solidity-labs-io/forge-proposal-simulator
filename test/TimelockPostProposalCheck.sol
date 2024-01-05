@@ -23,16 +23,16 @@ contract TimelockPostProposalCheck is Test {
         TIMELOCK_02 timelockProposal2 = new TIMELOCK_02();
         TIMELOCK_03 timelockProposal3 = new TIMELOCK_03();
 
-	// Populate addresses array
+        // Populate addresses array
         address[] memory proposalsAddresses = new address[](3);
         proposalsAddresses[0] = address(timelockProposal);
         proposalsAddresses[1] = address(timelockProposal2);
         proposalsAddresses[2] = address(timelockProposal3);
 
-	// Deploy TestSuite contract
+        // Deploy TestSuite contract
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
-	// Set addresses object
+        // Set addresses object
         addresses = suite.addresses();
 
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
@@ -43,27 +43,35 @@ contract TimelockPostProposalCheck is Test {
             timelockSize := extcodesize(timelock)
         }
         if (timelockSize == 0) {
-	    // Get proposer and executor addresses
+            // Get proposer and executor addresses
             address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
             address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-	    // Create arrays of addresses to pass to the TimelockController constructor
+            // Create arrays of addresses to pass to the TimelockController constructor
             address[] memory proposers = new address[](1);
             proposers[0] = proposer;
             address[] memory executors = new address[](1);
             executors[0] = executor;
 
-	    // Deploy a new TimelockController
-            TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
-	    // Update PROTOCOL_TIMELOCK address
-            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
+            // Deploy a new TimelockController
+            TimelockController timelockController = new TimelockController(
+                10_000,
+                proposers,
+                executors,
+                address(0)
+            );
+            // Update PROTOCOL_TIMELOCK address
+            addresses.changeAddress(
+                "PROTOCOL_TIMELOCK",
+                address(timelockController)
+            );
 
             suite.setDebug(true);
-	    // Execute proposals
+            // Execute proposals
             suite.testProposals();
 
-	    // Proposals execution may change addresses, so we need to update the addresses object.
-	    addresses = suite.addresses();
+            // Proposals execution may change addresses, so we need to update the addresses object.
+            addresses = suite.addresses();
         }
     }
 }

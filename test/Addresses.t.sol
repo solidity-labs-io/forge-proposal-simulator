@@ -23,7 +23,9 @@ contract TestAddresses is Test {
         string memory addressesPath = "./addresses/Addresses.json";
         addresses = new Addresses(addressesPath);
 
-        string memory addressesData = string(abi.encodePacked(vm.readFile(addressesPath)));
+        string memory addressesData = string(
+            abi.encodePacked(vm.readFile(addressesPath))
+        );
         parsedJson = vm.parseJson(addressesData);
     }
 
@@ -49,7 +51,11 @@ contract TestAddresses is Test {
         address addr = vm.addr(1);
         addresses.changeAddress("DEV_MULTISIG", addr);
 
-        assertEq(addresses.getAddress("DEV_MULTISIG"), addr, "Not updated correclty");
+        assertEq(
+            addresses.getAddress("DEV_MULTISIG"),
+            addr,
+            "Not updated correclty"
+        );
     }
 
     function test_changeAddressToSameAddressFails() public {
@@ -60,7 +66,9 @@ contract TestAddresses is Test {
         );
 
         address addr = addresses.getAddress("DEV_MULTISIG");
-        vm.expectRevert("Address: DEV_MULTISIG already set to the same value on chain: 31337");
+        vm.expectRevert(
+            "Address: DEV_MULTISIG already set to the same value on chain: 31337"
+        );
         addresses.changeAddress("DEV_MULTISIG", addr);
     }
 
@@ -75,7 +83,11 @@ contract TestAddresses is Test {
         uint256 chainId = 31337;
         addresses.changeAddress("DEV_MULTISIG", addr, chainId);
 
-        assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr, "Not updated correclty");
+        assertEq(
+            addresses.getAddress("DEV_MULTISIG", chainId),
+            addr,
+            "Not updated correclty"
+        );
     }
 
     function test_addAddress() public {
@@ -100,14 +112,20 @@ contract TestAddresses is Test {
 
         assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr);
         // Validate that the 'DEV_MULTISIG' address for chain 31337 matches the address from Addresses.json.
-        assertEq(addresses.getAddress("DEV_MULTISIG"), 0x3dd46846eed8D147841AE162C8425c08BD8E1b41);
+        assertEq(
+            addresses.getAddress("DEV_MULTISIG"),
+            0x3dd46846eed8D147841AE162C8425c08BD8E1b41
+        );
     }
 
     function test_resetRecordingAddresses() public {
         addresses.resetRecordingAddresses();
 
-        (string[] memory names, uint256[] memory chainIds, address[] memory _addresses) = addresses
-            .getRecordedAddresses();
+        (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory _addresses
+        ) = addresses.getRecordedAddresses();
 
         assertEq(names.length, 0);
         assertEq(chainIds.length, 0);
@@ -115,14 +133,20 @@ contract TestAddresses is Test {
     }
 
     function test_getRecordingAddresses() public {
-        (string[] memory names, uint256[] memory chainIds, address[] memory _addresses) = addresses
-            .getRecordedAddresses();
+        (
+            string[] memory names,
+            uint256[] memory chainIds,
+            address[] memory _addresses
+        ) = addresses.getRecordedAddresses();
 
         assertEq(names.length, 6);
         assertEq(chainIds.length, 6);
         assertEq(_addresses.length, 6);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
+        SavedAddresses[] memory savedAddresses = abi.decode(
+            parsedJson,
+            (SavedAddresses[])
+        );
 
         for (uint256 i = 0; i < savedAddresses.length; i++) {
             assertEq(names[i], savedAddresses[i].name);
@@ -162,7 +186,10 @@ contract TestAddresses is Test {
         assertEq(oldAddresses.length, 1);
         assertEq(newAddresses.length, 1);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(parsedJson, (SavedAddresses[]));
+        SavedAddresses[] memory savedAddresses = abi.decode(
+            parsedJson,
+            (SavedAddresses[])
+        );
 
         assertEq(names[0], savedAddresses[0].name);
         assertEq(chainIds[0], savedAddresses[0].chainId);
@@ -196,7 +223,9 @@ contract TestAddresses is Test {
     }
 
     function test_revertChangedAddressDoesNotExist() public {
-        vm.expectRevert("Address: TEST doesn't exist on chain: 31337. Use addAddress instead");
+        vm.expectRevert(
+            "Address: TEST doesn't exist on chain: 31337. Use addAddress instead"
+        );
         addresses.changeAddress("TEST", vm.addr(1));
     }
 }

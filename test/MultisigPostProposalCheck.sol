@@ -15,22 +15,22 @@ contract MultisigPostProposalCheck is Test {
     TestSuite public suite;
     Addresses public addresses;
 
-    function setUp() virtual public {
-	// Create proposals contracts
+    function setUp() public virtual {
+        // Create proposals contracts
         MULTISIG_01 multisigProposal = new MULTISIG_01();
         MULTISIG_02 multisigProposal2 = new MULTISIG_02();
         MULTISIG_03 multisigProposal3 = new MULTISIG_03();
 
-	// Populate addresses array
+        // Populate addresses array
         address[] memory proposalsAddresses = new address[](3);
         proposalsAddresses[0] = address(multisigProposal);
         proposalsAddresses[1] = address(multisigProposal2);
         proposalsAddresses[2] = address(multisigProposal3);
 
-	// Deploy TestSuite contract
+        // Deploy TestSuite contract
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
-	// Set addresses object
+        // Set addresses object
         addresses = suite.addresses();
 
         // Verify if the multisig address is a contract; if is not (e.g. running on a empty blockchain node), etch Gnosis Safe bytecode onto it.
@@ -44,11 +44,10 @@ contract MultisigPostProposalCheck is Test {
         }
 
         suite.setDebug(true);
-	// Execute proposals
+        // Execute proposals
         suite.testProposals();
 
-	// Proposals execution may change addresses, so we need to update the addresses object.
-	addresses = suite.addresses();
+        // Proposals execution may change addresses, so we need to update the addresses object.
+        addresses = suite.addresses();
     }
-
 }
