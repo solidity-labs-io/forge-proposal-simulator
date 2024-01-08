@@ -7,7 +7,7 @@ description: >-
 
 # Architecture
 
-<img src="../../.gitbook/assets/file.excalidraw (1).svg" alt="FPS design architecture" class="gitbook-drawing">
+<img src="../../assets/file.excalidraw.svg" alt="FPS design architecture" class="gitbook-drawing">
 
 {% content-ref url="design-philosophy.md" %}
 [design-philosophy.md](design-philosophy.md)
