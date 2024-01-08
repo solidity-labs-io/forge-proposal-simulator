@@ -1,26 +1,20 @@
 # Table of contents
 
-* [Forge Proposal Simulator](README.md)
-
-## Overview
-
-* [Use cases](overview/use-cases.md)
-* [Architecture](overview/architecture/README.md)
-  * [Design Philosophy](overview/architecture/design-philosophy.md)
-  * [External Fuctions](overview/architecture/external-fuctions.md)
-  * [Internal functions](overview/architecture/internal-functions.md)
-  * [Addresses](overview/architecture/addresses.md)
-
-## Fundamentals
-
-* [Getting set up](fundamentals/getting-set-up.md)
-
-## Guides
-
-* [Multisig Proposal](guides/multisig-proposal.md)
-* [Timelock Proposal](guides/timelock-proposal.md)
-
-## Testing
-
-* [Integration Tests](testing/integration-tests.md)
-* [Using with actions](testing/using-with-actions.md)
+* [Contributing Guidelines](README.md)
+* [Forge Proposal Simulator](docs/README.md)
+  * [Table of contents](docs/summary.md)
+  * [fundamentals](docs/fundamentals/README.md)
+    * [Getting set up](docs/fundamentals/getting-set-up.md)
+  * [guides](docs/guides/README.md)
+    * [Multisig Proposal](docs/guides/multisig-proposal.md)
+    * [Timelock Proposal](docs/guides/timelock-proposal.md)
+  * [overview](docs/overview/README.md)
+    * [Use cases](docs/overview/use-cases.md)
+    * [Architecture](docs/overview/architecture/README.md)
+      * [Addresses](docs/overview/architecture/addresses.md)
+      * [Design Philosophy](docs/overview/architecture/design-philosophy.md)
+      * [External Fuctions](docs/overview/architecture/external-fuctions.md)
+      * [Internal functions](docs/overview/architecture/internal-functions.md)
+  * [testing](docs/testing/README.md)
+    * [Integration Tests](docs/testing/integration-tests.md)
+    * [Using with actions](docs/testing/using-with-actions.md)
