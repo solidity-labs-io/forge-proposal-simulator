@@ -1,27 +1,29 @@
-# Overview
+# Forge Proposal Simulator
+
+## Overview
 
 The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
 
-For guidance on how to use the library please check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
+1. **Standardized Governance**: FPS standardizes the creation of governance proposals. This standardization simplifies the review process and enables thorough testing of proposed changes against the current state of the protocol. It ensures the protocol's stability post-implementation. With FPS, every protocol modification experiences rigorous checks through an integrated test suite, confirming the protocol's integrity from proposal creation to execution.
+2. **Safe Calldata Generation**: This framework enhances proposal security by generating and verifying calldata out of the box for both GnosisSafe Multisignature Wallets and Openzeppelin Timelocks. With this calldata and scaffolding, it allows for easy simulation within a forked environment to confirm the proposal is bug-free, ensuring they are ready for deployment. This introduces an extra layer of security for governance. Technical signers can quickly access proposal calldata through a standard method on the proposal contract. This allows for easy retrieval of calldata, which can then be checked against what is proposed in the governance contracts.
+3. **Preventing Governance Bugs**: Mistakes happen often in governance. This tool offers testing of contracts in their post-deployment state, mitigating such risks.
+4. **Preventing Deployment Script Bugs:** The framework allows developers to easily test their deployment scripts with integration tests, making it simple to leverage this tools capabilities to completely eliminate an entire category of bugs.
 
-## Usage
+\
 
-1. Integrate this library into your protocol repository as a submodule:
 
-    ```bash
-    forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
-    ```
+## Quick links
 
-2. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal. Explore our [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator) for practical examples.
+{% content-ref url="overview/use-cases.md" %}
+[use-cases.md](overview/use-cases.md)
+{% endcontent-ref %}
 
-3. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+{% content-ref url="overview/architecture/" %}
+[architecture](overview/architecture/)
+{% endcontent-ref %}
 
-4. Create scripts and/or tests using the methodology on [Design Philosophy](https://solidity-labs.gitbook.io/forge-proposal-simulator/overview/architecture/design-philosophy)
+## Get Started
 
-## Contribute
-
-There are many ways you can participate and help build high quality software. Check out the [contribution guide](CONTRIBUTING.md)!
-
-## License
-
-Forge Proposal Simulator is made available under the MIT License, which disclaims all warranties in relation to the project and which limits the liability of those that contribute and maintain the project. As set out further in the Terms, you acknowledge that you are solely responsible for any use of Forge Proposal Simulator contracts and you assume all risks associated with any such use.
+{% content-ref url="fundamentals/getting-set-up.md" %}
+[getting-set-up.md](fundamentals/getting-set-up.md)
+{% endcontent-ref %}
