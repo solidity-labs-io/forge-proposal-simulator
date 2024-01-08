@@ -1,23 +1,29 @@
-# Contributing Guidelines
+# Forge Proposal Simulator
 
-There are many ways to contribute to Forge Proposal Simulator.
+## Overview
 
-## Opening an issue
+The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
 
-You can [open an issue] to suggest a feature or report a minor bug. 
+1. **Standardized Governance**: FPS standardizes the creation of governance proposals. This standardization simplifies the review process and enables thorough testing of proposed changes against the current state of the protocol. It ensures the protocol's stability post-implementation. With FPS, every protocol modification experiences rigorous checks through an integrated test suite, confirming the protocol's integrity from proposal creation to execution.
+2. **Safe Calldata Generation**: This framework enhances proposal security by generating and verifying calldata out of the box for both GnosisSafe Multisignature Wallets and Openzeppelin Timelocks. With this calldata and scaffolding, it allows for easy simulation within a forked environment to confirm the proposal is bug-free, ensuring they are ready for deployment. This introduces an extra layer of security for governance. Technical signers can quickly access proposal calldata through a standard method on the proposal contract. This allows for easy retrieval of calldata, which can then be checked against what is proposed in the governance contracts.
+3. **Preventing Governance Bugs**: Mistakes happen often in governance. This tool offers testing of contracts in their post-deployment state, mitigating such risks.
+4. **Preventing Deployment Script Bugs:** The framework allows developers to easily test their deployment scripts with integration tests, making it simple to leverage this tools capabilities to completely eliminate an entire category of bugs.
 
-Before opening an issue, be sure to search through the existing open and closed issues, and consider posting a comment in one of those instead.
+\
 
-When requesting a new feature, include as many details as you can, especially around the use cases that motivate it. Features are prioritized according to the impact they may have on the ecosystem, so we appreciate information showing that the impact could be high.
 
-[open an issue]: https://github.com/solidity-labs-io/forge-proposal-simulator/issues/new
+## Quick links
 
-## Submitting a pull request
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
+{% endcontent-ref %}
 
-If you would like to contribute code or documentation you may do so by forking the repository and submitting a pull request.
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
+{% endcontent-ref %}
 
-Any non-trivial code contribution must be first discussed with the maintainers in an issue (see [Opening an issue](#opening-an-issue)). Only very minor changes are accepted without prior discussion.
+## Get Started
 
-Run linter, prettier and tests to make sure your pull request is good before submitting it.
-
-If you're looking for a good place to start, look for issues labelled ["good first issue"](https://github.com/solidity-labs-io/forge-proposal-simulator/labels/good%20first%20issue)!
+{% content-ref url="broken-reference" %}
+[Broken link](broken-reference)
+{% endcontent-ref %}
