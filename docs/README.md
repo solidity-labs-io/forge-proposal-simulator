@@ -9,21 +9,18 @@ The Forge Proposal Simulator (FPS) offers a framework for creating secure govern
 3. **Preventing Governance Bugs**: Mistakes happen often in governance. This tool offers testing of contracts in their post-deployment state, mitigating such risks.
 4. **Preventing Deployment Script Bugs:** The framework allows developers to easily test their deployment scripts with integration tests, making it simple to leverage this tools capabilities to completely eliminate an entire category of bugs.
 
-\
-
-
 ## Quick links
 
-{% content-ref url="broken-reference" %}
-[Broken link](broken-reference)
+{% content-ref url="./overview/use-cases.md" %}
+[Use cases](./overview/use-cases.md)
 {% endcontent-ref %}
 
-{% content-ref url="broken-reference" %}
-[Broken link](broken-reference)
+{% content-ref url="./overview/architecture" %}
+[Architecture](./overview/architecture)
 {% endcontent-ref %}
 
 ## Get Started
 
-{% content-ref url="broken-reference" %}
-[Broken link](broken-reference)
+{% content-ref url="./fundamentals/getting-set-up.md" %}
+[Getting Set Up](./fundamentals/getting-set-up.md)
 {% endcontent-ref %}
