@@ -11,10 +11,8 @@ description: >-
 
 FPS facilitates testing Timelock governance proposals, it supports both
 scheduling and execution calldatas. Developers can simulate the proposal
-timeline, including scheduling, delays, and execution calls. This feature allows
-for checks at each stage—before, during, and after the execution of each
-transaction —ensuring the protocol behaves as intended at every step. Check
-[Timelock Proposal](../guides/timelock-proposal.md)to learn how to integrate with an Openzeppelin Timelock.
+timeline, including scheduling call, delays and execution call. Check
+[Timelock Proposal](../guides/timelock-proposal.md) to learn how to integrate with an Openzeppelin Timelock.
 
 ### Multisig Governance
 
