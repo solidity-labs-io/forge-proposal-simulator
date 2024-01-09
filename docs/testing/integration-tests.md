@@ -14,9 +14,9 @@ deploying proposal contracts, executing them, and updating the address objects. 
 pragma solidity 0.8.19;
 
 import "@forge-std/Test.sol";
-import { MULTISIG_01 } from "@path/to/MULTISIG_01.sol";
-import { MULTISIG_02 } from "@path/to/MULTISIG_02.sol";
-import { MULTISIG_03 } from "@path/to/MULTISIG_03.sol";
+import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
+import { MULTISIG_02 } from "path/to/MULTISIG_02.sol";
+import { MULTISIG_03 } from "path/to/MULTISIG_03.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
 import { Constants } from "@forge-proposal-simulator/utils/Constants.sol";
 import { TestSuite } from "@forge-proposal-simulator/test/TestSuite.sol";

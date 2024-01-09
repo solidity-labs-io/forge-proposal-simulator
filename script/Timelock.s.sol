@@ -17,27 +17,34 @@ contract TimelockScript is ScriptSuite {
     
     constructor() ScriptSuite(ADDRESSES_PATH, new TIMELOCK_01()) {}
      
-     function run() public override  {
+    function run() public override  {
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         uint256 timelockSize;
         assembly {
             // retrieve the size of the code, this needs assembly
-            timelockSize := extcodesize(timelock)
-        }
+        timelockSize := extcodesize(timelock)
+                }
         if (timelockSize == 0) {
+            // Get proposer and executor addresses
             address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
             address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
+            // Create arrays of addresses to pass to the TimelockController constructor
             address[] memory proposers = new address[](1);
             proposers[0] = proposer;
             address[] memory executors = new address[](1);
             executors[0] = executor;
 
+            // Deploy a new TimelockController
             TimelockController timelockController = new TimelockController(10_000, proposers, executors, address(0));
-	    addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
-	    proposal.setDebug(true);
-	    super.run();
+            // Update PROTOCOL_TIMELOCK address
+            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelockController));
+
+            proposal.setDebug(true);
+
+            // Execute proposal
+            super.run();
+        }
     }
-     }
 }
