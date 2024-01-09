@@ -20,7 +20,7 @@ For guidance on how to use the library please check FPS [documentation](https://
 
 3. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal.
 
-4. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+4. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.json](./addresses/Address.json) for details.
 
 5. Create scripts and/or tests using the guides on [FPS documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
 
