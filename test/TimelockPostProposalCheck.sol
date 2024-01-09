@@ -6,10 +6,7 @@ import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {TIMELOCK_02} from "@examples/timelock/TIMELOCK_02.sol";
 import {TIMELOCK_03} from "@examples/timelock/TIMELOCK_03.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
-import {Vault} from "@examples/Vault.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Constants} from "@utils/Constants.sol";
-import {MockToken} from "@examples/MockToken.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.
 // @dev should be inherited by integration test contracts.
@@ -60,6 +57,7 @@ contract TimelockPostProposalCheck is Test {
                 executors,
                 address(0)
             );
+
             // Update PROTOCOL_TIMELOCK address
             addresses.changeAddress(
                 "PROTOCOL_TIMELOCK",

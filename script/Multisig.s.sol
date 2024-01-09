@@ -17,17 +17,22 @@ contract MultisigScript is ScriptSuite {
     constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
      
      function run() public override  {
-	address multisig = addresses.getAddress("DEV_MULTISIG");
+         // Verify if the multisig address is a contract; if it is not
+         // (e.g. running on a empty blockchain node), set the multisig
+         // code to Safe Multisig code
+         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        uint256 multisigSize;
-        assembly {
-            multisigSize := extcodesize(multisig)
-        }
-        if (multisigSize == 0) {
-            vm.etch(multisig, Constants.SAFE_BYTECODE);
-        }
+         uint256 multisigSize;
+         assembly {
+         multisigSize := extcodesize(multisig)
+                 }
+         if (multisigSize == 0) {
+             vm.etch(multisig, Constants.SAFE_BYTECODE);
+         }
 
-        proposal.setDebug(true);
-        super.run();
+         proposal.setDebug(true);
+
+         // Execute proposal
+         super.run();
     }
 }
