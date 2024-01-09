@@ -1,6 +1,7 @@
 # Timelock Proposal
 
-After adding FPS to your project dependencies, the next step is to create your first Timelock FPS contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the timelock contract.&#x20;
+After adding FPS to your project dependencies, the next step is to create your
+first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the timelock contract.
 
 ```solidity
 pragma solidity 0.8.19;
@@ -163,12 +164,14 @@ Let's go through each of the functions we are overriding here.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
--   `_deploy()`: Utilize this function to deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token
--   `_build(`): Use this function to set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
--   `_run()`: Execute the proposal actions outlined in the \_build step. This function performs a call to "simulateActions" from the inherited `TimelockProposal` contract. Internally, this function simulates a call to Timelock [excheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+-   `_deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token.
+-   `_build(`): Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
+-   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
+    function performs a call to `_simulateActions` from the inherited
+    `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [excheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `_validate(`): This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
-Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up the [Addresses](../overview/architecture/addresses.md) file. Let's create a `Addresses.json` file:
+Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `Addresses.json` file:
 
 ```json
 [
@@ -190,7 +193,7 @@ Now that your first proposal contract is ready, it's time to take action. You ha
 ]
 ```
 
-Now that we have the JSON file, let's create a script that inherits `ScriptSuite`.&#x20;
+Now that we have the JSON file to be used on `Addresses.sol`, let's create a script that inherits `ScriptSuite`.
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
@@ -327,4 +330,4 @@ payload
   TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
 ```
 
-If you are the Timelock executor, you can run the script to execute the proposal. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.&#x20;
+If you are the Timelock executor, you can run the script to execute the proposal. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.

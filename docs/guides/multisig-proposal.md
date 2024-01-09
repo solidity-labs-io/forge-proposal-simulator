@@ -1,6 +1,6 @@
 # Multisig Proposal
 
-After adding FPS to your project dependencies, the next step is to create your first Multisig FPS contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the multisig wallet.&#x20;
+After adding FPS to your project dependencies, the next step is to create the first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the multisig wallet.
 
 ```solidity
 pragma solidity 0.8.19;
@@ -77,8 +77,8 @@ pragma solidity 0.8.19;
 
 import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "@path/to/Vault.sol";
-import { MockToken } from "@path/to/MockToken.sol";
+import { Vault } from "path/to/Vault.sol";
+import { MockToken } from "path/to/MockToken.sol";
 
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
@@ -161,12 +161,14 @@ Let's go through each of the functions we are overriding here.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
--   `_deploy()`: Utilize this function to deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token
--   `_build(`): Use this function to set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
--   `_run()`: Execute the proposal actions outlined in the \_build step. This function performs a call to "simulateActions" from the inherited `MultisigProposal` contract. Internally, this function simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
--   `_validate(`): This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
+-   `_deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token.
+-   `_build(`): Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
+-   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
+    function performs a call to `simulateActions()` from the inherited
+    `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
+-   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
 
-Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up the [Addresses](../overview/architecture/addresses.md) file. Let's create a `Addresses.json` file:
+Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `Addresses.json` file:
 
 ```json
 [
@@ -178,11 +180,11 @@ Now that your first proposal contract is ready, it's time to take action. You ha
 ]
 ```
 
-Now that we have the JSON file, let's create a script that inherits `ScriptSuite`.&#x20;
+Now that we have the JSON file to be use on `Addresses.sol`, let's create a script that inherits `ScriptSuite`.
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import { MULTISIG_01 } from "@path/to/MULTISIG_01.sol";
+import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -248,4 +250,4 @@ You will see an output like this:
   TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
 ```
 
-If you are a signer from the multisig address, you can verify whether the calldata proposed on the multisig matches the calldata obtained from this call. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.&#x20;
+If you are a signer from the multisig address, you can verify whether the calldata proposed on the multisig matches the calldata obtained from this call. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.

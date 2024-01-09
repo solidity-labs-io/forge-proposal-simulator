@@ -69,9 +69,9 @@ contract MultisigPostProposalCheck is Test {
 ## Creating Integration Test Contracts
 
 Next, we create the `MultisigProposalTest` contract, inheriting
-`MultisigPostProposalCheck`. This contract execute specific test cases to
-validate your proposal's functionality and ensure it doesn't break existing
-features.
+`MultisigPostProposalCheck`. Add your tests to this contract, and use the
+`addresses` object to access the addresses of the contracts deployed by the
+proposals.
 
 ```solidity
 import { Vault } from "path/to/Vault.sol";
