@@ -4,13 +4,13 @@ FPS is designed to be used in the following way:&#x20;
 
 ### Proposal file
 
-Creates a `PROPOSAL_N.sol` (you can use any desired file name specification) file, which must inherit one of the Proposals models from FPS (e.g. `TimelockProposal.sol`)  &#x20;
+Creates a `PROPOSAL_N.sol` (you can use any desired file name specification) file, which must inherit one of the Proposals models from FPS (e.g. `TimelockProposal.sol`) &#x20;
 
 ```solidity
 import {TimelockProposal} from "@forge-proposal-simulator/proposals/TimelockProposal.sol"
 
 contract PROPOSAL_01 is TimelockProposal {
-// check documentation for External and Internal functions 
+// check documentation for External and Internal functions
 // to determine which ones to override
 }
 ```
@@ -22,7 +22,7 @@ Uses `PROPOSAL_N.sol` in test suites based on your protocol architecture. You ca
 ```solidity
 import {TestSuite} from "@forge-proposal-simulator/test/TestSuite.t.sol"
 import {PROPOSAL_01} from "./governance/proposals/PROPOSAL_01.sol"
-  
+
 contract ProposalIntegrationTest {
     string public constant ADDRESSES_PATH = "./governance/Addresses.json";
     TestSuite public suite;
@@ -57,9 +57,9 @@ import {PROPOSAL_01} from "./governance/proposals/PROPOSAL_01.sol"
 
 contract ProposalScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    
+
     constructor() ScriptSuite(ADDRESSES_PATH, new PROPOSAL_01()) {}
-     
+
      function run() public override  {
         proposal.setDebug(true);
         super.run();
@@ -71,5 +71,5 @@ contract ProposalScript is ScriptSuite {
 Then run the script:
 
 ```sh
-forge script path/to/script/ProposalScript.s.sol:ProposalScript 
+forge script path/to/script/ProposalScript.s.sol:ProposalScript
 ```

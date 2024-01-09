@@ -1,8 +1,8 @@
 ---
 description: >-
-  FPS helps protocols with trusted actors create and validate governance
-  proposals. Its versatile design makes it easily adaptable to any governance
-  model.
+    FPS helps protocols with trusted actors create and validate governance
+    proposals. Its versatile design makes it easily adaptable to any governance
+    model.
 ---
 
 # Architecture
