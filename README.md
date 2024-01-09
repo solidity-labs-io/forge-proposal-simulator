@@ -12,11 +12,17 @@ For guidance on how to use the library please check FPS [documentation](https://
     forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
     ```
 
-2. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal. Explore our [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator) for practical examples.
+2. Add the follow remapping to your `remappings.txt` file:
 
-3. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+```txt
+@forge-proposal-simulator=/lib/forge-proposal-simulator/
+```
 
-4. Create scripts and/or tests using the methodology on [Design Philosophy](https://solidity-labs.gitbook.io/forge-proposal-simulator/overview/architecture/design-philosophy)
+3. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal.
+
+4. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+
+5. Create scripts and/or tests using the guides on [FPS documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
 
 ## Contribute
 
