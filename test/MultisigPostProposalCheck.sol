@@ -33,7 +33,13 @@ contract MultisigPostProposalCheck is Test {
         // Set addresses object
         addresses = suite.addresses();
 
-        // Verify if the multisig address is a contract; if is not (e.g. running on a empty blockchain node), etch Gnosis Safe bytecode onto it.
+        // @dev Verify if the multisig address is a contract; if it is not
+        // (e.g. running on a empty blockchain node), set the multisig
+        // code to Safe Multisig code
+        // Note: This approach is a workaround for this example where
+        // a deployed multisig contract isn't available. In real-world applications,
+        // you'd typically have a multisig contract in place. Use this code
+        // only as a reference
         address multisig = addresses.getAddress("DEV_MULTISIG");
         uint256 multisigSize;
         assembly {

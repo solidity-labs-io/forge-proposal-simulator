@@ -4,6 +4,9 @@ import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {MultisigPostProposalCheck} from "@test/MultisigPostProposalCheck.sol";
 
+// @dev This test contract inherits MultisigPostProposalCheck, granting it
+// the ability to interact with state modifications effected by proposals
+// and to work with newly deployed contracts, if applicable.
 contract MultisigProposalTest is MultisigPostProposalCheck {
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

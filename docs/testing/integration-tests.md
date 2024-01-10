@@ -2,7 +2,7 @@
 
 FPS enables the simulation of proposals within integration tests. This
 capability is essential for verifying the functionality of your proposals and
-ensuring they don't break existing features.
+ensuring they don't break existing features or ensuring the correctness of a deployment / governance proposal.
 
 ## Setting Up PostProposalCheck.sol
 
@@ -65,6 +65,9 @@ import { Vault } from "path/to/Vault.sol";
 import { MockToken } from "path/to/MockToken.sol";
 import { MultisigPostProposalCheck } from "path/to/MultisigPostProposalCheck.sol";
 
+// @dev This test contract inherits MultisigPostProposalCheck, granting it
+// the ability to interact with state modifications effected by proposals
+// and to work with newly deployed contracts, if applicable.
 contract MultisigProposalTest is MultisigPostProposalCheck {
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

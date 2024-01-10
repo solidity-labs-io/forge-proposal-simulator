@@ -161,7 +161,9 @@ Let's go through each of the functions we are overriding here.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
--   `_deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token.
+-   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
+    deployment of Vault and an ERC20 token. Once the contracts are deployed,
+    they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build(`): Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited

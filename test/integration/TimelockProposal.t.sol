@@ -5,6 +5,9 @@ import {MockToken} from "@examples/MockToken.sol";
 import {TimelockPostProposalCheck} from "@test/TimelockPostProposalCheck.sol";
 import "@forge-std/Test.sol";
 
+// @dev This test contract extends TimelockPostProposalCheck, granting it
+// the ability to interact with state modifications effected by proposals
+// and to work with newly deployed contracts, if applicable.
 contract TimelockProposalTest is TimelockPostProposalCheck {
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
