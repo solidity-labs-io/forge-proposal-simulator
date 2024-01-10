@@ -13,26 +13,26 @@ import {Constants} from "@utils/Constants.sol";
 // `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    
+
     constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
-     
-     function run() public override  {
-         // Verify if the multisig address is a contract; if it is not
-         // (e.g. running on a empty blockchain node), set the multisig
-         // code to Safe Multisig code
-         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-         uint256 multisigSize;
-         assembly {
-         multisigSize := extcodesize(multisig)
-                 }
-         if (multisigSize == 0) {
-             vm.etch(multisig, Constants.SAFE_BYTECODE);
-         }
+    function run() public override {
+        // Verify if the multisig address is a contract; if it is not
+        // (e.g. running on a empty blockchain node), set the multisig
+        // code to Safe Multisig code
+        address multisig = addresses.getAddress("DEV_MULTISIG");
 
-         proposal.setDebug(true);
+        uint256 multisigSize;
+        assembly {
+            multisigSize := extcodesize(multisig)
+        }
+        if (multisigSize == 0) {
+            vm.etch(multisig, Constants.SAFE_BYTECODE);
+        }
 
-         // Execute proposal
-         super.run();
+        proposal.setDebug(true);
+
+        // Execute proposal
+        super.run();
     }
 }

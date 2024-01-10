@@ -43,19 +43,6 @@ contract MultisigPostProposalCheck is Test {
         // Deploy TestSuite contract
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
-        // Set addresses object
-        addresses = suite.addresses();
-
-        // Verify if the multisig address is a contract; if is not (e.g. running on a empty blockchain node), etch Gnosis Safe bytecode onto it.
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-        uint256 multisigSize;
-        assembly {
-            multisigSize := extcodesize(multisig)
-        }
-        if (multisigSize == 0) {
-            vm.etch(multisig, Constants.SAFE_BYTECODE);
-        }
-
         suite.setDebug(true);
         // Execute proposals
         suite.testProposals();

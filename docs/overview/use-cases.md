@@ -22,11 +22,3 @@ execution. FPS uses Foundry cheat codes to simulate actions from the actual
 Multisig Governance address, mirroring real-world proposal execution. Calldata
 generated from this module can be used directly in Gnosis Safe's UI. Check
 [Multisig Proposal](../guides/multisig-proposal.md) to learn how to integrate with FPS within a Multisig Governance.
-
-### Governor Bravo
-
-TBD
-
-### Governor Charlie
-
-TBD
