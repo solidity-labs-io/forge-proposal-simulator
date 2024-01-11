@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses

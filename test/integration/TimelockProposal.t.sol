@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";

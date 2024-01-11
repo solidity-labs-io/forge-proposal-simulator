@@ -4,7 +4,7 @@ After adding FPS to your project dependencies, the next step is to create your
 first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the timelock contract.
 
 ```solidity
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import { Ownable } from "@openzeppelin/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/security/Pausable.sol";
@@ -74,9 +74,9 @@ contract Vault is Ownable, Pausable {
 ```
 
 ```solidity
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
-import { TImelockProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
+import { TimelockProposal } from "@forge-proposal-simulator/proposals/TimelockProposal.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
 import { Vault } from "@path/to/Vault.sol";
 import { MockToken } from "@path/to/MockToken.sol";
@@ -199,6 +199,7 @@ Now that we have the JSON file to be used on `Addresses.sol`, let's create a scr
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
+import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
 import { TIMELOCK_01 } from "@path/to/TIMELOCK_01.sol";
 
 // @notice TimelockScript is a script that run TIMELOCK_01 proposal

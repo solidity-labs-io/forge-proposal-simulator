@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {MockToken} from "@examples/MockToken.sol";

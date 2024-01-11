@@ -11,7 +11,7 @@ a base for your integration test contracts. This contract is responsable for
 deploying proposal contracts, executing them, and updating the address objects. We'll illustrate this with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md).
 
 ```solidity
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";

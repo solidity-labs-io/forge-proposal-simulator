@@ -1,28 +1,41 @@
 # Getting set up
 
-### Step 1: Add library as a dependency to your project
+## Step 1: Add Dependency
+
+Add `forge-proposal-simulator` to your project using Forge:
 
 ```sh
 forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 ```
 
-### Step 2: Remapping
+## Step 2: Remapping
 
-Add the follow remapping to your `remappings.txt` file:
+Update your remappings.txt to include:
 
 ```txt
 @forge-proposal-simulator=/lib/forge-proposal-simulator/
 ```
 
-### Step 3: Create your first proposal following FPS standard by inheriting one of the proposal models
+## Step 3: Addresses File
 
-Check implementation guides on [Multisig
-Proposal](../guides/multisig-proposal.md) and [Timelock Proposal](../guides/timelock-proposal.md)
+Create a JSON file following the standard on
+[Addresses](../overview/architecture/addresses.md). We recommend to keep the
+addresses file in a separate folder, for example `./addresses/addresses.json`.
+Once you have the file, you should allow read access on `foundry.toml`.
 
-### Step 4: Addresses file
+```toml
+[profile.default]
+...
+fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
+```
 
-Creates a JSON file following the standard on [Addresses](../overview/architecture/addresses.md)
+## Step 4: Create a Proposal
 
-### Step 5: Using FPS on your Scripts and Tests
+Create a proposal. Choose a model that fits your needs:
+
+-   [Multisig Proposal](../guides/multisig-proposal.md)
+-   [Timelock Proposal](../guides/timelock-proposal.md)
+
+## Step 5: Implement Scripts and Tests
 
 Create scripts and/or tests. Check [Guides](../guides/multisig-proposal.md) and [Integration Tests](../testing/integration-tests.md).

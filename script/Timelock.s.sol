@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {ScriptSuite} from "@script/ScriptSuite.s.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";

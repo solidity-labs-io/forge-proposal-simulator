@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {ScriptSuite} from "@script/ScriptSuite.s.sol";
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";

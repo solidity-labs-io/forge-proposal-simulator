@@ -3,7 +3,7 @@
 After adding FPS to your project dependencies, the next step is to create the first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the multisig wallet.
 
 ```solidity
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import { Ownable } from "@openzeppelin/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/security/Pausable.sol";
@@ -73,7 +73,7 @@ contract Vault is Ownable, Pausable {
 ```
 
 ```solidity
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";

@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
