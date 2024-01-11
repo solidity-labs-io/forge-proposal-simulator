@@ -38,8 +38,8 @@ Protocols must implement a `Post Proposal Check` contract. This contract is task
 
 Serves as a multipurpose tool. Primarily used for proposal simulation, it can also execute proposals on-chain when used with the `--broadcast` flag. The Script Suite works alongside the `Addresses` object to manage proposal address references. For enhanced security in proposal transaction creation, FPS scripts can integrate with CI pipelines. More information is available in [Using with actions](../../testing/using-with-actions.md).
 
-{% content-ref url="external-fuctions.md" %}
-[external-fuctions.md](external-fuctions.md)
+{% content-ref url="external-functions.md" %}
+[external-functions.md](external-functions.md)
 {% endcontent-ref %}
 
 {% content-ref url="internal-functions.md" %}
