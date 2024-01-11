@@ -26,6 +26,6 @@ functions, bypassing the others. This could be suitable in situations where only
 initial deployment and final validation are necessary, without the need for
 intermediate steps. Alternatively, a developer might opt to simulate a proposal
 by executing only the build and run functions, omitting the deploy step if there
-is no need to deploy new contracts. In summary, this system empowers developers
+is no need to deploy new contracts. FPS empowers developers
 with the ability to selectively execute functions based on their unique
 requirements.
