@@ -8,7 +8,7 @@ ensuring they don't break existing features or ensuring the correctness of a dep
 
 The first step is to create a `PostProposalCheck.sol` contract, which serves as
 a base for your integration test contracts. This contract is responsable for
-deploying proposal contracts, executing them, and updating the address objects. We'll illustrate this with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md).
+deploying proposal contracts, executing them, and updating the addresses object. We'll illustrate this with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md).
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -57,7 +57,7 @@ contract MultisigPostProposalCheck is Test {
 
 Next, we create the `MultisigProposalTest` contract, inheriting
 `MultisigPostProposalCheck`. Add your tests to this contract, and use the
-`addresses` object to access the addresses of the contracts deployed by the
+addresses object to access the addresses of the contracts deployed by the
 proposals.
 
 ```solidity
