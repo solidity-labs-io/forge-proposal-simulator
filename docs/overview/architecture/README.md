@@ -1,6 +1,6 @@
 ---
 description: >-
-    The Forge Proposal Simulator (FPS) offers a versatile solution for protocols with trusted actors to create and validate governance proposals. Its adaptable design fits various governance models seamlessly.
+    The Forge Proposal Simulator (FPS) offers a versatile solution for protocols with trusted actors to create and validate governance proposals.
 ---
 
 # Architecture

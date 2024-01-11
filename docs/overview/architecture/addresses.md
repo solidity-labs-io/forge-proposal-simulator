@@ -1,16 +1,47 @@
 # Addresses
 
-The Addresses contract stores the addresses of deployed contracts, facilitating their access in proposal contracts and recording them post-execution. Deployed contract addresses, along with their names and networks, are specified in a json file in the following format:
+## Overview
+
+he Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
+
+## Structure
+
+Deployed contract addresses are registered along with their respective names and networks. This data is stored in an array within a JSON file, adhering to the following format:
 
 ```json
-{
-    "addr": "0x1234567890123456789012345678901234567890",
-    "name": "ADDRESS_NAME",
-    "chainId": 1234
-}
+[
+    {
+        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
+        "name": "DEV_MULTISIG",
+        "chainId": 1234
+    },
+    {
+        "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
+        "name": "TEAM_MULTISIG",
+        "chainId": 1234
+    },
+    {
+        "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
+        "name": "PROTOCOL_TIMELOCK",
+        "chainId": 1234
+    },
+    {
+        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
+        "name": "TIMELOCK_PROPOSER",
+        "chainId": 1234
+    },
+    {
+        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
+        "name": "TIMELOCK_EXECUTOR",
+        "chainId": 123
+    }
+]
 ```
 
-Contracts with identical names are acceptable if deployed on different networks. Duplicates on the same network are not allowed and Addresses.sol prevents by reverting during construction.
+The system allows contracts with identical names as long as they are deployed on
+different networks. However, duplicates on the same network are not
+permitted. The `Addresses.sol` contract enforces this rule by reverting during
+construction if such a duplicate is detected.
 
 ## Usage
 

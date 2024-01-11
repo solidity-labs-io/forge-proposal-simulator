@@ -1,4 +1,4 @@
-# External Fuctions
+# External Functions
 
 The `Proposal.sol` file contains a set of functions that all governance models inherit. To create a Proposal compatible with FPS, you must inherit one of the governance models, such as `MultisigProposal.sol,` and override the needed functions. We recommended that you override the `name()`, `description()` and `getCalldata()` functions.
 
