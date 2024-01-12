@@ -120,7 +120,7 @@ contract MULTISIG_01 is MultisigProposal {
         // Transfer ownership of the contracts to the multisig address
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
-        
+
         // Transfer tokens from deployer to multisig address
         token.transfer(devMultisig, token.balanceOf(address(deployer)));
     }
@@ -151,7 +151,7 @@ contract MULTISIG_01 is MultisigProposal {
         // Get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-       // Simulates actions on Multisig address
+        // Simulates actions on Multisig address
         _simulateActions(multisig);
     }
 
@@ -162,8 +162,8 @@ contract MULTISIG_01 is MultisigProposal {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-       // Validate post-execution state
-       // Vault ownership should be transferred to multisig
+        // Validate post-execution state
+        // Vault ownership should be transferred to multisig
         assertEq(timelockVault.owner(), devMultisig);
         // Token should be whitelisted on the Vault contract
         assertTrue(timelockVault.tokenWhitelist(address(token)));

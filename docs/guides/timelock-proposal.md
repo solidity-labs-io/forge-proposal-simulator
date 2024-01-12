@@ -131,7 +131,7 @@ contract TIMELOCK_01 is TimelockProposal {
         // Get vault and token addresses (deployed on _deploy step)
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-        
+
         // Push action to whitelist the MockToken
         _pushAction(
             timelockVault,
@@ -154,7 +154,7 @@ contract TIMELOCK_01 is TimelockProposal {
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-       // Simulates actions on TimelockController
+        // Simulates actions on TimelockController
         _simulateActions(timelock, proposer, executor);
     }
 
