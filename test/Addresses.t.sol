@@ -133,26 +133,23 @@ contract TestAddresses is Test {
     }
 
     function test_getRecordingAddresses() public {
+        // Add a new address
+        address addr = vm.addr(1);
+        addresses.addAddress("TEST", addr);
+
         (
             string[] memory names,
             uint256[] memory chainIds,
             address[] memory _addresses
         ) = addresses.getRecordedAddresses();
 
-        assertEq(names.length, 6);
-        assertEq(chainIds.length, 6);
-        assertEq(_addresses.length, 6);
+        assertEq(names.length, 1);
+        assertEq(chainIds.length, 1);
+        assertEq(_addresses.length, 1);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(
-            parsedJson,
-            (SavedAddresses[])
-        );
-
-        for (uint256 i = 0; i < savedAddresses.length; i++) {
-            assertEq(names[i], savedAddresses[i].name);
-            assertEq(chainIds[i], savedAddresses[i].chainId);
-            assertEq(_addresses[i], savedAddresses[i].addr);
-        }
+        assertEq(names[0], "TEST");
+        assertEq(chainIds[0], 31337);
+        assertEq(_addresses[0], addr);
     }
 
     function test_resetChangedAddresses() public {

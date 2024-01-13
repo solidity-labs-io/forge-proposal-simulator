@@ -34,6 +34,7 @@ contract Addresses is IAddresses, Test {
         uint256 chainId;
     }
 
+    // @notice struct to record addresses changed during a proposal
     struct ChangedAddress {
         string name;
         uint256 chainId;
@@ -43,6 +44,7 @@ contract Addresses is IAddresses, Test {
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
+    // @notice array of addresses changed during a proposal
     ChangedAddress[] private changedAddresses;
 
     constructor(string memory addressesPath) {
@@ -90,10 +92,6 @@ contract Addresses is IAddresses, Test {
 
         _addresses[name][_chainId] = addr;
         vm.label(addr, name);
-
-        recordedAddresses.push(
-            RecordedAddress({name: name, chainId: _chainId})
-        );
     }
 
     function _getAddress(
@@ -133,6 +131,8 @@ contract Addresses is IAddresses, Test {
     /// @notice add an address for the current chainId
     function addAddress(string memory name, address addr) public {
         _addAddress(name, addr, chainId);
+
+        recordedAddresses.push(RecordedAddress({name: name, chainId: chainId}));
     }
 
     /// @notice add an address for a specific chainId
@@ -142,6 +142,10 @@ contract Addresses is IAddresses, Test {
         uint256 _chainId
     ) public {
         _addAddress(name, addr, _chainId);
+
+        recordedAddresses.push(
+            RecordedAddress({name: name, chainId: _chainId})
+        );
     }
 
     /// @notice change an address for a specific chainId

@@ -127,15 +127,17 @@ If the address needs to be retrieved from a chain id that is not the current cha
 addresses.getAddress("CONTRACT_NAME", chainId);
 ```
 
-### Retrieving All
+### Retrieving Recorded Addresses
 
-All addresses can be retrieved by calling the `getRecordedAddresses` function.
+Addresses added during the proposals executions can be retrieved by calling the `getRecordedAddresses` function.
 
 ```solidity
 addresses.getRecordedAddresses();
 ```
 
-To retrieve all changed addresses, the `getChangedAddresses` function should be called.
+### Retrieving Changed Addresses
+
+Addresses changed during the proposals executions can be retrieved by calling the `getChangedAddresses` function.
 
 ```solidity
 addresses.getChangedAddresses();
@@ -217,7 +219,7 @@ contract PostProposalCheck is Test {
 
         // Create TestSuite
         suite = new TestSuite(ADDRESSES_PATH, proposalAddresses);
-        
+
         // Addresses object is available here
         addresses = suite.addresses();
 
