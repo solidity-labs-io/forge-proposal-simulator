@@ -19,7 +19,7 @@ import { MULTISIG_02 } from "path/to/MULTISIG_02.sol";
 import { MULTISIG_03 } from "path/to/MULTISIG_03.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
 import { Constants } from "@forge-proposal-simulator/utils/Constants.sol";
-import { TestSuite } from "@forge-proposal-simulator/test/TestSuite.sol";
+import { TestSuite } from "@forge-proposal-simulator/test/TestSuite.t.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.
 // @dev should be inherited by integration test contracts.
@@ -61,6 +61,8 @@ addresses object to access the addresses of the contracts deployed by the
 proposals.
 
 ```solidity
+pragma solidity ^0.8.0;
+
 import { Vault } from "path/to/Vault.sol";
 import { MockToken } from "path/to/MockToken.sol";
 import { MultisigPostProposalCheck } from "path/to/MultisigPostProposalCheck.sol";
@@ -68,7 +70,7 @@ import { MultisigPostProposalCheck } from "path/to/MultisigPostProposalCheck.sol
 // @dev This test contract inherits MultisigPostProposalCheck, granting it
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
-contract MultisigProposalTest is MultisigPostProposalCheck {
+contract MultisigProposalIntegrationTest is MultisigPostProposalCheck {
     // Tests if the Vault contract can be paused
     function test_vaultIsPausable() public {
         // Retrieves the Vault instance using its address from the Addresses contract
@@ -140,5 +142,5 @@ Executing the integration tests triggers the `setUp()` function before each test
 tests are always executed on a fresh state after the proposals execution.
 
 ```bash
-forge test --mc MultisigProposalTest -vvv
+forge test --mc MultisigProposalIntegrationTest -vvv
 ```
