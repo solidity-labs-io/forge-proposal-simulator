@@ -1,8 +1,9 @@
 # Internal functions
 
-This section outlines optional internal functions provided by FPS. These
-functions offer a high degree of customization and can be overridden in your
-proposal contract as required. You can control their execution using the run function with granular action control.
+This section details optional internal functions offered by FPS. These functions
+allow for a significant level of customization and can be overridden in your
+proposal contract as needed. It's possible to explicity specify which functions to
+execute by using the `run` function with granularity control.
 
 -   `function _deploy(Addresses, address) internal`: Defines new contract deployments. Newly deployed contracts must be added to the `Addresses` contract instance through the setters methods.
 -   `function _afterDeploy(Addresses, address) internal`: Specifies post-deployment actions. Such actions can include wiring contracts together, transferring ownership rights, or invoking setter functions as the deployer.

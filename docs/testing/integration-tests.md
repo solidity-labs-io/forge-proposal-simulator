@@ -52,11 +52,11 @@ contract MultisigPostProposalCheck is Test {
 }
 ```
 
-Make sure that `DEV_MULTISIG` address is a valid Multisig Gnosis Safe contract,
-otherwise the script will fail with: `Multisig address doesn't match Gnosis Safe contract bytecode`.
+Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail, displaying the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
 
-If you wants to complete this tutorial on a local blockchain without needing to
-deploy a Gnosis Safe Account, you can change the `setUp` function to the following:
+For those who wish to complete this tutorial on a local blockchain without the
+necessity of deploying a Gnosis Safe Account, it is possible to modify the
+`setUp` function as follows:
 
 ```solidity
 bytes public constant SAFE_BYTECODE =
@@ -90,10 +90,7 @@ bytes public constant SAFE_BYTECODE =
 
 ## Creating Integration Test Contracts
 
-Next, we create the `MultisigProposalTest` contract, inheriting
-`MultisigPostProposalCheck`. Add your tests to this contract, and use the
-addresses object to access the addresses of the contracts deployed by the
-proposals.
+Next, the creation of the `MultisigProposalIntegrationTest` contract is required, which will inherit from `MultisigPostProposalCheck`. Tests should be added to this contract. Utilize the addresses object within this contract to access the addresses of the contracts that have been deployed by the proposals.
 
 ```solidity
 pragma solidity ^0.8.0;

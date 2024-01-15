@@ -190,7 +190,14 @@ Let's go through each of the functions we are overriding here.
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
 
-Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `addresses.json` file:
+With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
+
+1. **Using `foundry test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
+2. **Using `foundry script`**: This is the chosen method for this scenario.
+
+Before proceeding with the `foundry script`, it is necessary to set up the
+[Addresses](../overview/architecture/addresses.md) contract. The next step
+involves creating an `addresses.json` file.
 
 ```json
 [
@@ -202,7 +209,7 @@ Now that your first proposal contract is ready, it's time to take action. You ha
 ]
 ```
 
-Now that we have the JSON file to be use on `Addresses.sol`, let's create a script that inherits `ScriptSuite`.
+With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`.
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
@@ -229,11 +236,9 @@ contract MultisigScript is ScriptSuite {
 }
 ```
 
-Make sure that `DEV_MULTISIG` address is a valid Multisig Gnosis Safe contract,
-otherwise the script will fail with: `Multisig address doesn't match Gnosis Safe contract bytecode`.
+Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail, displaying the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
 
-If you wants to complete this tutorial on a local blockchain without needing to
-deploy a Gnosis Safe Account, you can change `MultisigScript` to the following:
+For those who wish to complete this tutorial on a local blockchain without the necessity of deploying a Gnosis Safe Account, it is possible to modify `MultisigScript` as follows:
 
 ```solidity
 contract MultisigScript is ScriptSuite {
@@ -262,7 +267,7 @@ Running the script:
 forge script path/to/MultisigScript.s.sol
 ```
 
-You will see an output like this:
+The script will output the following:
 
 ```sh
   Addresses before running proposal:
@@ -287,4 +292,4 @@ You will see an output like this:
   TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
 ```
 
-If you are a signer from the multisig address, you can verify whether the calldata proposed on the multisig matches the calldata obtained from this call. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.
+A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.

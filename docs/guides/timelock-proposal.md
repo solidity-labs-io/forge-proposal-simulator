@@ -193,7 +193,14 @@ Let's go through each of the functions we are overriding here.
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [excheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `_validate(`): This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
-Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `Addresses.json` file:
+With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
+
+1. **Using `foundry test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
+2. **Using `foundry script`**: This is the chosen method for this scenario.
+
+Before proceeding with the `foundry script`, it is necessary to set up the
+[Addresses](../overview/architecture/addresses.md) contract. The next step
+involves creating an `addresses.json` file.
 
 ```json
 [
@@ -215,7 +222,7 @@ Now that your first proposal contract is ready, it's time to take action. You ha
 ]
 ```
 
-Now that we have the JSON file to be used on `Addresses.sol`, let's create a script that inherits `ScriptSuite`.
+With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`.
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
@@ -281,7 +288,7 @@ Running the script:
 forge script path/to/TimelockScript.s.sol
 ```
 
-You will see an output like this:
+The script will output the following:
 
 ```sh
 == Logs ==
@@ -353,4 +360,4 @@ payload
   TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
 ```
 
-If you are the Timelock executor, you can run the script to execute the proposal. Please note that two new addresses have been added to `Addresses` storage but are not included in the JSON file. You will need to add them manually to the JSON.
+As the Timelock executor, you have the ability to run the script to execute the proposal. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.

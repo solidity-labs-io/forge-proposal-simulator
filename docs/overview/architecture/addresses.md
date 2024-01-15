@@ -45,7 +45,7 @@ construction if such a duplicate is detected.
 
 ## Deployment
 
-Usually `Addresses.json` will be deployed as part of the Proposal deployment process. However, if you need to deploy it separately, you can do so by running:
+Usually `adresses.json` will be deployed as part of the Proposal deployment process. However, if you need to deploy it separately, you can do so by running:
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -57,7 +57,7 @@ contract DeployAddresses is Script {
     Addresses addresses;
 
     function run() public virtual {
-        string memory addressesPath = "./addresses/Addresses.json";
+        string memory addressesPath = "./addresses/addresses.json";
         addresses = new Addresses(addressesPath);
     }
 }
@@ -145,8 +145,8 @@ addresses.getChangedAddresses();
 
 ### Using with Proposals
 
-All proposal [internal functions](./internal-functions.md) receive a `Addresses` instance as the
-first paramater. You can then use the `addresses` variable to add, update, retrieve, and remove addresses.
+All proposal [internal functions](./internal-functions.md) receive an `Addresses` instance as the
+first paramater. Use the `addresses` variable to add, update, retrieve, and remove addresses.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -168,7 +168,7 @@ contract PROPOSAL_01 is MultisigProposal {
 
 ### Using with Scripts
 
-When writing a script, you must pass the addresses path to the
+When writing a script, pass the addresses path to the
 `ScriptSuite.s.sol` constructor.
 
 ```solidity
