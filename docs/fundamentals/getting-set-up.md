@@ -13,7 +13,7 @@ forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 Update your remappings.txt to include:
 
 ```txt
-@forge-proposal-simulator=/lib/forge-proposal-simulator/
+@forge-proposal-simulator=lib/forge-proposal-simulator/
 ```
 
 ## Step 3: Addresses File

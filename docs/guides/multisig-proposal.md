@@ -190,7 +190,7 @@ Let's go through each of the functions we are overriding here.
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
 
-Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `Addresses.json` file:
+Now that your first proposal contract is ready, it's time to take action. You have two options to execute the contract. The first option is to use `foundry test`. You can learn how to do that on [integration-tests.md](../testing/integration-tests.md "mention") section. The second option is to use `foundry script`, which is the method we will use here. But first, we need to set up [Addresses](../overview/architecture/addresses.md) contract. Let's create a `addresses.json` file:
 
 ```json
 [
@@ -216,12 +216,39 @@ import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
 // Use this as a template to create your own script
 // `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
+    string public constant ADDRESSES_PATH = "./addresses/addresses.json";
 
     constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
 
     function run() public override {
         proposal.setDebug(true);
+
+        // Execute proposal
+        super.run();
+    }
+}
+```
+
+Make sure that `DEV_MULTISIG` address is a valid Multisig Gnosis Safe contract,
+otherwise the script will fail with: `Multisig address doesn't match Gnosis Safe contract bytecode`.
+
+If you wants to complete this tutorial on a local blockchain without needing to
+deploy a Gnosis Safe Account, you can change `MultisigScript` to the following:
+
+```solidity
+contract MultisigScript is ScriptSuite {
+    string public constant ADDRESSES_PATH = "./addresses/addresses.json";
+
+    constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
+
+    bytes public constant SAFE_BYTECODE =
+        hex"608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033";
+
+    function run() public override {
+        proposal.setDebug(true);
+
+        // Set Gnosis Safe bytecode
+        vm.etch(addresses.getAddress("DEV_MULTISIG"), SAFE_BYTECODE);
 
         // Execute proposal
         super.run();
