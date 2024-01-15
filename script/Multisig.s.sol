@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {ScriptSuite} from "@script/ScriptSuite.s.sol";
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
@@ -13,11 +13,18 @@ import {Constants} from "@utils/Constants.sol";
 // `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    
+
     constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
-     
-     function run() public override  {
-	address multisig = addresses.getAddress("DEV_MULTISIG");
+
+    function run() public override {
+        // @dev Verify if the multisig address is a contract; if it is not
+        // (e.g. running on a empty blockchain node), set the multisig
+        // code to Safe Multisig code
+        // Note: This approach is a workaround for this example where
+        // a deployed multisig contract isn't available. In real-world applications,
+        // you'd typically have a multisig contract in place. Use this code
+        // only as a reference.
+        address multisig = addresses.getAddress("DEV_MULTISIG");
 
         uint256 multisigSize;
         assembly {
@@ -28,6 +35,8 @@ contract MultisigScript is ScriptSuite {
         }
 
         proposal.setDebug(true);
+
+        // Execute proposal
         super.run();
     }
 }

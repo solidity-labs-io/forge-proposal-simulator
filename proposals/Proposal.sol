@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
 import {IProposal} from "@proposals/IProposal.sol";
@@ -186,7 +186,11 @@ abstract contract Proposal is Test, Script, IProposal {
     // or execute a serie of Multisig calls...).
     // See proposals for helper contracts.
     // address param is the address of the proposal executor
-    function _run(Addresses, address) internal virtual {}
+    function _run(Addresses, address) internal virtual {
+        // Check if there are actions to run
+        uint256 actionsLength = actions.length;
+        require(actionsLength > 0, "No actions found");
+    }
 
     // @dev After a proposal executed, if you mocked some behavior in the
     // afterDeploy step, you might want to tear down the mocks here.

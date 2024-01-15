@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
 import {IProposal} from "@proposals/IProposal.sol";
@@ -14,18 +14,22 @@ contract ScriptSuite is Script {
     }
 
     function run() public virtual {
-	console.log("Addresses before running proposal:");
-	(string[] memory recordedNames, , address[] memory recordedAddresses) = addresses.getRecordedAddresses();
-	for (uint256 j = 0; j < recordedNames.length; j++) {
-	    console.log(recordedNames[j], recordedAddresses[j]);
-	}
+        console.log("Addresses before running proposal:");
+        (
+            string[] memory recordedNames,
+            ,
+            address[] memory recordedAddresses
+        ) = addresses.getRecordedAddresses();
+        for (uint256 j = 0; j < recordedNames.length; j++) {
+            console.log(recordedNames[j], recordedAddresses[j]);
+        }
 
         proposal.run(addresses, msg.sender);
 
-	console.log("Addresses after running proposals:");
-	(recordedNames, , recordedAddresses) = addresses.getRecordedAddresses();
-	for (uint256 j = 0; j < recordedNames.length; j++) {
-	    console.log(recordedNames[j], recordedAddresses[j]);
-	}
+        console.log("Addresses after running proposals:");
+        (recordedNames, , recordedAddresses) = addresses.getRecordedAddresses();
+        for (uint256 j = 0; j < recordedNames.length; j++) {
+            console.log(recordedNames[j], recordedAddresses[j]);
+        }
     }
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/security/Pausable.sol";
@@ -12,8 +12,9 @@ contract Vault is Ownable, Pausable {
         uint256 timestamp;
     }
 
-    mapping(address => mapping(address => Deposit)) public deposits;
-    mapping(address => bool) public tokenWhitelist;
+    mapping(address _token => mapping(address _user => Deposit _deposit))
+        public deposits;
+    mapping(address _token => bool _isWhitelisted) public tokenWhitelist;
 
     constructor() Ownable() Pausable() {}
 

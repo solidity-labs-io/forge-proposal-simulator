@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
@@ -61,6 +61,9 @@ contract MULTISIG_01 is MultisigProposal {
 
     // Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
+        // Call parent _run function to check if there are actions to execute
+        super._run(addresses, address(0));
+
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
         _simulateActions(multisig);

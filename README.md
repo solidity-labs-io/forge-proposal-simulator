@@ -6,17 +6,45 @@ For guidance on how to use the library please check FPS [documentation](https://
 
 ## Usage
 
-1. Integrate this library into your protocol repository as a submodule:
+### Step 1: Add Dependency
 
-    ```bash
-    forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
-    ```
+Add `forge-proposal-simulator` to your project using Forge:
 
-2. For testing a governance proposal, create a contract inheriting one of the proposal types from our [proposals](./proposals) directory. Omit any actions that are not relevant to your proposal. Explore our [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator) for practical examples.
+```sh
+forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
+```
 
-3. Generate a JSON file listing the addresses and names of your deployed contracts. Refer to [Addresses.sol](./addresses/Address.sol) for details.
+### Step 2: Remapping
 
-4. Create scripts and/or tests using the methodology on [Design Philosophy](https://solidity-labs.gitbook.io/forge-proposal-simulator/overview/architecture/design-philosophy)
+Update your remappings.txt to include:
+
+```txt
+@forge-proposal-simulator=/lib/forge-proposal-simulator/
+```
+
+### Step 3: Addresses File
+
+Create a JSON file following the standard on
+[Addresses](../overview/architecture/addresses.md). We recommend to keep the
+addresses file in a separate folder, for example `./addresses/addresses.json`.
+Once you have the file, you should allow read access on `foundry.toml`.
+
+```toml
+[profile.default]
+...
+fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
+```
+
+### Step 4: Create a Proposal
+
+Create a proposal. Choose a model that fits your needs:
+
+-   [Multisig Proposal](../guides/multisig-proposal.md)
+-   [Timelock Proposal](../guides/timelock-proposal.md)
+
+### Step 5: Implement Scripts and Tests
+
+Create scripts and/or tests. Check [Guides](../guides/multisig-proposal.md) and [Integration Tests](../testing/integration-tests.md).
 
 ## Contribute
 

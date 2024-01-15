@@ -4,7 +4,7 @@ There are many ways to contribute to Forge Proposal Simulator.
 
 ## Opening an issue
 
-You can [open an issue] to suggest a feature or report a minor bug. 
+You can [open an issue] to suggest a feature or report a minor bug.
 
 Before opening an issue, be sure to search through the existing open and closed issues, and consider posting a comment in one of those instead.
 

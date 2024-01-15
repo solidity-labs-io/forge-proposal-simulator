@@ -1,4 +1,4 @@
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
@@ -37,6 +37,9 @@ contract TIMELOCK_03 is TimelockProposal {
 
     // Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
+        // Call parent _run function to check if there are actions to execute
+        super._run(addresses, address(0));
+
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
