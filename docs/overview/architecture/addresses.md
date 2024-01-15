@@ -45,7 +45,8 @@ construction if such a duplicate is detected.
 
 ## Deployment
 
-Usually `adresses.json` will be deployed as part of the Proposal deployment process. However, if you need to deploy it separately, you can do so by running:
+Usually `adresses.json` will be deployed as part of the Proposal deployment
+process. However, if needed, it can be deployed separately by running:
 
 ```solidity
 pragma solidity ^0.8.0;
