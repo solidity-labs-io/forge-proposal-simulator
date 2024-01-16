@@ -147,7 +147,7 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 pragma solidity ^0.8.0;
 
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
+import { MULTISIG_01 } from "proposals/MULTISIG_01.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract

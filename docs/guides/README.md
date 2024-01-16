@@ -1,4 +1,4 @@
-# Guides 
+# Guides
 
 FPS is designed to be loosely coupled, making it easy to integrate into any
 governance model. Each of these governance models have their unique
@@ -10,7 +10,7 @@ introduces [proposal-specific](proposals/) contracts. Each contract is designed 
 FPS's versatility and robustness have been validated through successful integration with leading governance models. To date, FPS has been tested and confirmed for compatibility with:
 
 1. [Gnosis Safe Multisig](./multisig-proposal.md)
-2. [Openzeppelin Timelock Controller](./timelock-proposal.md) 
+2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
 
 ## Example Contracts
 
@@ -23,6 +23,7 @@ application, it is advised to copy these contracts into your project and follow
 the guides linked in the section above.
 
 ### Vault contract
+
 ```solidity
 pragma solidity ^0.8.0;
 
@@ -93,14 +94,13 @@ contract Vault is Ownable, Pausable {
 }
 ```
 
-
 ### MockToken contract
 
 ```solidity
 pragma solidity ^0.8.0;
 
-import {ERC20} from "@openzeppelin/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/access/Ownable.sol";
+import { ERC20 } from "@openzeppelin/token/ERC20/ERC20.sol";
+import { Ownable } from "@openzeppelin/access/Ownable.sol";
 
 contract MockToken is ERC20, Ownable {
     constructor() ERC20("MockToken", "MTK") Ownable() {
@@ -112,6 +112,4 @@ contract MockToken is ERC20, Ownable {
         _mint(to, amount);
     }
 }
-
 ```
-
