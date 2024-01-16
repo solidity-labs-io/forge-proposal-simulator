@@ -4,6 +4,7 @@ After adding FPS to your project dependencies, the next step is to create the
 first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the timelock contract.
 
 Vault contract:
+
 ```solidity
 pragma solidity ^0.8.0;
 

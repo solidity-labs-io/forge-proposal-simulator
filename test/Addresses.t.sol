@@ -230,6 +230,6 @@ contract TestAddresses is Test {
         string memory addressesPath = "./addresses/AddressesDuplicated.json";
 
         vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
-        Addresses addressesDuplicated = new Addresses(addressesPath);
+        new Addresses(addressesPath);
     }
 }
