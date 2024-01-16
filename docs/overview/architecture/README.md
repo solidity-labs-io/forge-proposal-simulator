@@ -36,7 +36,7 @@ Protocols must implement a `Post Proposal Check` contract. This contract is task
 
 ## Script Suite
 
-Serves as a multipurpose tool. Primarily used for proposal simulation, it can also execute proposals on-chain when used with the `--broadcast` flag. The Script Suite works alongside the `Addresses` object to manage proposal address references. For enhanced security in proposal transaction creation, FPS scripts can integrate with CI pipelines. More information is available in [Using with actions](../../testing/using-with-actions.md).
+Serves as a multipurpose tool. Primarily used for proposal simulation, it can also execute proposals on-chain when used with the `--broadcast` flag. The Script Suite works alongside the `Addresses` object to manage proposal address references.
 
 {% content-ref url="external-functions.md" %}
 [external-functions.md](external-functions.md)

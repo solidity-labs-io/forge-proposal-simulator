@@ -24,4 +24,3 @@
 ## Testing
 
 -   [Integration Tests](testing/integration-tests.md)
--   [Using with actions](testing/using-with-actions.md)
