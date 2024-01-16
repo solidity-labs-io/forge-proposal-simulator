@@ -1,77 +1,6 @@
 # Multisig Proposal
 
-After adding FPS to your project dependencies, the next step is to create the first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the multisig wallet.
-
-Vault contract:
-```solidity
-pragma solidity ^0.8.0;
-
-import { Ownable } from "@openzeppelin/access/Ownable.sol";
-import { Pausable } from "@openzeppelin/security/Pausable.sol";
-import { IERC20 } from "@openzeppelin/token/ERC20/IERC20.sol";
-
-contract Vault is Ownable, Pausable {
-    uint256 public LOCK_PERIOD = 1 weeks;
-
-    struct Deposit {
-        uint256 amount;
-        uint256 timestamp;
-    }
-
-    mapping(address => mapping(address => Deposit)) public deposits;
-    mapping(address => bool) public tokenWhitelist;
-
-    constructor() Ownable() Pausable() {}
-
-    function whitelistToken(address token, bool active) external onlyOwner {
-        tokenWhitelist[token] = active;
-    }
-
-    function deposit(address token, uint256 amount) external whenNotPaused {
-        require(tokenWhitelist[token], "Vault: token must be active");
-        require(amount > 0, "Vault: amount must be greater than 0");
-        require(token != address(0), "Vault: token must not be 0x0");
-
-        Deposit storage userDeposit = deposits[token][msg.sender];
-        userDeposit.amount += amount;
-        userDeposit.timestamp = block.timestamp;
-
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
-    }
-
-    function withdraw(
-        address token,
-        address payable to,
-        uint256 amount
-    ) external whenNotPaused {
-        require(tokenWhitelist[token], "Vault: token must be active");
-        require(amount > 0, "Vault: amount must be greater than 0");
-        require(token != address(0), "Vault: token must not be 0x0");
-        require(
-            deposits[token][msg.sender].amount >= amount,
-            "Vault: insufficient balance"
-        );
-        require(
-            deposits[token][msg.sender].timestamp + LOCK_PERIOD <
-                block.timestamp,
-            "Vault: lock period has not passed"
-        );
-
-        Deposit storage userDeposit = deposits[token][msg.sender];
-        userDeposit.amount -= amount;
-
-        IERC20(token).transfer(to, amount);
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-}
-```
+After adding FPS into project dependencies, the next step involves initiating the creation of the first Proposal contract. This example provides guidance on formulating a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./README.md#example-contracts). The proposal includes the transfer of ownership of both contracts to a multisig wallet, along with the whitelisting of the token and minting of tokens to the multisig.
 
 Proposal files are located in the `proposals` folder. Create a new file called `MULTISIG_01.sol` and add the following code:
 
@@ -218,7 +147,7 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 pragma solidity ^0.8.0;
 
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
+import { MULTISIG_01 } from "proposals/MULTISIG_01.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -269,30 +198,31 @@ contract MultisigScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script path/to/MultisigScript.s.sol
+forge script script/MultisigScript.s.sol
 ```
 
 The script will output the following:
 
 ```sh
-  Addresses before running proposal:
-  DEV_MULTISIG 0x3dd46846eed8D147841AE162C8425c08BD8E1b41
-  TEAM_MULTISIG 0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9
-  PROTOCOL_TIMELOCK 0x1a9C8182C09F50C8318d769245beA52c32BE35BC
-  DAO_MULTISIG 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
-  TIMELOCK_PROPOSER 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
-  TIMELOCK_EXECUTOR 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
+== Logs ==
+
+Proposal Description:
+
+Deploy Vault contract
+
+
+------------------ Proposal Actions ------------------
+  1). Set token to active
+  target: 0x90193C961A926261B756D1E5bb255e67ff9498A1
+payload
+  0x0ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c004960000000000000000000000000000000000000000000000000000000000000001
+
+
   Calldata:
   0x252dba4200000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000090193c961a926261b756d1e5bb255e67ff9498a1000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c00496000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
   Multicall result:
   0x00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000
-  Addresses after running proposals:
-  DEV_MULTISIG 0x3dd46846eed8D147841AE162C8425c08BD8E1b41
-  TEAM_MULTISIG 0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9
-  PROTOCOL_TIMELOCK 0x1a9C8182C09F50C8318d769245beA52c32BE35BC
-  DAO_MULTISIG 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
-  TIMELOCK_PROPOSER 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
-  TIMELOCK_EXECUTOR 0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f
+  Addresses added after running proposals:
   VAULT 0x90193C961A926261B756D1E5bb255e67ff9498A1
   TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
 ```

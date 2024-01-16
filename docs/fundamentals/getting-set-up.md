@@ -38,4 +38,6 @@ Create a proposal. Choose a model that fits your needs:
 
 ## Step 5: Implement Scripts and Tests
 
-Create scripts and/or tests. Check [Guides](../guides/multisig-proposal.md) and [Integration Tests](../testing/integration-tests.md).
+Create scripts and/or tests. For guidance and best practices, refer to the [Guides](../guides/README.md) and [Integration Tests](../testing/integration-tests.md) sections.
+
+Additionally, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) can be consulted for practical examples and further insights.
