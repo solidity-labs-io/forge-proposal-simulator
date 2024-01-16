@@ -54,4 +54,4 @@ There are many ways you can participate and help build high quality software. Ch
 
 Forge Proposal Simulator is made available under the MIT License, which disclaims all warranties in relation to the project and which limits the liability of those that contribute and maintain the project. As set out further in the Terms, you acknowledge that you are solely responsible for any use of Forge Proposal Simulator contracts and you assume all risks associated with any such use. The authors make no warranties about the safety, suitability, reliability, timeliness, and accuracy of the software.
 
-Further license details can be found in [LICENSE](LICENSE.md).
+Further license details can be found in [LICENSE](LICENSE).
