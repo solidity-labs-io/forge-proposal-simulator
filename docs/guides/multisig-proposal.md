@@ -2,6 +2,7 @@
 
 After adding FPS to your project dependencies, the next step is to create the first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the multisig wallet.
 
+Vault contract:
 ```solidity
 pragma solidity ^0.8.0;
 
@@ -71,6 +72,8 @@ contract Vault is Ownable, Pausable {
     }
 }
 ```
+
+Proposal files are located in the `proposals` folder. Create a new file called `MULTISIG_01.sol` and add the following code:
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -212,8 +215,10 @@ involves creating an `addresses.json` file.
 With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`.
 
 ```solidity
+pragma solidity ^0.8.0;
+
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
+import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -221,7 +226,7 @@ import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
-// `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
+// `forge script script/MultisigScript.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/addresses.json";
 

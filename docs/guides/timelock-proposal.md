@@ -1,8 +1,9 @@
 # Timelock Proposal
 
-After adding FPS to your project dependencies, the next step is to create your
+After adding FPS to your project dependencies, the next step is to create the
 first Proposal contract. In this example, we will create a proposal that deploys a new instance of `Vault.sol` and a new ERC20 token, then transfer ownership of both contracts to the timelock contract.
 
+Vault contract:
 ```solidity
 pragma solidity ^0.8.0;
 
@@ -72,6 +73,8 @@ contract Vault is Ownable, Pausable {
     }
 }
 ```
+
+In the `proposals` folder, create a new file called `TIMELOCK_01.sol` and add the following code:
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -191,7 +194,7 @@ Let's go through each of the functions we are overriding here.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [excheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
--   `_validate(`): This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
+-   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
 With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
 
@@ -222,7 +225,7 @@ involves creating an `addresses.json` file.
 ]
 ```
 
-With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`.
+With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `TimelockScript.s.sol` in the `scripts` folder and add the following code:
 
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
