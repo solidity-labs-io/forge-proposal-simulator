@@ -19,20 +19,22 @@ contract MultisigProposal is Proposal {
 
     /// @notice log calldata
     function getCalldata() public view override returns (bytes memory data) {
-        uint256 actionsLength = actions.length;
-        Call[] memory calls = new Call[](actionsLength);
+        // get proposal actions
+        (
+            address[] memory targets, // ignore values
+            ,
+            bytes[] memory arguments
+        ) = getProposalActions();
 
-        for (uint256 i; i < actionsLength; i++) {
-            require(
-                actions[i].target != address(0),
-                "Invalid target for multisig"
-            );
-            calls[i] = Call({
-                target: actions[i].target,
-                callData: actions[i].arguments
-            });
+        // create calls array with targets and arguments
+        Call[] memory calls = new Call[](targets.length);
+
+        for (uint256 i; i < calls.length; i++) {
+            require(targets[i] != address(0), "Invalid target for multisig");
+            calls[i] = Call({target: targets[i], callData: arguments[i]});
         }
 
+        // generate calldata
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
 
         if (DEBUG) {
