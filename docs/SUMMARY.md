@@ -13,9 +13,11 @@
 ## Fundamentals
 
 -   [Getting set up](fundamentals/getting-set-up.md)
+-   [Compatibility](fundamentals/compatibility.md)
 
 ## Guides
 
+-   [Introduction](guides/introduction.md)
 -   [Multisig Proposal](guides/multisig-proposal.md)
 -   [Timelock Proposal](guides/timelock-proposal.md)
 
