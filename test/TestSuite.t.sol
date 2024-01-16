@@ -63,7 +63,7 @@ contract TestSuite is Test {
         }
 
         if (debug) {
-            console.log("Addresses after running proposals:");
+            console.log("Addresses added after running proposals:");
             /// output deployed contract addresses and names
             (
                 string[] memory recordedNames,
