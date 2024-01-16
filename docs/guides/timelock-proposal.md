@@ -14,8 +14,8 @@ pragma solidity ^0.8.0;
 
 import { TimelockProposal } from "@forge-proposal-simulator/proposals/TimelockProposal.sol";
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "@path/to/Vault.sol";
-import { MockToken } from "@path/to/MockToken.sol";
+import { Vault } from "path/to/Vault.sol";
+import { MockToken } from "path/to/MockToken.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
@@ -163,7 +163,7 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 ```solidity
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
 import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
-import { TIMELOCK_01 } from "@path/to/TIMELOCK_01.sol";
+import { TIMELOCK_01 } from "proposals/TIMELOCK_01.sol";
 
 // @notice TimelockScript is a script that run TIMELOCK_01 proposal
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -221,7 +221,7 @@ contract TimelockScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script path/to/TimelockScript.s.sol
+forge script script/TimelockScript.s.sol
 ```
 
 The script will output the following:
