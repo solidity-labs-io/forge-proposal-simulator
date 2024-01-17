@@ -45,17 +45,6 @@ contract TestSuite is Test {
     {
         if (debug) {
             console.log("TestSuite: running", proposals.length, "proposals.");
-
-            console.log("Addresses before running proposals:");
-            /// output deployed contract addresses and names
-            (
-                string[] memory recordedNames,
-                ,
-                address[] memory recordedAddresses
-            ) = addresses.getRecordedAddresses();
-            for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log(recordedNames[j], recordedAddresses[j]);
-            }
         }
 
         /// evm snapshot array
@@ -74,7 +63,7 @@ contract TestSuite is Test {
         }
 
         if (debug) {
-            console.log("Addresses after running proposals:");
+            console.log("Addresses added after running proposals:");
             /// output deployed contract addresses and names
             (
                 string[] memory recordedNames,
