@@ -13,13 +13,14 @@
 ## Fundamentals
 
 -   [Getting set up](fundamentals/getting-set-up.md)
+-   [Compatibility](fundamentals/compatibility.md)
 
 ## Guides
 
+-   [Introduction](guides/introduction.md)
 -   [Multisig Proposal](guides/multisig-proposal.md)
 -   [Timelock Proposal](guides/timelock-proposal.md)
 
 ## Testing
 
 -   [Integration Tests](testing/integration-tests.md)
--   [Using with actions](testing/using-with-actions.md)

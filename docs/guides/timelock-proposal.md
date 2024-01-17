@@ -161,6 +161,8 @@ involves creating an `addresses.json` file.
 With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `TimelockScript.s.sol` in the `scripts` folder and add the following code:
 
 ```solidity
+pragma solidity ^0.8.0;
+
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
 import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
 import { TIMELOCK_01 } from "proposals/TIMELOCK_01.sol";

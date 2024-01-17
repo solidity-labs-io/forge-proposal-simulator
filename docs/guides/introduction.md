@@ -21,3 +21,22 @@ and [MockToken](examples/MockToken.sol). It is important to understand that
 these contracts are intended solely for demonstration and are not recommended for production use due to their lack of validation and audit processes. Their primary purpose is to illustrate the deployment process and the setup of protocol parameters within proposals.
 
 For practical examples and additional insights, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) is also available for consultation.
+
+## Know issues
+
+Be aware of the following issues:
+
+### Error: Failed to deploy script
+
+```sh
+Error:
+Failed to deploy script:
+Execution reverted: EvmError: Revert
+```
+
+If you encounter this error when running `forge script`, consider the following troubleshooting steps:
+
+1. **Duplicate Contract Addresses:** Ensure there are no duplicate contract addresses in the `addresses.json` file for the same chain.
+2. **Proposal Contract Logic:** Execution reversion can occur due to flaws in
+   the proposal contract logic. It is recommended to deploy the proposal
+   contract within the `PostProposalCheck` contract and then running with `forge test` for clearer error messages and easier debugging.

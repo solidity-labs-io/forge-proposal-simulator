@@ -1,0 +1,12 @@
+[
+    {
+        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
+        "name": "DEV_MULTISIG",
+        "chainId": 31337
+    },
+    {
+        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
+        "name": "DEV_MULTISIG",
+        "chainId": 31337
+    }
+]

@@ -225,4 +225,11 @@ contract TestAddresses is Test {
         );
         addresses.changeAddress("TEST", vm.addr(1));
     }
+
+    function test_revertDuplicateAddressInJson() public {
+        string memory addressesPath = "./addresses/AddressesDuplicated.json";
+
+        vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
+        new Addresses(addressesPath);
+    }
 }
