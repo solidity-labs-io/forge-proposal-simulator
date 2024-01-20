@@ -28,20 +28,20 @@ contract BRAVO_01 is GovernorBravoProposal {
         addresses.addAddress("TOKEN_1", address(token));
     }
 
-    // Transfers vault ownership to governor.
-    // Transfer token ownership to governor.
-    // Transfers all tokens to governor.
+    // Transfers vault ownership to timelock.
+    // Transfer token ownership to timelock.
+    // Transfers all tokens to timelock.
     function _afterDeploy(
         Addresses addresses,
         address deployer
     ) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        timelockVault.transferOwnership(governor);
-        token.transferOwnership(governor);
-        token.transfer(governor, token.balanceOf(address(deployer)));
+        timelockVault.transferOwnership(timelock);
+        token.transferOwnership(timelock);
+        token.transfer(timelock, token.balanceOf(address(deployer)));
     }
 
     // Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -68,20 +68,20 @@ contract BRAVO_01 is GovernorBravoProposal {
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("BRAVO_PROPOSER");
 
-        _simulateActions(governor, proposer, govToken);
+        _simulateActions(governor, govToken, proposer);
     }
 
     // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        assertEq(timelockVault.owner(), governor);
+        assertEq(timelockVault.owner(), timelock);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), governor);
-        assertEq(token.balanceOf(governor), token.totalSupply());
+        assertEq(token.owner(), timelock);
+        assertEq(token.balanceOf(timelock), token.totalSupply());
     }
 }

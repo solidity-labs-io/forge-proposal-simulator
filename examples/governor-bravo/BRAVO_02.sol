@@ -19,10 +19,10 @@ contract BRAVO_02 is GovernorBravoProposal {
 
     // Sets up actions for the proposal, in this case, depositing MockToken into Vault.
     function _build(Addresses addresses) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-        uint256 balance = MockToken(token).balanceOf(address(governor));
+        uint256 balance = MockToken(token).balanceOf(address(timelock));
         _pushAction(
             token,
             abi.encodeWithSignature(
@@ -48,24 +48,24 @@ contract BRAVO_02 is GovernorBravoProposal {
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("BRAVO_PROPOSER");
 
-        _simulateActions(governor, proposer, govToken);
+        _simulateActions(governor, govToken, proposer);
     }
 
     // Validates the post-execution state
     function _validate(Addresses addresses, address) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
         uint256 balance = token.balanceOf(address(timelockVault));
-        (uint256 amount, ) = timelockVault.deposits(address(token), governor);
+        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
         assertEq(amount, balance);
 
-        assertEq(timelockVault.owner(), governor);
+        assertEq(timelockVault.owner(), timelock);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), governor);
+        assertEq(token.owner(), timelock);
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }

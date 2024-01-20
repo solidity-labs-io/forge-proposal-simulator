@@ -19,7 +19,7 @@ contract BRAVO_03 is GovernorBravoProposal {
 
     // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build(Addresses addresses) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelockVault));
@@ -28,7 +28,7 @@ contract BRAVO_03 is GovernorBravoProposal {
             abi.encodeWithSignature(
                 "withdraw(address,address,uint256)",
                 token,
-                governor,
+                timelock,
                 balance
             ),
             "Withdraw tokens from Vault"
@@ -47,23 +47,23 @@ contract BRAVO_03 is GovernorBravoProposal {
         // Simulate time passing, vault time lock is 1 week
         vm.warp(block.timestamp + 1 weeks + 1);
 
-        _simulateActions(governor, proposer, govToken);
+        _simulateActions(governor, govToken, proposer);
     }
 
     // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        (uint256 amount, ) = timelockVault.deposits(address(token), governor);
+        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
         assertEq(amount, 0);
-        assertEq(timelockVault.owner(), governor);
+        assertEq(timelockVault.owner(), timelock);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), governor);
+        assertEq(token.owner(), timelock);
         assertEq(token.balanceOf(address(timelockVault)), 0);
-        assertEq(token.balanceOf(governor), 10_000_000e18);
+        assertEq(token.balanceOf(timelock), 10_000_000e18);
     }
 }

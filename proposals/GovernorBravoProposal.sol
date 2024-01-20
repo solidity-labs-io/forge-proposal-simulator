@@ -5,7 +5,9 @@ import "@forge-std/console.sol";
 import {Proposal} from "./Proposal.sol";
 import {Address} from "@utils/Address.sol";
 import {Constants} from "@utils/Constants.sol";
-import {TimelockInterface} from "@comp-governance/GovernorBravoInterfaces.sol";
+import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
+import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
+import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
 
 contract GovernorBravoProposal is Proposal {
     using Address for address;
@@ -37,23 +39,25 @@ contract GovernorBravoProposal is Proposal {
     function _simulateActions(address governorAddress, address governanceToken, address proposerAddress)
         internal
     {
-        uint8 state;
-        bytes memory data;
-        {
-        // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
-        data = governorAddress.functionCall(abi.encodeWithSignature("proposalThreshold()"));
-        uint256 proposalThreshold = abi.decode(data, (uint256));
-        data = governorAddress.functionCall(abi.encodeWithSignature("quorumVotes()"));
-        uint256 quorumVotes = abi.decode(data, (uint256));
+        GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
 
-        uint256 votingPower = quorumVotes > proposalThreshold ? quorumVotes : proposalThreshold;
-        deal(governanceToken, proposerAddress, votingPower);
+        {
+            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            uint256 quorumVotes = governor.quorumVotes();
+            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 votingPower = quorumVotes > proposalThreshold ? quorumVotes : proposalThreshold;
+            deal(governanceToken, proposerAddress, votingPower);
+            // Delegate proposer's votes to itself
+            vm.prank(proposerAddress);
+            IVotes(governanceToken).delegate(proposerAddress);
+            vm.roll(block.number + 1);
         }
 
         bytes memory proposeCalldata = getProposeCalldata();
 
+        // Register the proposal
         vm.prank(proposerAddress);
-        data = address(payable(governorAddress)).functionCall(proposeCalldata);
+        bytes memory data = address(payable(governorAddress)).functionCall(proposeCalldata);
         uint256 proposalId = abi.decode(data, (uint256));
 
         if (DEBUG) {
@@ -69,45 +73,30 @@ contract GovernorBravoProposal is Proposal {
         }
 
         // Check proposal is in Pending state
-        data = governorAddress.functionCall(abi.encodeWithSignature("state(uint256)", proposalId));
-        state = abi.decode(data, (uint8));
-        require(state == 0);
+        require(governor.state(proposalId) == Bravo.ProposalState.Pending);
 
         // Roll to Active state (voting period)
-        data = governorAddress.functionCall(abi.encodeWithSignature("votingDelay()"));
-        uint256 votingDelay = abi.decode(data, (uint256));
-        vm.roll(block.number + votingDelay + 1);
-        data = governorAddress.functionCall(abi.encodeWithSignature("state(uint256)", proposalId));
-        state = abi.decode(data, (uint8));
-        require(state == 1);
+        vm.roll(block.number + governor.votingDelay() + 1);
+        require(governor.state(proposalId) == Bravo.ProposalState.Active);
 
         // Vote YES
         vm.prank(proposerAddress);
-        governorAddress.functionCall(abi.encodeWithSignature("castVote(uint256,uint8)", proposalId, 1));
+        governor.castVote(proposalId, 1);
 
         // Roll to allow proposal state transitions
-        data = governorAddress.functionCall(abi.encodeWithSignature("votingDelay()"));
-        uint256 votingPeriod = abi.decode(data, (uint256));
-        vm.warp(block.number + votingPeriod);
-        data = governorAddress.functionCall(abi.encodeWithSignature("state(uint256)", proposalId));
-        state = abi.decode(data, (uint8));
-        require(state == 4);
+        vm.roll(block.number + governor.votingPeriod());
+        require(governor.state(proposalId) == Bravo.ProposalState.Succeeded);
 
         // Queue the proposal
-        governorAddress.functionCall(abi.encodeWithSignature("queue(uint256)", proposalId));
-        data = governorAddress.functionCall(abi.encodeWithSignature("state(uint256)", proposalId));
-        state = abi.decode(data, (uint8));
-        require(state == 5);
+        governor.queue(proposalId);
+        require(governor.state(proposalId) == Bravo.ProposalState.Queued);
 
-        data = governorAddress.functionCall(abi.encodeWithSignature("timelock()"));
-        address timelockAddress = abi.decode(data, (address));
-        TimelockInterface timelock = TimelockInterface(timelockAddress);
+        // Warp to allow proposal execution on timelock
+        TimelockInterface timelock = TimelockInterface(governor.timelock());
         vm.warp(block.timestamp + timelock.delay());
 
         // Execute the proposal
-        governorAddress.functionCall(abi.encodeWithSignature("execute(uint256)", proposalId));
-        data = governorAddress.functionCall(abi.encodeWithSignature("state(uint256)", proposalId));
-        state = abi.decode(data, (uint8));
-        require(state == 7);
+        governor.execute(proposalId);
+        require(governor.state(proposalId) == Bravo.ProposalState.Executed);
     }
 }
