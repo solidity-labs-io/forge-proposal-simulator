@@ -6,3 +6,4 @@
 @examples/=examples/
 @script=script/
 @openzeppelin=lib/openzeppelin-contracts/contracts
+@comp-governance=lib/compound-governance/contracts
