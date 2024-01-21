@@ -61,9 +61,6 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     // Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
-        // Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
-
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("BRAVO_PROPOSER");
