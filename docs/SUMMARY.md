@@ -20,6 +20,7 @@
 -   [Introduction](guides/introduction.md)
 -   [Multisig Proposal](guides/multisig-proposal.md)
 -   [Timelock Proposal](guides/timelock-proposal.md)
+-   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
 
 ## Testing
 
