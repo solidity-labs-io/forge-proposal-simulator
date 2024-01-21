@@ -15,9 +15,9 @@ models. FPS has been tested and confirmed to be compatible with:
 
 ## Example Contracts
 
-The [Examples folder](examples/) includes contracts used in the guides mentioned
-above for demonstration purposes. Examples include [Vault](examples/Vault.sol)
-and [MockToken](examples/MockToken.sol). It is important to understand that
+The [Examples folder](../../examples/) includes contracts used in the guides mentioned
+above for demonstration purposes. Examples include [Vault](../../examples/Vault.sol)
+and [MockToken](../../examples/MockToken.sol). It is important to understand that
 these contracts are intended solely for demonstration and are not recommended for production use due to their lack of validation and audit processes. Their primary purpose is to illustrate the deployment process and the setup of protocol parameters within proposals.
 
 For practical examples and additional insights, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) is also available for consultation.
