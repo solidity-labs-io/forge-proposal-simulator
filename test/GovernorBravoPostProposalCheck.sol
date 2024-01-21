@@ -43,7 +43,9 @@ contract GovernorBravoPostProposalCheck is Test {
             governorSize := extcodesize(governor)
         }
         if (governorSize == 0) {
-            address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
+            address govToken = addresses.getAddress(
+                "PROTOCOL_GOVERNANCE_TOKEN"
+            );
             uint256 govTokenSize;
             assembly {
                 // retrieve the size of the code, this needs assembly
@@ -51,7 +53,10 @@ contract GovernorBravoPostProposalCheck is Test {
             }
             if (govTokenSize == 0) {
                 // Deploy the governance token
-                MockERC20Votes govTokenContract = new MockERC20Votes("Governance Token", "GOV");
+                MockERC20Votes govTokenContract = new MockERC20Votes(
+                    "Governance Token",
+                    "GOV"
+                );
                 govToken = address(govTokenContract);
 
                 // Update PROTOCOL_GOVERNANCE_TOKEN address
@@ -65,15 +70,17 @@ contract GovernorBravoPostProposalCheck is Test {
             GovernorBravoDelegate implementation = new GovernorBravoDelegate();
 
             // Deploy and configure the GovernorBravoDelegator
-            governor = address(new GovernorBravoDelegator(
-                address(timelock),          // timelock
-                govToken,                   // governance token
-                address(this),              // admin
-                address(implementation),    // implementation
-                10_000,                     // voting period
-                10_000,                     // voting delay
-                1e21                        // proposal threshold
-            ));
+            governor = address(
+                new GovernorBravoDelegator(
+                    address(timelock), // timelock
+                    govToken, // governance token
+                    address(this), // admin
+                    address(implementation), // implementation
+                    10_000, // voting period
+                    10_000, // voting delay
+                    1e21 // proposal threshold
+                )
+            );
 
             // Deploy mock GovernorAlpha
             address govAlpha = address(new MockGovernorAlpha());
