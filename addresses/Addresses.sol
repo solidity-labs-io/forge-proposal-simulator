@@ -12,7 +12,7 @@ contract Addresses is IAddresses, Test {
     using Strings for uint256;
 
     /// @notice mapping from contract name to network chain id to address
-    mapping(string name => mapping(uint256 chainId => address addr))
+    mapping(string => mapping(uint256 => address))
         public _addresses;
 
     /// @notice chainid of the network when contract is constructed
