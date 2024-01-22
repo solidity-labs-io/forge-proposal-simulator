@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 
-import {console} from "@forge-std/console.sol";
+import {console} from "forge-std/console.sol";
 import {Proposal} from "@proposals/Proposal.sol";
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {TimelockController} from "openzeppelin/governance/TimelockController.sol";
 import {Address} from "@utils/Address.sol";
 
 abstract contract TimelockProposal is Proposal {

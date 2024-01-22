@@ -13,7 +13,7 @@ deploying proposal contracts, executing them, and updating the addresses object.
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 import { MULTISIG_01 } from "path/to/MULTISIG_01.sol";
 import { MULTISIG_02 } from "path/to/MULTISIG_02.sol";
 import { MULTISIG_03 } from "path/to/MULTISIG_03.sol";

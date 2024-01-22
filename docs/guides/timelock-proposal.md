@@ -164,7 +164,7 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 pragma solidity ^0.8.0;
 
 import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
+import { TimelockController } from "openzeppelin/governance/TimelockController.sol";
 import { TIMELOCK_01 } from "proposals/TIMELOCK_01.sol";
 
 // @notice TimelockScript is a script that run TIMELOCK_01 proposal

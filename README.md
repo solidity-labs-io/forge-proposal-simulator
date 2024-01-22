@@ -11,7 +11,7 @@ For guidance on how to use the library please check FPS [documentation](https://
 Add `forge-proposal-simulator` to your project using Forge:
 
 ```sh
-forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
+forge install https://github.com/OlympusDAO/forge-proposal-simulator.git
 ```
 
 ### Step 2: Remapping

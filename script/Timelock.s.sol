@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 import {ScriptSuite} from "@script/ScriptSuite.s.sol";
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {TimelockController} from "openzeppelin/governance/TimelockController.sol";
 import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {Constants} from "@utils/Constants.sol";
 

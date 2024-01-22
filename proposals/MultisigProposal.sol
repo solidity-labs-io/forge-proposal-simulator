@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "@forge-std/console.sol";
+import "forge-std/console.sol";
 import {Proposal} from "./Proposal.sol";
 import {Address} from "@utils/Address.sol";
 import {Constants} from "@utils/Constants.sol";

@@ -1,15 +1,15 @@
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 import {TestSuite} from "@test/TestSuite.t.sol";
 import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 import {BRAVO_02} from "@examples/governor-bravo/BRAVO_02.sol";
 import {BRAVO_03} from "@examples/governor-bravo/BRAVO_03.sol";
 import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
 import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
-import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
-import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
-import {Timelock} from "@comp-governance/Timelock.sol";
+import {GovernorBravoDelegator} from "comp-governance/GovernorBravoDelegator.sol";
+import {GovernorBravoDelegate} from "comp-governance/GovernorBravoDelegate.sol";
+import {Timelock} from "comp-governance/Timelock.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.

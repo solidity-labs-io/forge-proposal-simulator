@@ -1,9 +1,9 @@
-@forge-std/=lib/forge-std/src/
+forge-std/=lib/forge-std/src/
 @test=test/
 @proposals/=proposals/
 @addresses/=addresses/
 @utils/=utils/
 @examples/=examples/
 @script=script/
-@openzeppelin=lib/openzeppelin-contracts/contracts
-@comp-governance=lib/compound-governance/contracts
+openzeppelin=lib/openzeppelin-contracts/contracts
+comp-governance=lib/compound-governance/contracts

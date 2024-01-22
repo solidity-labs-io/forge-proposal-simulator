@@ -1,11 +1,11 @@
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 import {TestSuite} from "@test/TestSuite.t.sol";
 import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {TIMELOCK_02} from "@examples/timelock/TIMELOCK_02.sol";
 import {TIMELOCK_03} from "@examples/timelock/TIMELOCK_03.sol";
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {TimelockController} from "openzeppelin/governance/TimelockController.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.

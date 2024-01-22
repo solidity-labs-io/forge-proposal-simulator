@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 
-import {Ownable} from "@openzeppelin/access/Ownable.sol";
-import {Pausable} from "@openzeppelin/security/Pausable.sol";
-import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
+import {Ownable} from "openzeppelin/access/Ownable.sol";
+import {Pausable} from "openzeppelin/security/Pausable.sol";
+import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
 contract Vault is Ownable, Pausable {
     uint256 public LOCK_PERIOD = 1 weeks;

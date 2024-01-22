@@ -203,7 +203,7 @@ you must pass the addresses path to the `TestSuite.t.sol` constructor.
 import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
 import { TestSuite } from "@forge-proposal-simulator/test/TestSuite.t.sol";
 import { PROPOSAL_01 } from "path/to/PROPOSAL_01.sol";
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 
 contract PostProposalCheck is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";

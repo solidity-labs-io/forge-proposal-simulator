@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {Test} from "@forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {IAddresses} from "@addresses/IAddresses.sol";
-import {Strings} from "@openzeppelin/utils/Strings.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses

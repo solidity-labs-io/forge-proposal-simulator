@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 
-import {Test} from "@forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {IProposal} from "@proposals/IProposal.sol";
-import {Script} from "@forge-std/Script.sol";
+import {Script} from "forge-std/Script.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {console} from "@forge-std/console.sol";
+import {console} from "forge-std/console.sol";
 
 abstract contract Proposal is Test, Script, IProposal {
     struct Action {

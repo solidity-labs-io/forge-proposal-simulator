@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 import {TestSuite} from "@test/TestSuite.t.sol";
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 import {MULTISIG_02} from "@examples/multisig/MULTISIG_02.sol";

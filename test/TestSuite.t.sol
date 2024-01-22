@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 
-import {console} from "@forge-std/console.sol";
+import {console} from "forge-std/console.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Strings} from "@openzeppelin/utils/Strings.sol";
-import {Test} from "@forge-std/Test.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {Test} from "forge-std/Test.sol";
 
 /*
 How to use:

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalCheck.sol";
-import "@forge-std/Test.sol";
+import "forge-std/Test.sol";
 
 // @dev This test contract extends GovernorBravoPostProposalCheck, granting it
 // the ability to interact with state modifications effected by proposals
