@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "@forge-std/console.sol";
 import {Proposal} from "./Proposal.sol";
 import {Address} from "@utils/Address.sol";
-import {Constants} from "@utils/Constants.sol";
 import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
 import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
 import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
@@ -13,8 +12,16 @@ contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getProposeCalldata() public view returns (bytes memory proposeCalldata) {
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = getProposalActions();
+    function getProposeCalldata()
+        public
+        view
+        returns (bytes memory proposeCalldata)
+    {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
         string[] memory signatures = new string[](targets.length);
 
         proposeCalldata = abi.encodeWithSignature(
@@ -36,16 +43,20 @@ contract GovernorBravoProposal is Proposal {
     /// @param governorAddress address of the Governor Bravo Delegator contract
     /// @param governanceToken address of the governance token of the system
     /// @param proposerAddress address of the proposer
-    function _simulateActions(address governorAddress, address governanceToken, address proposerAddress)
-        internal
-    {
+    function _simulateActions(
+        address governorAddress,
+        address governanceToken,
+        address proposerAddress
+    ) internal {
         GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
 
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
             uint256 proposalThreshold = governor.proposalThreshold();
-            uint256 votingPower = quorumVotes > proposalThreshold ? quorumVotes : proposalThreshold;
+            uint256 votingPower = quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
             deal(governanceToken, proposerAddress, votingPower);
             // Delegate proposer's votes to itself
             vm.prank(proposerAddress);
@@ -57,7 +68,9 @@ contract GovernorBravoProposal is Proposal {
 
         // Register the proposal
         vm.prank(proposerAddress);
-        bytes memory data = address(payable(governorAddress)).functionCall(proposeCalldata);
+        bytes memory data = address(payable(governorAddress)).functionCall(
+            proposeCalldata
+        );
         uint256 proposalId = abi.decode(data, (uint256));
 
         if (DEBUG) {

@@ -7,10 +7,10 @@ In the `proposals` folder, create a new file called `BRAVO_01.sol` and add the f
 ```solidity
 pragma solidity ^0.8.0;
 
-import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {MockToken} from "@examples/MockToken.sol";
-import {Addresses} from "@addresses/Addresses.sol";
-import {Vault} from "@examples/Vault.sol";
+import { GovernorBravoProposal } from "@proposals/GovernorBravoProposal.sol";
+import { MockToken } from "@examples/MockToken.sol";
+import { Addresses } from "@addresses/Addresses.sol";
+import { Vault } from "@examples/Vault.sol";
 
 // BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the governor address
@@ -143,9 +143,9 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 ```solidity
 pragma solidity ^0.8.0;
 
-import {ScriptSuite} from "@script/ScriptSuite.s.sol";
-import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
-import {Constants} from "@utils/Constants.sol";
+import { ScriptSuite } from "@script/ScriptSuite.s.sol";
+import { BRAVO_01 } from "@examples/governor-bravo/BRAVO_01.sol";
+import { Constants } from "@utils/Constants.sol";
 
 // @notice GovernorBravoScript is a script that runs BRAVO_01 proposal.
 // BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
