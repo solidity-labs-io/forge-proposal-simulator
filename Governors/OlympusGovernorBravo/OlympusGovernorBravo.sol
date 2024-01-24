@@ -425,7 +425,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, IGovernorBravo
         
         // Get the user's votes at the start of the proposal and at the time of voting. Take the minimum.
         uint256 originalVotes = gohm.getPriorVotes(voter, proposal.startBlock);
-        uint256 currentVotes = gohm.getPriorVotes(voter, block.number);
+        uint256 currentVotes = gohm.getPriorVotes(voter, block.number - 1);
         uint256 votes = currentVotes > originalVotes ? originalVotes : currentVotes;
 
         if (support == 0) {
