@@ -53,7 +53,7 @@ contract GovernorBravoProposal is Proposal {
 
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
-            uint256 quorumVotes = governor.getQuorumVotes();
+            uint256 quorumVotes = governor.getHighRiskQuorumVotes();
             uint256 proposalThreshold = governor.getProposalThresholdVotes();
             uint256 votingPower = quorumVotes > proposalThreshold
                 ? quorumVotes

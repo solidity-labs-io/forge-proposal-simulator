@@ -43,7 +43,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV2, IGovernorBravo
     ///         in order for a quorum to be reached and for a vote to succeed
     /// @dev    Olympus has a variable supply system, that actively fluctuates fairly significantly, so it is better to use
     ///         a percentage of total supply, rather than a fixed number of tokens.
-    uint256 public constant highRiskQuorum = 30_000; // 30% (out of 100_000)
+    uint256 public constant highRiskQuorum = 20_000; // 20% (out of 100_000)
 
     /// @notice The percentage of votes that must be in favor of a proposal for it to succeed
     uint256 public constant approvalThresholdPct = 55_000; // 55% (out of 100_000)
