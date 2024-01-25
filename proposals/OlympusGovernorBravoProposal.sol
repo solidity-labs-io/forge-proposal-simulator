@@ -13,11 +13,7 @@ contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getProposeCalldata()
-        public
-        view
-        returns (bytes memory proposeCalldata)
-    {
+    function getCalldata() public view override returns (bytes memory data)
         (
             address[] memory targets,
             uint256[] memory values,
@@ -25,7 +21,7 @@ contract GovernorBravoProposal is Proposal {
         ) = getProposalActions();
         string[] memory signatures = new string[](targets.length);
 
-        proposeCalldata = abi.encodeWithSignature(
+        data = abi.encodeWithSignature(
             "propose(address[],uint256[],string[],bytes[],string)",
             targets,
             values,
@@ -36,7 +32,7 @@ contract GovernorBravoProposal is Proposal {
 
         if (DEBUG) {
             console.log("Calldata for proposal:");
-            console.logBytes(proposeCalldata);
+            console.logBytes(data);
         }
     }
 
@@ -65,13 +61,11 @@ contract GovernorBravoProposal is Proposal {
             vm.roll(block.number + 1);
         }
 
-        bytes memory proposeCalldata = getProposeCalldata();
+        bytes memory data = getCalldata();
 
         // Register the proposal
         vm.prank(proposerAddress);
-        bytes memory data = address(payable(governorAddress)).functionCall(
-            proposeCalldata
-        );
+        bytes memory data = address(payable(governorAddress)).functionCall(data);
         uint256 proposalId = abi.decode(data, (uint256));
 
         if (DEBUG) {
