@@ -12,7 +12,7 @@ contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getCalldata() public view override returns (bytes memory data)
+    function getCalldata() public view override returns (bytes memory data) {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -60,11 +60,13 @@ contract GovernorBravoProposal is Proposal {
             vm.roll(block.number + 1);
         }
 
-        bytes memory data = getCalldata();
+        bytes memory proposeCalldata = getCalldata();
 
         // Register the proposal
         vm.prank(proposerAddress);
-        bytes memory data = address(payable(governorAddress)).functionCall(data);
+        bytes memory data = address(payable(governorAddress)).functionCall(
+            proposeCalldata
+        );
         uint256 proposalId = abi.decode(data, (uint256));
 
         if (DEBUG) {
