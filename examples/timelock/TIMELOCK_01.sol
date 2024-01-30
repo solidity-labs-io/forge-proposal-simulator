@@ -10,6 +10,11 @@ import {Vault} from "@examples/Vault.sol";
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
     // Returns the name of the proposal.
+    function id() public pure override returns (uint256) {
+        return 1;
+    }
+
+    // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";
     }
@@ -17,6 +22,11 @@ contract TIMELOCK_01 is TimelockProposal {
     // Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
+    }
+
+    // Returns the hash of the predecessor proposal.
+    function predecessor() public view override returns (bytes32) {
+        return bytes32(0);
     }
 
     // Deploys a vault contract and an ERC20 token contract.

@@ -8,6 +8,11 @@ import {MockToken} from "@examples/MockToken.sol";
 // Mock proposal that withdraws MockToken from Vault.
 contract TIMELOCK_03 is TimelockProposal {
     // Returns the name of the proposal.
+    function id() public pure override returns (uint256) {
+        return 3;
+    }
+
+    // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_PROPOSAL_MOCK";
     }
@@ -15,6 +20,11 @@ contract TIMELOCK_03 is TimelockProposal {
     // Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
+    }
+
+    // Returns the hash of the predecessor proposal.
+    function predecessor() public view override returns (bytes32) {
+        return bytes32(0);
     }
 
     // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.

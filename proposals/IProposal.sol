@@ -3,6 +3,10 @@ pragma solidity ^0.8.0;
 import {Addresses} from "@addresses/Addresses.sol";
 
 interface IProposal {
+    // @notice proposal id
+    // @dev override this to set the proposal id
+    function id() external view returns (uint256);
+
     // @notice proposal name, e.g. "BIP15"
     // @dev override this to set the proposal name
     function name() external view returns (string memory);
@@ -41,6 +45,10 @@ interface IProposal {
 
     // @notice Print proposal calldata
     function getCalldata() external returns (bytes memory data);
+
+    // @notice Print proposal calldata from the forked environment
+    // @dev override this to extract the calldata for the given proposal id
+    function getForkCalldata(address governor) external returns (bytes memory data);
 
     // @notice set the debug flag
     function setDebug(bool debug) external;

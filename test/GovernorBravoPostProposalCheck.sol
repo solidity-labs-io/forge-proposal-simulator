@@ -18,6 +18,7 @@ contract GovernorBravoPostProposalCheck is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
     Addresses public addresses;
+    bool public checkCalldata;
 
     function setUp() public virtual {
         BRAVO_01 governorProposal1 = new BRAVO_01();
@@ -42,7 +43,8 @@ contract GovernorBravoPostProposalCheck is Test {
             // retrieve the size of the code, this needs assembly
             governorSize := extcodesize(governor)
         }
-        if (governorSize == 0) {
+        if (governorSize != 0) checkCalldata = true;
+        else {
             address govToken = addresses.getAddress(
                 "PROTOCOL_GOVERNANCE_TOKEN"
             );

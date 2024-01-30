@@ -9,6 +9,18 @@ import "@forge-std/Test.sol";
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
+
+    // Check if simulated calldatas match the ones from the forked environment.
+    function test_calldataMatch() public {
+        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        bool[] memory matches = suite.checkProposalCalldatas(governor);
+        if (checkCalldata) {
+            for (uint256 i; i < matches.length; i++) {
+                assertTrue(matches[i]);
+            }
+        }
+    }
+
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");

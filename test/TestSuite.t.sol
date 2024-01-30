@@ -77,4 +77,56 @@ contract TestSuite is Test {
 
         return postProposalVmSnapshots;
     }
+
+    function checkProposalCalldatas(address governor) public returns (bool[] memory calldataMatches) {
+        if (debug) {
+            console.log("TestSuite: comparing", proposals.length, "proposals.");
+        }
+
+        /// evm snapshot array
+        calldataMatches = new bool[](proposals.length);
+
+        for (uint256 i = 0; i < proposals.length; i++) {
+            string memory name = proposals[i].name();
+            if (debug) {
+                console.log("Proposal id:", proposals[i].id());
+                console.log("Proposal name:", name);
+            }
+
+            bytes memory dataSim = proposals[i].getCalldata();
+            bytes memory dataFork = proposals[i].getForkCalldata(governor);
+            bool check = _bytesMatch(dataSim, dataFork);
+
+            if (debug) {
+                if (check) {
+                    console.log(
+                        "  > Simulated calldata matches proposal id %s in the forked environment",
+                        proposals[i].id()
+                    );
+                } else {
+                    console.log(
+                        "  x Simulated calldata does not match proposal id %s in the forked environment",
+                        proposals[i].id()
+                    );
+                }
+            }
+
+            calldataMatches[i] = check;
+        }
+
+        return calldataMatches;
+    }
+
+    function _bytesMatch(bytes memory a_, bytes memory b_) internal pure returns (bool) {
+        if(a_.length != b_.length) {
+            return false;
+        }
+        for (uint i = 0; i < a_.length; i++) {
+            if(a_[i] != b_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

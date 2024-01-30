@@ -35,6 +35,30 @@ contract GovernorBravoProposal is Proposal {
         }
     }
 
+    /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
+    function getForkCalldata(address governor) public view override returns (bytes memory data) {
+        (
+            address[] memory targets,
+            uint[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        ) = GovernorBravoDelegate(governor).getActions(id());
+
+        data = abi.encodeWithSignature(
+            "propose(address[],uint256[],string[],bytes[],string)",
+            targets,
+            values,
+            signatures,
+            calldatas,
+            description()
+        );
+
+        if (DEBUG) {
+            console.log("Calldata for proposal:");
+            console.logBytes(data);
+        }
+    }
+
     /// @notice Simulate governance proposal
     /// @param governorAddress address of the Governor Bravo Delegator contract
     /// @param governanceToken address of the governance token of the system

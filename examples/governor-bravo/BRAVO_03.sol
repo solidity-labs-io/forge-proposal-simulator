@@ -8,6 +8,11 @@ import {MockToken} from "@examples/MockToken.sol";
 // Mock proposal that withdraws MockToken from Vault.
 contract BRAVO_03 is GovernorBravoProposal {
     // Returns the name of the proposal.
+    function id() public pure override returns (uint256) {
+        return 3;
+    }
+
+    // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "BRAVO_03";
     }

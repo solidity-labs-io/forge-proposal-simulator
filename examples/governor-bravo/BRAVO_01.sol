@@ -10,6 +10,11 @@ import {Vault} from "@examples/Vault.sol";
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract BRAVO_01 is GovernorBravoProposal {
     // Returns the name of the proposal.
+    function id() public pure override returns (uint256) {
+        return 1;
+    }
+
+    // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "BRAVO_01";
     }

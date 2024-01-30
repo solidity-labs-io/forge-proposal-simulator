@@ -8,12 +8,13 @@ import {Address} from "@utils/Address.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
+    function predecessor() public view virtual returns (bytes32) {}
+
     /// @notice get schedule calldata
     function getScheduleCalldata(
         address timelock
     ) public view returns (bytes memory scheduleCalldata) {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         (
             address[] memory targets,
@@ -27,7 +28,7 @@ abstract contract TimelockProposal is Proposal {
             targets,
             values,
             payloads,
-            predecessor,
+            predecessor(),
             salt,
             delay
         );
@@ -45,7 +46,6 @@ abstract contract TimelockProposal is Proposal {
         returns (bytes memory executeCalldata)
     {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         (
             address[] memory targets,
@@ -58,7 +58,7 @@ abstract contract TimelockProposal is Proposal {
             targets,
             values,
             payloads,
-            predecessor,
+            predecessor(),
             salt
         );
 
