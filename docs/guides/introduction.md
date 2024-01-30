@@ -3,7 +3,7 @@
 FPS is designed to be loosely coupled, making it easy to integrate into any
 governance model. Each of these governance models have their unique
 specifications. To accommodate the unique requirements of different governance systems, FPS
-introduces [proposal-specific](proposals/) contracts. Each contract is designed to align with their respective governance model.
+introduces [proposal-specific](./) contracts. Each contract is designed to align with their respective governance model.
 
 ## Validated Governance Models
 
