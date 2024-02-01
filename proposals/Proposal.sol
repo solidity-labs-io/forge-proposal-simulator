@@ -18,11 +18,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
     bool internal DEBUG;
 
-    // @notice override this to set the proposal id
-    function id() public view virtual returns (uint256) {}
-
     // @notice override this to set the proposal name
-    function name() external view virtual returns (string memory) {}
+    function name() public view virtual returns (string memory) {}
 
     // @notice override this to set the proposal description
     function description() public view virtual returns (string memory) {}
@@ -86,8 +83,8 @@ abstract contract Proposal is Test, Script, IProposal {
     // @notice Print proposal calldata
     function getCalldata() public virtual returns (bytes memory data) {}
 
-    // @notice Print proposal calldata from the forked environment
-    function getForkCalldata(address governor) public virtual returns (bytes memory data) {}
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(address check, bool debug) public virtual returns (bool) {}
 
     // @notice Print out proposal actions
     // @dev do not override

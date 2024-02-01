@@ -68,6 +68,35 @@ abstract contract TimelockProposal is Proposal {
         }
     }
 
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(address timelock, bool debug) public view override returns (bool) {
+        bytes32 salt = keccak256(abi.encode(actions[0].description));
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
+
+        bytes32 id = keccak256(abi.encode(targets, values, payloads, predecessor(), salt));
+        
+        bool doMatch = TimelockController(payable(timelock)).isOperationPending(id);
+        if (debug) {
+            console.log("Proposal name:", name());
+            if (doMatch) {
+                console.log(
+                    "  > Simulated calldata matches a proposal in the forked environment"
+                );
+            } else {
+                console.log(
+                    "  x Simulated calldata does not match any proposal in the forked environment"
+                );
+            }
+        }
+
+        return doMatch;
+    }
+
     /// @notice simulate timelock proposal
     /// @param timelockAddress to execute the proposal against
     /// @param proposerAddress account to propose the proposal to the timelock
@@ -78,7 +107,6 @@ abstract contract TimelockProposal is Proposal {
         address executorAddress
     ) internal {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         if (DEBUG) {
             console.log("salt:");
@@ -101,7 +129,7 @@ abstract contract TimelockProposal is Proposal {
             targets,
             values,
             payloads,
-            predecessor,
+            predecessor(),
             salt
         );
 

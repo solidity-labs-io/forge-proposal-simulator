@@ -8,11 +8,6 @@ import {MockToken} from "@examples/MockToken.sol";
 // Mock proposal that deposits MockToken into Vault.
 contract TIMELOCK_02 is TimelockProposal {
     // Returns the name of the proposal.
-    function id() public pure override returns (uint256) {
-        return 2;
-    }
-
-    // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_02";
     }
