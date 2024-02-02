@@ -70,7 +70,7 @@ abstract contract TimelockProposal is Proposal {
 
     // @notice Check proposal calldata against the forked environment
     function checkCalldata(
-        address timelock,
+        address check,
         bool debug
     ) public view override returns (bool) {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
@@ -81,13 +81,15 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 id = keccak256(
-            abi.encode(targets, values, payloads, predecessor(), salt)
-        );
+        TimelockController timelock = TimelockController(payable(check));
+        bytes32 id = timelock.hashOperationBatch(targets, values, payloads, predecessor(), salt);
+        bool doMatch = timelock.isOperationPending(id);
+        // If there is only one action, check if it matches the hash of a single operation
+        if (targets.length == 1 && !doMatch) {
+            id = timelock.hashOperation(targets[0], values[0], payloads[0], predecessor(), salt);
+            doMatch = timelock.isOperation(id);
+        }
 
-        bool doMatch = TimelockController(payable(timelock)).isOperationPending(
-            id
-        );
         if (debug) {
             console.log("Proposal name:", name());
             if (doMatch) {

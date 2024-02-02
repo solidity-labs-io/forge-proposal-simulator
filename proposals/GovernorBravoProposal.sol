@@ -66,11 +66,11 @@ contract GovernorBravoProposal is Proposal {
 
     // @notice Check proposal calldata against the forked environment
     function checkCalldata(
-        address governor,
+        address check,
         bool debug
     ) public virtual override returns (bool) {
         bytes memory dataSim = getCalldata();
-        bytes memory dataFork = getForkCalldata(governor);
+        bytes memory dataFork = getForkCalldata(check);
 
         bool doMatch = _bytesMatch(dataSim, dataFork);
 
