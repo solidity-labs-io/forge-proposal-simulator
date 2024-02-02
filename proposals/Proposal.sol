@@ -84,7 +84,10 @@ abstract contract Proposal is Test, Script, IProposal {
     function getCalldata() public virtual returns (bytes memory data) {}
 
     // @notice Check proposal calldata against the forked environment
-    function checkCalldata(address check, bool debug) public virtual returns (bool) {}
+    function checkCalldata(
+        address check,
+        bool debug
+    ) public virtual returns (bool) {}
 
     // @notice Print out proposal actions
     // @dev do not override

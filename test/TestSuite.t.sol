@@ -8,7 +8,7 @@ import {Test} from "@forge-std/Test.sol";
 
 /*
 How to use:
-forge test --fork-url $ETH_RPC_URL --doMatch-contract -vvv
+forge test --fork-url $ETH_RPC_URL --match-contract -vvv
 
 Or, from another Solidity file (for post-proposal integration testing):
     TestSuite suite = new TestSuite();
@@ -78,15 +78,21 @@ contract TestSuite is Test {
         return postProposalVmSnapshots;
     }
 
-    function checkProposalCalldatas(address check) public returns (bool[] memory calldataMatches) {
+    function checkProposalCalldatas(
+        address check
+    ) public returns (bool[] memory calldataMatches) {
         if (debug) {
-            console.log("TestSuite: comparing calldata for", proposals.length, "proposals.");
+            console.log(
+                "TestSuite: comparing calldata for",
+                proposals.length,
+                "proposals."
+            );
         }
 
         calldataMatches = new bool[](proposals.length);
 
         for (uint256 i = 0; i < proposals.length; i++) {
-            bool doMatch =  proposals[i].checkCalldata(check, debug);
+            bool doMatch = proposals[i].checkCalldata(check, debug);
             calldataMatches[i] = doMatch;
         }
 

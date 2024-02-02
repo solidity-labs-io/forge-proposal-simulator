@@ -39,7 +39,9 @@ contract GovernorBravoProposal is Proposal {
     }
 
     /// @notice Getter function to get calldata from the proposal id of the forked environment
-    function getForkCalldata(address governor) public view returns (bytes memory data) {
+    function getForkCalldata(
+        address governor
+    ) public view returns (bytes memory data) {
         (
             address[] memory targets,
             uint[] memory values,
@@ -63,7 +65,10 @@ contract GovernorBravoProposal is Proposal {
     }
 
     // @notice Check proposal calldata against the forked environment
-    function checkCalldata(address governor, bool debug) public virtual override returns (bool) {
+    function checkCalldata(
+        address governor,
+        bool debug
+    ) public virtual override returns (bool) {
         bytes memory dataSim = getCalldata();
         bytes memory dataFork = getForkCalldata(governor);
 
@@ -161,12 +166,15 @@ contract GovernorBravoProposal is Proposal {
         require(governor.state(proposalId) == Bravo.ProposalState.Executed);
     }
 
-    function _bytesMatch(bytes memory a_, bytes memory b_) internal pure returns (bool) {
-        if(a_.length != b_.length) {
+    function _bytesMatch(
+        bytes memory a_,
+        bytes memory b_
+    ) internal pure returns (bool) {
+        if (a_.length != b_.length) {
             return false;
         }
         for (uint i = 0; i < a_.length; i++) {
-            if(a_[i] != b_[i]) {
+            if (a_[i] != b_[i]) {
                 return false;
             }
         }

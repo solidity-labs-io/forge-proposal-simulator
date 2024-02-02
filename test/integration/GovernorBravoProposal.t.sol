@@ -9,7 +9,6 @@ import "@forge-std/Test.sol";
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
-
     // Check if simulated calldatas match the ones from the forked environment.
     function test_calldataMatch() public {
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
@@ -18,6 +17,8 @@ contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
             for (uint256 i; i < matches.length; i++) {
                 assertTrue(matches[i]);
             }
+        } else {
+            console2.log("Skipping calldata check");
         }
     }
 
