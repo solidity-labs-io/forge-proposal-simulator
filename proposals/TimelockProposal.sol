@@ -82,11 +82,23 @@ abstract contract TimelockProposal is Proposal {
         ) = getProposalActions();
 
         TimelockController timelock = TimelockController(payable(check));
-        bytes32 id = timelock.hashOperationBatch(targets, values, payloads, predecessor(), salt);
+        bytes32 id = timelock.hashOperationBatch(
+            targets,
+            values,
+            payloads,
+            predecessor(),
+            salt
+        );
         bool doMatch = timelock.isOperationPending(id);
         // If there is only one action, check if it matches the hash of a single operation
         if (targets.length == 1 && !doMatch) {
-            id = timelock.hashOperation(targets[0], values[0], payloads[0], predecessor(), salt);
+            id = timelock.hashOperation(
+                targets[0],
+                values[0],
+                payloads[0],
+                predecessor(),
+                salt
+            );
             doMatch = timelock.isOperation(id);
         }
 
