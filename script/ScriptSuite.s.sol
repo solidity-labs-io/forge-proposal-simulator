@@ -26,4 +26,25 @@ contract ScriptSuite is Script {
             console.log(recordedNames[j], recordedAddresses[j]);
         }
     }
+
+    function checkProposalCalldatas(
+        address check
+    ) public returns (bool[] memory calldataMatches) {
+        if (debug) {
+            console.log(
+                "TestSuite: comparing calldata for",
+                proposals.length,
+                "proposals."
+            );
+        }
+
+        calldataMatches = new bool[](proposals.length);
+
+        for (uint256 i = 0; i < proposals.length; i++) {
+            bool doMatch = proposals[i].checkCalldata(check, debug);
+            calldataMatches[i] = doMatch;
+        }
+
+        return calldataMatches;
+    }
 }
