@@ -9,7 +9,7 @@ import {Vault} from "@examples/Vault.sol";
 // Then the proposal transfers ownership of both Vault and ERC20 to the governor address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract BRAVO_01 is GovernorBravoProposal {
-    // Returns the name of the proposal.
+    // Returns the proposal id.
     function id() public pure override returns (uint256) {
         return 1;
     }
