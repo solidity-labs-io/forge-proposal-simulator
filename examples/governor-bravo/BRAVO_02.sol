@@ -7,7 +7,7 @@ import {MockToken} from "@examples/MockToken.sol";
 
 // Mock proposal that deposits MockToken into Vault.
 contract BRAVO_02 is GovernorBravoProposal {
-    // Returns the name of the proposal.
+    // Returns the proposal id.
     function id() public pure override returns (uint256) {
         return 2;
     }
