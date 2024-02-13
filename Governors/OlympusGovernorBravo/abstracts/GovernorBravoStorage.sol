@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import {IgOHM} from "../interfaces/IgOHM.sol";
 import {ITimelock} from "../interfaces/ITimelock.sol";
 
+import "../Kernel.sol";
+
 abstract contract GovernorBravoDelegatorStorage {
     // --- PROXY STATE VARIABLES ---------------------------------------------------
 

@@ -12,9 +12,9 @@ contract Vault is Ownable, Pausable {
         uint256 timestamp;
     }
 
-    mapping(address _token => mapping(address _user => Deposit _deposit))
+    mapping(address => mapping(address => Deposit))
         public deposits;
-    mapping(address _token => bool _isWhitelisted) public tokenWhitelist;
+    mapping(address => bool) public tokenWhitelist;
 
     constructor() Ownable() Pausable() {}
 
