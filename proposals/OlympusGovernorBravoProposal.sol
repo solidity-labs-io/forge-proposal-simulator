@@ -13,7 +13,7 @@ contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getCalldata() public view override returns (bytes memory data)
+    function getCalldata() public view override returns (bytes memory data) {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -30,10 +30,77 @@ contract GovernorBravoProposal is Proposal {
             description()
         );
 
-        if (DEBUG) {
-            console.log("Calldata for proposal:");
+        if (DEBUG && HIDE_DEBUG) {
+            console.log("Calldata for proposal %s:", id());
             console.logBytes(data);
         }
+    }
+
+    /// @notice Getter function to get calldata from the proposal id of the forked environment
+    function getForkCalldata(
+        address governor
+    ) public view returns (bytes memory data) {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        ) = GovernorBravoDelegate(governor).getActions(id());
+
+        data = abi.encodeWithSignature(
+            "propose(address[],uint256[],string[],bytes[],string)",
+            targets,
+            values,
+            signatures,
+            calldatas,
+            description()
+        );
+
+        if (DEBUG && HIDE_DEBUG) {
+            console.log("Calldata for proposal %s submitted on mainnet:", id());
+            console.logBytes(data);
+        }
+    }
+
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(
+        address check,
+        bool debug
+    ) public virtual override returns (bool) {
+        bytes memory dataSim = getCalldata();
+        bytes memory dataFork = getForkCalldata(check);
+
+        bool doMatch = _bytesMatch(dataSim, dataFork);
+
+        if (debug) {
+            console.log("\n  CALLDATA CHECK OUTCOME:");
+            if (doMatch) {
+                console.log(
+                    "  > Simulated calldata matches proposal id %s on mainnet",
+                    id()
+                );
+            } else {
+                // Check if proposal id exists on mainnet
+                bytes memory notFound = abi.encodeWithSignature(
+                    "propose(address[],uint256[],string[],bytes[],string)",
+                    new address[](0),
+                    new uint256[](0),
+                    new string[](0), 
+                    new bytes[](0),
+                    description()
+                );
+                _bytesMatch(notFound, dataFork)
+                    ? console.log(
+                        "  x Proposal id %s not found on mainnet",
+                        id())
+                    : console.log(
+                        "  x Simulated calldata does not match proposal id %s on mainnet",
+                        id());
+            }
+            console.log(" ");
+        }
+
+        return doMatch;
     }
 
     /// @notice Simulate governance proposal
@@ -61,23 +128,21 @@ contract GovernorBravoProposal is Proposal {
             vm.roll(block.number + 1);
         }
 
-        bytes memory data = getCalldata();
+        bytes memory proposeData = getCalldata();
+        // Ensure actions are only printed once
+        setHideDebug(true);
 
         // Register the proposal
         vm.prank(proposerAddress);
-        bytes memory data = address(payable(governorAddress)).functionCall(data);
+        bytes memory data = address(payable(governorAddress)).functionCall(proposeData);
         uint256 proposalId = abi.decode(data, (uint256));
 
         if (DEBUG) {
             console.log(
-                "schedule batch calldata with ",
+                "\n  Schedule batch calldata with ",
                 actions.length,
-                (actions.length > 1 ? "actions" : "action")
+                (actions.length > 1 ? "actions." : "action.")
             );
-
-            if (data.length > 0) {
-                console.log("proposalId: %s", proposalId);
-            }
         }
 
         // Check proposal is in Pending state
@@ -115,4 +180,20 @@ contract GovernorBravoProposal is Proposal {
         governor.execute(proposalId);
         require(governor.state(proposalId) == Bravo.ProposalState.Executed);
     }
+
+    function _bytesMatch(
+        bytes memory a_,
+        bytes memory b_
+    ) internal pure returns (bool) {
+        if (a_.length != b_.length) {
+            return false;
+        }
+        for (uint i = 0; i < a_.length; i++) {
+            if (a_[i] != b_[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
+

@@ -17,9 +17,13 @@ abstract contract Proposal is Test, Script, IProposal {
     Action[] public actions;
 
     bool internal DEBUG;
+    bool internal HIDE_DEBUG;
+
+    // @notice override this to set the proposal id
+    function id() public view virtual returns (uint256) {}
 
     // @notice override this to set the proposal name
-    function name() external view virtual returns (string memory) {}
+    function name() public view virtual returns (string memory) {}
 
     // @notice override this to set the proposal description
     function description() public view virtual returns (string memory) {}
@@ -80,8 +84,19 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = debug;
     }
 
+    // @dev set the debug flag
+    function setHideDebug(bool hide) public {
+        HIDE_DEBUG = hide;
+    }
+
     // @notice Print proposal calldata
     function getCalldata() public virtual returns (bytes memory data) {}
+
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(
+        address check,
+        bool debug
+    ) public virtual returns (bool) {}
 
     // @notice Print out proposal actions
     // @dev do not override
@@ -102,10 +117,15 @@ abstract contract Proposal is Test, Script, IProposal {
         values = new uint256[](actionsLength);
         arguments = new bytes[](actionsLength);
 
-        if (DEBUG) {
-            console.log("\n\nProposal Description:\n\n%s", description());
+        if (DEBUG && !HIDE_DEBUG) {
             console.log(
-                "\n\n------------------ Proposal Actions ------------------"
+                "\n\n----------------- Proposal Overview -----------------\n"
+            );
+            console.log("Proposal ID: %s", id());
+            console.log("Proposal Name: %s", name());
+            console.log("Proposal Description: %s", description());
+            console.log(
+                "\n\n------------------ Proposal Actions ------------------\n"
             );
         }
 
@@ -124,7 +144,7 @@ abstract contract Proposal is Test, Script, IProposal {
             arguments[i] = actions[i].arguments;
             values[i] = actions[i].value;
 
-            if (DEBUG) {
+            if (DEBUG && !HIDE_DEBUG) {
                 console.log("%d). %s", i + 1, actions[i].description);
                 console.log("target: %s\npayload", actions[i].target);
                 console.logBytes(actions[i].arguments);

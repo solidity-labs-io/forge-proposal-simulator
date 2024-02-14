@@ -71,14 +71,10 @@ contract GovernorBravoProposal is Proposal {
 
         if (DEBUG) {
             console.log(
-                "schedule batch calldata with ",
+                "\n  Schedule batch calldata with ",
                 actions.length,
                 (actions.length > 1 ? "actions" : "action")
             );
-
-            if (data.length > 0) {
-                console.log("proposalId: %s", proposalId);
-            }
         }
 
         // Check proposal is in Pending state

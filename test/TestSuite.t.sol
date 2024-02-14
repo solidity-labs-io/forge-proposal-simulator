@@ -44,18 +44,13 @@ contract TestSuite is Test {
         returns (uint256[] memory postProposalVmSnapshots)
     {
         if (debug) {
-            console.log("TestSuite: running", proposals.length, "proposals.");
+            console.log("\n  TestSuite: running", proposals.length, "proposals.");
         }
 
         /// evm snapshot array
         postProposalVmSnapshots = new uint256[](proposals.length);
 
         for (uint256 i = 0; i < proposals.length; i++) {
-            string memory name = proposals[i].name();
-            if (debug) {
-                console.log("Proposal name:", name);
-            }
-
             proposals[i].run(addresses, address(this));
 
             /// take new snapshot
@@ -71,10 +66,30 @@ contract TestSuite is Test {
                 address[] memory recordedAddresses
             ) = addresses.getRecordedAddresses();
             for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log(recordedNames[j], recordedAddresses[j]);
+                console.log(" - %s: %s", recordedNames[j], recordedAddresses[j]);
             }
         }
 
         return postProposalVmSnapshots;
+    }
+
+    function checkProposalCalldatas(
+        address check
+    ) public returns (bool[] memory calldataMatches) {
+        if (debug) {
+            console.log(
+                "\n\n------- Calldata check (simulation vs mainnet) -------");
+        }
+
+        calldataMatches = new bool[](proposals.length);
+
+        for (uint256 i = 0; i < proposals.length; i++) {
+            console.log("\n\n%s: (Proposal id: %s)", proposals[i].name(), proposals[i].id());
+            console.log(" ");
+            bool doMatch = proposals[i].checkCalldata(check, debug);
+            calldataMatches[i] = doMatch;
+        }
+
+        return calldataMatches;
     }
 }
