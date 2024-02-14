@@ -63,13 +63,13 @@ contract TimelockPostProposalCheck is Test {
                 "PROTOCOL_TIMELOCK",
                 address(timelockController)
             );
-
-            suite.setDebug(true);
-            // Execute proposals
-            suite.testProposals();
-
-            // Proposals execution may change addresses, so we need to update the addresses object.
-            addresses = suite.addresses();
         }
+
+        suite.setDebug(true);
+        // Execute proposals
+        suite.testProposals();
+
+        // Proposals execution may change addresses, so we need to update the addresses object.
+        addresses = suite.addresses();
     }
 }

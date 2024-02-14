@@ -89,6 +89,14 @@ contract GovernorBravoProposal is Proposal {
         // Check proposal is in Pending state
         require(governor.state(proposalId) == Bravo.ProposalState.Pending);
 
+        // Roll to allow proposal activation
+        vm.roll(block.number + governor.votingDelay() + 1);
+        require(governor.state(proposalId) == Bravo.ProposalState.Pending);
+
+        // Activate the proposal
+        vm.prank(proposerAddress);
+        governor.activate(proposalId);
+
         // Roll to Active state (voting period)
         vm.roll(block.number + governor.votingDelay() + 1);
         require(governor.state(proposalId) == Bravo.ProposalState.Active);

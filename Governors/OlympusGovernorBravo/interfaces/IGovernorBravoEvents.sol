@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
-pragma solidity ^0.8.0;
+pragma solidity 0.8.15;
 
 interface IGovernorBravoEventsAndErrors {
-
     // --- ERRORS ---------------------------------------------------------
 
     // Admin Errors
@@ -14,7 +13,11 @@ interface IGovernorBravoEventsAndErrors {
     error GovernorBravo_AddressZero();
     error GovernorBravo_InvalidDelay();
     error GovernorBravo_InvalidPeriod();
+    error GovernorBravo_InvalidGracePeriod();
     error GovernorBravo_InvalidThreshold();
+    error GovernorBravo_InvalidCalldata();
+    error GovernorBravo_Emergency_SupplyTooLow();
+    error GovernorBravo_NotEmergency();
     // Proposal Errors
     error GovernorBravo_Proposal_ThresholdNotMet();
     error GovernorBravo_Proposal_LengthMismatch();
@@ -24,6 +27,8 @@ interface IGovernorBravoEventsAndErrors {
     error GovernorBravo_Proposal_AlreadyPending();
     error GovernorBravo_Proposal_IdCollision();
     error GovernorBravo_Proposal_IdInvalid();
+    error GovernorBravo_Proposal_TooEarly();
+    error GovernorBravo_Proposal_AlreadyActivated();
     // Voting Errors
     error GovernorBravo_InvalidSignature();
     error GovernorBravo_Vote_Closed();
@@ -41,7 +46,6 @@ interface IGovernorBravoEventsAndErrors {
     error GovernorBravo_Cancel_WhitelistedProposer();
     error GovernorBravo_Cancel_AboveThreshold();
     error GovernorBravo_Veto_AlreadyExecuted();
-    
 
     // --- EVENTS ------------------------------------------------------------------
 
@@ -54,9 +58,11 @@ interface IGovernorBravoEventsAndErrors {
         string[] signatures,
         bytes[] calldatas,
         uint256 startBlock,
-        uint256 endBlock,
         string description
     );
+
+    /// @notice Event emitted when a proposal's voting period is activated
+    event ProposalVotingStarted(uint256 id);
 
     /// @notice An event emitted when a vote has been cast on a proposal
     /// @param voter The address which casted a vote

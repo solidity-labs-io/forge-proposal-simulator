@@ -20,6 +20,6 @@ LICENSE
 .solhintrc
 .prettierrc
 .prettierignore
-.svg
+*.svg
 .gitmodules
 .gitignore

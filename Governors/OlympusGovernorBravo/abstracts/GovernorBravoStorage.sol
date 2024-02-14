@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import {IgOHM} from "../interfaces/IgOHM.sol";
 import {ITimelock} from "../interfaces/ITimelock.sol";
 
-abstract contract GovernorBravoDelegatorStorage {
+import "../Kernel.sol";
 
+abstract contract GovernorBravoDelegatorStorage {
     // --- PROXY STATE VARIABLES ---------------------------------------------------
 
     /// @notice Administrator for this contract
@@ -25,7 +26,6 @@ abstract contract GovernorBravoDelegatorStorage {
  * GovernorBravoDelegateStorageVX.
  */
 abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
-
     // --- DATA STRUCTURES ---------------------------------------------------------
 
     struct Proposal {
@@ -47,6 +47,8 @@ abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorag
         string[] signatures;
         /// @notice The ordered list of calldata to be passed to each call
         bytes[] calldatas;
+        /// @notice The codehash for each target contract
+        bytes32[] codehashes;
         /// @notice The block at which voting begins: holders must delegate their votes prior to this block
         uint256 startBlock;
         /// @notice The block at which voting ends: votes must be cast prior to this block
@@ -57,6 +59,8 @@ abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorag
         uint256 againstVotes;
         /// @notice Current number of votes for abstaining for this proposal
         uint256 abstainVotes;
+        /// @notice Flag marking whether the voting period for a proposal has been activated
+        bool votingStarted;
         /// @notice Flag marking whether the proposal has been vetoed
         bool vetoed;
         /// @notice Flag marking whether the proposal has been canceled
@@ -87,7 +91,8 @@ abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorag
         Queued,
         Expired,
         Executed,
-        Vetoed
+        Vetoed,
+        Emergency
     }
 
     // --- STATE VARIABLES ---------------------------------------------------------
@@ -97,6 +102,9 @@ abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorag
 
     /// @notice The duration of voting on a proposal, in blocks
     uint256 public votingPeriod;
+
+    /// @notice The grace period after the voting delay through which a proposal may be activated
+    uint256 public activationGracePeriod;
 
     /// @notice The percentage of total supply required in order for a voter to become a proposer
     /// @dev    Out of 1000
@@ -119,15 +127,18 @@ abstract contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorag
 }
 
 abstract contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
-
     // --- STATE VARIABLES ---------------------------------------------------------
 
-    /// @notice Stores the expiration of account whitelist status as a timestamp
-    mapping(address => uint256) public whitelistAccountExpirations;
-
-    /// @notice Address which manages whitelisted proposals and whitelist accounts
-    address public whitelistGuardian;
+    /// @notice Modules in the Default system that are considered high risk
+    /// @dev    In Default Framework, Keycodes are used to uniquely identify modules. They are a
+    ///         wrapper over the bytes5 data type, and allow us to easily check if a proposal is
+    ///         touching any specific modules
+    mapping(Keycode => bool) public isKeycodeHighRisk;
 
     /// @notice Address which has veto power over all proposals
     address public vetoGuardian;
+
+    /// @notice The central hub of the Default Framework system that manages modules and policies
+    /// @dev    Used in this adaptation of Governor Bravo to identify high risk proposals
+    address public kernel;
 }
