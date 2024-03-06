@@ -15,7 +15,7 @@ interface IAddresses {
     ) external view returns (address);
 
     /// @notice add an address for the current chainId
-    function addAddress(string memory name, address addr) external;
+    function addAddress(string memory name, address addr, bool isContract) external;
 
     /// @notice add an address for a specific chainId
     function addAddress(

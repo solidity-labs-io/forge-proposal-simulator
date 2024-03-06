@@ -61,7 +61,8 @@ contract TimelockPostProposalCheck is Test {
             // Update PROTOCOL_TIMELOCK address
             addresses.changeAddress(
                 "PROTOCOL_TIMELOCK",
-                address(timelockController)
+                address(timelockController),
+                true
             );
         }
 

@@ -33,8 +33,8 @@ contract MULTISIG_01 is MultisigProposal {
         MockToken token = new MockToken();
 
         // Add deployed contracts to the address registry
-        addresses.addAddress("VAULT", address(timelockVault));
-        addresses.addAddress("TOKEN_1", address(token));
+        addresses.addAddress("VAULT", address(timelockVault), true);
+        addresses.addAddress("TOKEN_1", address(token), true);
     }
 
     // Transfers vault ownership to dev multisig.

@@ -79,13 +79,13 @@ Addresses can be added to the object during a proposal or test by calling the
 contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
 
 ```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress);
+addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);
 ```
 
 If the address needs to be added to a chain id that is not the current chain id, that address can still be added by calling the same function with an additional chain id parameter.
 
 ```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress, chainId);
+addresses.addAddress("CONTRACT_NAME", contractAddress, chainId, isContract);
 ```
 
 Both functions will revert with the name, address and chain id in human-readable format if the contract name already has an existing address stored.
@@ -162,7 +162,7 @@ contract PROPOSAL_01 is MultisigProposal {
         MyContract myContract = new MyContract();
 
         // Interact with the Addresses object, adding the new contract address
-        addresses.addAddress("CONTRACT_NAME", address(myContract));
+        addresses.addAddress("CONTRACT_NAME", address(myContract), true);
     }
 }
 ```
