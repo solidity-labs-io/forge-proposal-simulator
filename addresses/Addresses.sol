@@ -133,8 +133,6 @@ contract Addresses is IAddresses, Test {
                 )
             )
         );
-
-        _checkAddress(addr, data.isContract, name, _chainId);
     }
 
     /// @notice get an address for the current chainId
@@ -148,6 +146,7 @@ contract Addresses is IAddresses, Test {
         uint256 _chainId
     ) public view returns (address) {
         return _getAddress(name, _chainId);
+
     }
 
     /// @notice add an address for the current chainId
@@ -284,6 +283,10 @@ contract Addresses is IAddresses, Test {
                 changedAddresses[i].chainId
             ].addr;
         }
+    }
+
+    function isContract(string memory name) public view returns (bool) {
+        return _addresses[name][chainId].isContract;
     }
 
     function _checkAddress(

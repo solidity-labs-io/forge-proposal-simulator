@@ -62,4 +62,6 @@ interface IAddresses {
             address[] memory oldAddresses,
             address[] memory newAddresses
         );
+
+    function isContract(string memory name) external view returns (bool);
 }

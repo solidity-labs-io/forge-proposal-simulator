@@ -49,7 +49,7 @@ contract TestAddresses is Test {
         );
 
         address addr = vm.addr(1);
-        addresses.changeAddress("DEV_MULTISIG", addr, true);
+        addresses.changeAddress("DEV_MULTISIG", addr, false);
 
         assertEq(
             addresses.getAddress("DEV_MULTISIG"),
@@ -81,7 +81,7 @@ contract TestAddresses is Test {
         address addr = vm.addr(1);
 
         uint256 chainId = 31337;
-        addresses.changeAddress("DEV_MULTISIG", addr, chainId, true);
+        addresses.changeAddress("DEV_MULTISIG", addr, chainId, false);
 
         assertEq(
             addresses.getAddress("DEV_MULTISIG", chainId),

@@ -3,7 +3,7 @@
         "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
         "name": "DEV_MULTISIG",
         "chainId": 31337,
-        "isContract": true
+        "isContract": false
     },
     {
         "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
