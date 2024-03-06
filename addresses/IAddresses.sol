@@ -21,17 +21,19 @@ interface IAddresses {
     function addAddress(
         string memory name,
         address addr,
-        uint256 _chainId
+        uint256 _chainId,
+        bool isContract
     ) external;
 
     /// @notice change an address for the current chainId
-    function changeAddress(string memory name, address addr) external;
+    function changeAddress(string memory name, address addr, bool isContract) external;
 
     /// @notice change an address for a specific chainId
     function changeAddress(
         string memory name,
         address _addr,
-        uint256 _chainId
+        uint256 _chainId,
+        bool isContract
     ) external;
 
     /// @notice remove recorded addresses
