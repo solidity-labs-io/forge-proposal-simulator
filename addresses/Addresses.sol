@@ -89,6 +89,10 @@ contract Addresses is IAddresses, Test {
         Address storage currentAddress = _addresses[name][_chainId];
         currentAddress = _addresses[name][_chainId];
 
+        require(addr != address(0), "Address cannot be 0");
+
+        require(_chainId != 0, "ChainId cannot be 0");
+
         require(
             currentAddress.addr == address(0),
             string(
@@ -175,6 +179,11 @@ contract Addresses is IAddresses, Test {
         bool isContract
     ) public {
         Address storage data = _addresses[name][_chainId];
+
+        require(_addr != address(0), "Address cannot be 0");
+
+        require(_chainId != 0, "ChainId cannot be 0");
+
         require(
             data.addr != address(0),
             string(
