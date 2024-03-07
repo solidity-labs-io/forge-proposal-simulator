@@ -17,6 +17,7 @@
         "solidity"
     ],
     "scripts": {
+        "prepare": "husky && husky install",
         "clean": "rm -rf cache out",
         "build": "forge build",
         "lint": "solhint --config ./.solhintrc {addresses,proposals,utils,test,examples}/**/*.sol",
