@@ -15,6 +15,8 @@ contract TestAddresses is Test {
         address addr;
         /// chain id of network to store for
         uint256 chainId;
+        /// whether the address is a contract
+        bool isContract;
         /// name of contract to store
         string name;
     }
@@ -232,4 +234,53 @@ contract TestAddresses is Test {
         vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
         new Addresses(addressesPath);
     }
+
+    function test_addAddressCannotBeZero() public {
+        vm.expectRevert("Address cannot be 0");
+        addresses.addAddress("DEV_MULTISIG", address(0), false);
+    }
+
+    function test_addAddressCannotBeZeroChainId() public {
+        vm.expectRevert("ChainId cannot be 0");
+        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+    }
+
+    function test_revertChangeAddressCannotBeZero() public {
+        vm.expectRevert("Address cannot be 0");
+        addresses.changeAddress("DEV_MULTISIG", address(0), false);
+    }
+
+    function test_revertChangeAddresCannotBeZeroChainId() public {
+        vm.expectRevert("ChainId cannot be 0");
+        addresses.changeAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+    }
+
+    function test_isContractFalse() public {
+        assertEq(addresses.isContract("DEV_MULTISIG"), false);
+    }
+
+    function test_isContractTrue() public {
+        address test = vm.addr(1);
+
+        vm.etch(test, "0x01");
+
+        addresses.addAddress("TEST", test, true);
+
+        assertEq(addresses.isContract("TEST"), true);
+    }
+
+    function test_checkAddressRevertIfNotContract() public {
+        vm.expectRevert("Address: TEST is not a contract on chain: 31337");
+        addresses.addAddress("TEST", vm.addr(1), true);
+    }
+
+    function test_checkAddressRevertIfSetIsContractFalseButIsContract() public {
+        address test = vm.addr(1);
+
+        vm.etch(test, "0x01");
+
+        vm.expectRevert("Address: TEST is a contract on chain: 31337");
+        addresses.addAddress("TEST", test, false);
+    }
+
 }
