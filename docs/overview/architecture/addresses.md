@@ -98,8 +98,8 @@ FPS has the following type checkers implemented for the `addAddress` function:
 - Address must be unique for a given name and chain id.
 - Address must be non-zero.
 - Chain id must be non-zero.
-- Address must be a contracts in the execution chain if `isContract` is set to `true`.
-- Address must not be contracts in the execution chain if `isContract` is set to `false`.
+- Address must be a contract in the specified chain if `isContract` is set to `true`.
+- Address must not be contracts in the specified chain if `isContract` is set to `false`.
 
 Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment the `getRecordedAddresses` function will return all of the newly deployed addresses, and their respective names and chain id's.
 
@@ -117,14 +117,14 @@ If the address needs to be updated on a chain id that is not the current chain i
 addresses.changeAddress("CONTRACT_NAME", contractAddress, chainId);
 ```
 
-FPS has the following type checkers implemented for the `changeAddress`
+FPS has the following type checks implemented for the function `changeAddress`
 function:
 
 - Address must be unique for a given name and chain id.
 - Address must be non-zero.
 - Chain id must be non-zero.
-- Address must be a contracts in the execution chain if `isContract` is set to `true`.
-- Address must not be contracts in the execution chain if `isContract` is set to `false`.
+- Address must be a contract in the specified chain if `isContract` is set to `true`.
+- Address must not be contract in the specified chain if `isContract` is set to `false`.
 - Address must be different from the existing address.
 - An address for the specified name must already exist.
 
@@ -164,7 +164,7 @@ Addresses changed during the proposals executions can be retrieved by calling th
 addresses.getChangedAddresses();
 ```
 
-## Checkers
+## Checks
 
 ### Address exists
 
@@ -181,7 +181,10 @@ addresses.isAddressSet("CONTRACT_NAME", chainId);
 
 ### Address is a contract
 
-The `isContract` function checks if an address is a contract in the execution chain.
+The `isContract` function determines whether an address on the execution chain
+represents a contract. This is useful for distinguishing between contract and
+non-contract addresses, helping to avoid runtime errors when attempting to
+interact with non-existent contracts or contracts not deployed on the current chain.
 
 ```solidity
 addresses.isContract("CONTRACT_NAME");
