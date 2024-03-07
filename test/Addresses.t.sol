@@ -269,6 +269,31 @@ contract TestAddresses is Test {
         assertEq(addresses.isContract("TEST"), true);
     }
 
+    function addressIsPresent() public {
+        address test = vm.addr(1);
+
+        addresses.addAddress("TEST", test, true);
+
+        assertEq(addresses.addressIsSet("TEST"), true);
+    }
+
+    function addressIsNotPresent() public {
+        assertEq(addresses.addressIsSet("TEST"), false);
+    }
+
+    function addressIsPresentOnChain() public {
+        address test = vm.addr(1);
+
+        addresses.addAddress("TEST", test, 123, true);
+
+        assertEq(addresses.addressIsSet("TEST", 123), true);
+    }
+
+    function addressIsNotPresentOnChain() public {
+        assertEq(addresses.addressIsSet("DEV_MULTISIG", 31337), true);
+        assertEq(addresses.addressIsSet("DEV_MULTISIG", 123), false);
+    }
+
     function test_checkAddressRevertIfNotContract() public {
         vm.expectRevert("Address: TEST is not a contract on chain: 31337");
         addresses.addAddress("TEST", vm.addr(1), true);

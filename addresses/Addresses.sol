@@ -289,6 +289,18 @@ contract Addresses is IAddresses, Test {
         return _addresses[name][chainId].isContract;
     }
 
+    function addressIsSet(string memory name) public view returns (bool) {
+        return _addresses[name][chainId].addr != address(0);
+    }
+
+    function addressIsSet(string memory name, uint256 _chainId)
+        public
+        view
+        returns (bool)
+    {
+        return _addresses[name][_chainId].addr != address(0);
+    }
+
     function _checkAddress(
         address _addr,
         bool isContract,
