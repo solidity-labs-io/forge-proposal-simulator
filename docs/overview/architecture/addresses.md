@@ -50,7 +50,7 @@ construction if such a duplicate is detected.
 
 ## Deployment
 
-Usually `Adresses.json` will be deployed as part of the Proposal deployment
+Usually `Addresses.json` will be deployed as part of the Proposal deployment
 process. However, if needed, it can be deployed separately by running:
 
 ```solidity
@@ -93,13 +93,13 @@ If the address needs to be added to a chain id that is not the current chain id,
 addresses.addAddress("CONTRACT_NAME", contractAddress, chainId, isContract);
 ```
 
-FPS has the following type checkers implemented for the `addAddress` function:
+FPS has the following type checks implemented for the function `addAddress`:
 
-- Address must be unique for a given name and chain id.
-- Address must be non-zero.
-- Chain id must be non-zero.
-- Address must be a contract in the specified chain if `isContract` is set to `true`.
-- Address must not be contracts in the specified chain if `isContract` is set to `false`.
+-   Address must be unique for a given name and chain id.
+-   Address must be non-zero.
+-   Chain id must be non-zero.
+-   Address must be a contract in the specified chain if `isContract` is set to `true`.
+-   Address must not be a contract in the specified chain if `isContract` is set to `false`.
 
 Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment the `getRecordedAddresses` function will return all of the newly deployed addresses, and their respective names and chain id's.
 
@@ -117,16 +117,15 @@ If the address needs to be updated on a chain id that is not the current chain i
 addresses.changeAddress("CONTRACT_NAME", contractAddress, chainId);
 ```
 
-FPS has the following type checks implemented for the function `changeAddress`
-function:
+FPS has the following type checks implemented for the function `changeAddress`:
 
-- Address must be unique for a given name and chain id.
-- Address must be non-zero.
-- Chain id must be non-zero.
-- Address must be a contract in the specified chain if `isContract` is set to `true`.
-- Address must not be contract in the specified chain if `isContract` is set to `false`.
-- Address must be different from the existing address.
-- An address for the specified name must already exist.
+-   Address must be unique for a given name and chain id.
+-   Address must be non-zero.
+-   Chain id must be non-zero.
+-   Address must be a contract in the specified chain if `isContract` is set to `true`.
+-   Address must not be a contract in the specified chain if `isContract` is set to `false`.
+-   Address must be different from the existing address.
+-   An address for the specified name must already exist.
 
 After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain id's.
 
@@ -189,7 +188,6 @@ interact with non-existent contracts or contracts not deployed on the current ch
 ```solidity
 addresses.isContract("CONTRACT_NAME");
 ```
-
 
 ### Using with Proposals
 
