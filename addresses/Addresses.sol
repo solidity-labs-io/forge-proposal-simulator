@@ -79,61 +79,6 @@ contract Addresses is IAddresses, Test {
         }
     }
 
-    /// @notice add an address for a specific chainId
-    function _addAddress(
-        string memory name,
-        address addr,
-        uint256 _chainId,
-        bool isContract
-    ) private {
-        Address storage currentAddress = _addresses[name][_chainId];
-
-        require(addr != address(0), "Address cannot be 0");
-
-        require(_chainId != 0, "ChainId cannot be 0");
-
-        require(
-            currentAddress.addr == address(0),
-            string(
-                abi.encodePacked(
-                    "Address: ",
-                    name,
-                    " already set on chain: ",
-                    _chainId.toString()
-                )
-            )
-        );
-
-        _checkAddress(addr, isContract, name, _chainId);
-
-        currentAddress.addr = addr;
-        currentAddress.isContract = isContract;
-
-        vm.label(addr, name);
-    }
-
-    function _getAddress(
-        string memory name,
-        uint256 _chainId
-    ) private view returns (address addr) {
-        require(_chainId != 0, "ChainId cannot be 0");
-
-        Address memory data = _addresses[name][_chainId];
-        addr = data.addr;
-
-        require(
-            addr != address(0),
-            string(
-                abi.encodePacked(
-                    "Address: ",
-                    name,
-                    " not set on chain: ",
-                    _chainId.toString()
-                )
-            )
-        );
-    }
-
     /// @notice get an address for the current chainId
     function getAddress(string memory name) public view returns (address) {
         return _getAddress(name, chainId);
@@ -284,20 +229,78 @@ contract Addresses is IAddresses, Test {
         }
     }
 
+    /// @notice check if an address is a contract
     function isContract(string memory name) public view returns (bool) {
         return _addresses[name][chainId].isContract;
     }
 
+    /// @notice check if an address is set
     function isAddressSet(string memory name) public view returns (bool) {
         return _addresses[name][chainId].addr != address(0);
     }
 
+    /// @notice check if an address is set for a specific chain id
     function isAddressSet(string memory name, uint256 _chainId)
         public
         view
         returns (bool)
     {
         return _addresses[name][_chainId].addr != address(0);
+    }
+
+    /// @notice add an address for a specific chainId
+    function _addAddress(
+        string memory name,
+        address addr,
+        uint256 _chainId,
+        bool isContract
+    ) private {
+        Address storage currentAddress = _addresses[name][_chainId];
+
+        require(addr != address(0), "Address cannot be 0");
+
+        require(_chainId != 0, "ChainId cannot be 0");
+
+        require(
+            currentAddress.addr == address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " already set on chain: ",
+                    _chainId.toString()
+                )
+            )
+        );
+
+        _checkAddress(addr, isContract, name, _chainId);
+
+        currentAddress.addr = addr;
+        currentAddress.isContract = isContract;
+
+        vm.label(addr, name);
+    }
+
+    function _getAddress(
+        string memory name,
+        uint256 _chainId
+    ) private view returns (address addr) {
+        require(_chainId != 0, "ChainId cannot be 0");
+
+        Address memory data = _addresses[name][_chainId];
+        addr = data.addr;
+
+        require(
+            addr != address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " not set on chain: ",
+                    _chainId.toString()
+                )
+            )
+        );
     }
 
     function _checkAddress(

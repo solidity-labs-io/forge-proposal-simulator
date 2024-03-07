@@ -11,7 +11,7 @@ interface IAddresses {
     /// @notice get an address for a specific chainId
     function getAddress(
         string memory name,
-        uint256 _chainId
+        uint256 chainId
     ) external view returns (address);
 
     /// @notice add an address for the current chainId
@@ -21,7 +21,7 @@ interface IAddresses {
     function addAddress(
         string memory name,
         address addr,
-        uint256 _chainId,
+        uint256 chainId,
         bool isContract
     ) external;
 
@@ -31,8 +31,8 @@ interface IAddresses {
     /// @notice change an address for a specific chainId
     function changeAddress(
         string memory name,
-        address _addr,
-        uint256 _chainId,
+        address addr,
+        uint256 chainId,
         bool isContract
     ) external;
 
@@ -66,10 +66,10 @@ interface IAddresses {
     /// @notice check if an address is a contract
     function isContract(string memory name) external view returns (bool);
 
-    /// @notice check is an address is set
+    /// @notice check if an address is set
     function isAddressSet(string memory name) external view returns (bool);
 
-    /// @notice check is an address is set for a specific chainId
-    function isAddressSet(string memory name, uint256 _chainId) external view returns (bool);
+    /// @notice check if an address is set for a specific chain id
+    function isAddressSet(string memory name, uint256 chainId) external view returns (bool);
 
 }
