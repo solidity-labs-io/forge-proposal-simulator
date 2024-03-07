@@ -1,4 +1,4 @@
-{
+
     "name": "standard-repo",
     "description": "Foundry-based library for proposals simulations",
     "version": "1.0.0",
@@ -17,6 +17,7 @@
         "solidity"
     ],
     "scripts": {
+        "prepare": "husky"
         "clean": "rm -rf cache out",
         "build": "forge build",
         "lint": "solhint --config ./.solhintrc {addresses,proposals,utils,test,examples}/**/*.sol",
