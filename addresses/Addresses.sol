@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
@@ -11,7 +10,7 @@ import {Strings} from "@openzeppelin/utils/Strings.sol";
 /// for a given network.
 contract Addresses is IAddresses, Test {
     using Strings for uint256;
-    
+
     struct Address {
         address addr;
         bool isContract;
@@ -90,11 +89,14 @@ contract Addresses is IAddresses, Test {
         uint256 _chainId
     ) public view returns (address) {
         return _getAddress(name, _chainId);
-
     }
 
     /// @notice add an address for the current chainId
-    function addAddress(string memory name, address addr, bool isContract) public {
+    function addAddress(
+        string memory name,
+        address addr,
+        bool isContract
+    ) public {
         _addAddress(name, addr, chainId, isContract);
 
         recordedAddresses.push(RecordedAddress({name: name, chainId: chainId}));
@@ -155,7 +157,11 @@ contract Addresses is IAddresses, Test {
         _checkAddress(_addr, isContract, name, _chainId);
 
         changedAddresses.push(
-            ChangedAddress({name: name, chainId: _chainId, oldAddress: data.addr})
+            ChangedAddress({
+                name: name,
+                chainId: _chainId,
+                oldAddress: data.addr
+            })
         );
 
         data.addr = _addr;
@@ -164,7 +170,11 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice change an address for the current chainId
-    function changeAddress(string memory name, address addr, bool isContract) public {
+    function changeAddress(
+        string memory name,
+        address addr,
+        bool isContract
+    ) public {
         changeAddress(name, addr, chainId, isContract);
     }
 
@@ -240,11 +250,10 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice check if an address is set for a specific chain id
-    function isAddressSet(string memory name, uint256 _chainId)
-        public
-        view
-        returns (bool)
-    {
+    function isAddressSet(
+        string memory name,
+        uint256 _chainId
+    ) public view returns (bool) {
         return _addresses[name][_chainId].addr != address(0);
     }
 
