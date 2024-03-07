@@ -274,11 +274,11 @@ contract TestAddresses is Test {
 
         addresses.addAddress("TEST", test, true);
 
-        assertEq(addresses.addressIsSet("TEST"), true);
+        assertEq(addresses.isAddressSet("TEST"), true);
     }
 
     function addressIsNotPresent() public {
-        assertEq(addresses.addressIsSet("TEST"), false);
+        assertEq(addresses.isAddressSet("TEST"), false);
     }
 
     function addressIsPresentOnChain() public {
@@ -286,12 +286,12 @@ contract TestAddresses is Test {
 
         addresses.addAddress("TEST", test, 123, true);
 
-        assertEq(addresses.addressIsSet("TEST", 123), true);
+        assertEq(addresses.isAddressSet("TEST", 123), true);
     }
 
     function addressIsNotPresentOnChain() public {
-        assertEq(addresses.addressIsSet("DEV_MULTISIG", 31337), true);
-        assertEq(addresses.addressIsSet("DEV_MULTISIG", 123), false);
+        assertEq(addresses.isAddressSet("DEV_MULTISIG", 31337), true);
+        assertEq(addresses.isAddressSet("DEV_MULTISIG", 123), false);
     }
 
     function test_checkAddressRevertIfNotContract() public {
