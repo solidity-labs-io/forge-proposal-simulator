@@ -87,7 +87,6 @@ contract Addresses is IAddresses, Test {
         bool isContract
     ) private {
         Address storage currentAddress = _addresses[name][_chainId];
-        currentAddress = _addresses[name][_chainId];
 
         require(addr != address(0), "Address cannot be 0");
 
