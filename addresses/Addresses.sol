@@ -74,11 +74,14 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice get an address for the current chainId
+    /// @param name the name of the address
     function getAddress(string memory name) public view returns (address) {
         return _getAddress(name, block.chainid);
     }
 
     /// @notice get an address for a specific chainId
+    /// @param name the name of the address
+    /// @param _chainId the chain id
     function getAddress(
         string memory name,
         uint256 _chainId
@@ -87,6 +90,9 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice add an address for the current chainId
+    /// @param name the name of the address
+    /// @param addr the address to add
+    /// @param isContract whether the address is a contract
     function addAddress(
         string memory name,
         address addr,
@@ -100,6 +106,10 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice add an address for a specific chainId
+    /// @param name the name of the address
+    /// @param addr the address to add
+    /// @param _chainId the chain id
+    /// @param isContract whether the address is a contract
     function addAddress(
         string memory name,
         address addr,
@@ -114,6 +124,10 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice change an address for a specific chainId
+    /// @param name the name of the address
+    /// @param _addr the address to change to
+    /// @param chainId the chain id
+    /// @param isContract whether the address is a contract
     function changeAddress(
         string memory name,
         address _addr,
@@ -167,6 +181,9 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice change an address for the current chainId
+    /// @param name the name of the address
+    /// @param addr the address to change to
+    /// @param isContract whether the address is a contract
     function changeAddress(
         string memory name,
         address addr,
@@ -237,16 +254,20 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice check if an address is a contract
+    /// @param name the name of the address
     function isAddressContract(string memory name) public view returns (bool) {
         return _addresses[name][block.chainid].isContract;
     }
 
     /// @notice check if an address is set
+    /// @param name the name of the address
     function isAddressSet(string memory name) public view returns (bool) {
         return _addresses[name][block.chainid].addr != address(0);
     }
 
     /// @notice check if an address is set for a specific chain id
+    /// @param name the name of the address
+    /// @param chainId the chain id
     function isAddressSet(
         string memory name,
         uint256 chainId
@@ -255,6 +276,10 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice add an address for a specific chainId
+    /// @param name the name of the address
+    /// @param addr the address to add
+    /// @param chainId the chain id
+    /// @param isContract whether the address is a contract
     function _addAddress(
         string memory name,
         address addr,
@@ -287,6 +312,9 @@ contract Addresses is IAddresses, Test {
         vm.label(addr, name);
     }
 
+    /// @notice get an address for a specific chainId
+    /// @param name the name of the address
+    /// @param chainId the chain id
     function _getAddress(
         string memory name,
         uint256 chainId
@@ -309,6 +337,11 @@ contract Addresses is IAddresses, Test {
         );
     }
 
+    /// @notice check if an address is a contract
+    /// @param _addr the address to check
+    /// @param isContract whether the address is a contract
+    /// @param name the name of the address
+    /// @param chainId the chain id
     function _checkAddress(
         address _addr,
         bool isContract,
