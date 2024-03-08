@@ -180,13 +180,13 @@ addresses.isAddressSet("CONTRACT_NAME", chainId);
 
 ### Address is a contract
 
-The `isContract` function determines whether an address on the execution chain
+The `isAddressContract` function determines whether an address on the execution chain
 represents a contract. This is useful for distinguishing between contract and
 non-contract addresses, helping to avoid runtime errors when attempting to
 interact with non-existent contracts or contracts not deployed on the current chain.
 
 ```solidity
-addresses.isContract("CONTRACT_NAME");
+addresses.isAddressContract("CONTRACT_NAME");
 ```
 
 ### Using with Proposals

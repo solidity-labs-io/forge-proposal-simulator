@@ -237,7 +237,7 @@ contract Addresses is IAddresses, Test {
     }
 
     /// @notice check if an address is a contract
-    function isContract(string memory name) public view returns (bool) {
+    function isAddressContract(string memory name) public view returns (bool) {
         return _addresses[name][block.chainid].isContract;
     }
 

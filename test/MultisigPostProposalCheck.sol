@@ -40,7 +40,7 @@ contract MultisigPostProposalCheck is Test {
         // a deployed multisig contract isn't available. In real-world applications,
         // you'd typically have a multisig contract in place. Use this code
         // only as a reference
-        bool isContract = addresses.isContract("DEV_MULTISIG");
+        bool isContract = addresses.isAddressContract("DEV_MULTISIG");
         address multisig;
         if (!isContract) {
             multisig = addresses.getAddress("DEV_MULTISIG");
@@ -54,7 +54,7 @@ contract MultisigPostProposalCheck is Test {
         } else {
             multisig = addresses.getAddress("DEV_MULTISIG");
         }
-        
+
         suite.setDebug(true);
         // Execute proposals
         suite.testProposals();

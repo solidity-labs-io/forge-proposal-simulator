@@ -256,7 +256,7 @@ contract TestAddresses is Test {
     }
 
     function test_isContractFalse() public {
-        assertEq(addresses.isContract("DEV_MULTISIG"), false);
+        assertEq(addresses.isAddressContract("DEV_MULTISIG"), false);
     }
 
     function test_isContractTrue() public {
@@ -266,7 +266,7 @@ contract TestAddresses is Test {
 
         addresses.addAddress("TEST", test, true);
 
-        assertEq(addresses.isContract("TEST"), true);
+        assertEq(addresses.isAddressContract("TEST"), true);
     }
 
     function addressIsPresent() public {
@@ -307,5 +307,4 @@ contract TestAddresses is Test {
         vm.expectRevert("Address: TEST is a contract on chain: 31337");
         addresses.addAddress("TEST", test, false);
     }
-
 }
