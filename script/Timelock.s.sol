@@ -46,7 +46,8 @@ contract TimelockScript is ScriptSuite {
             // Update PROTOCOL_TIMELOCK address
             addresses.changeAddress(
                 "PROTOCOL_TIMELOCK",
-                address(timelockController)
+                address(timelockController),
+                true
             );
 
             proposal.setDebug(true);

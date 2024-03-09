@@ -15,6 +15,8 @@ contract TestAddresses is Test {
         address addr;
         /// chain id of network to store for
         uint256 chainId;
+        /// whether the address is a contract
+        bool isContract;
         /// name of contract to store
         string name;
     }
@@ -49,7 +51,7 @@ contract TestAddresses is Test {
         );
 
         address addr = vm.addr(1);
-        addresses.changeAddress("DEV_MULTISIG", addr);
+        addresses.changeAddress("DEV_MULTISIG", addr, false);
 
         assertEq(
             addresses.getAddress("DEV_MULTISIG"),
@@ -69,7 +71,7 @@ contract TestAddresses is Test {
         vm.expectRevert(
             "Address: DEV_MULTISIG already set to the same value on chain: 31337"
         );
-        addresses.changeAddress("DEV_MULTISIG", addr);
+        addresses.changeAddress("DEV_MULTISIG", addr, true);
     }
 
     function test_changeAddressChainId() public {
@@ -81,7 +83,7 @@ contract TestAddresses is Test {
         address addr = vm.addr(1);
 
         uint256 chainId = 31337;
-        addresses.changeAddress("DEV_MULTISIG", addr, chainId);
+        addresses.changeAddress("DEV_MULTISIG", addr, chainId, false);
 
         assertEq(
             addresses.getAddress("DEV_MULTISIG", chainId),
@@ -92,7 +94,7 @@ contract TestAddresses is Test {
 
     function test_addAddress() public {
         address addr = vm.addr(1);
-        addresses.addAddress("TEST", addr);
+        addresses.addAddress("TEST", addr, false);
 
         assertEq(addresses.getAddress("TEST"), addr);
     }
@@ -100,7 +102,7 @@ contract TestAddresses is Test {
     function test_addAddressChainId() public {
         address addr = vm.addr(1);
         uint256 chainId = 123;
-        addresses.addAddress("TEST", addr, chainId);
+        addresses.addAddress("TEST", addr, chainId, false);
 
         assertEq(addresses.getAddress("TEST", chainId), addr);
     }
@@ -108,7 +110,7 @@ contract TestAddresses is Test {
     function test_addAddressDifferentChain() public {
         address addr = vm.addr(1);
         uint256 chainId = 123;
-        addresses.addAddress("DEV_MULTISIG", addr, chainId);
+        addresses.addAddress("DEV_MULTISIG", addr, chainId, false);
 
         assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr);
         // Validate that the 'DEV_MULTISIG' address for chain 31337 matches the address from Addresses.json.
@@ -135,7 +137,7 @@ contract TestAddresses is Test {
     function test_getRecordingAddresses() public {
         // Add a new address
         address addr = vm.addr(1);
-        addresses.addAddress("TEST", addr);
+        addresses.addAddress("TEST", addr, false);
 
         (
             string[] memory names,
@@ -170,7 +172,7 @@ contract TestAddresses is Test {
 
     function test_getChangedAddresses() public {
         address addr = vm.addr(1);
-        addresses.changeAddress("DEV_MULTISIG", addr);
+        addresses.changeAddress("DEV_MULTISIG", addr, false);
         (
             string[] memory names,
             uint256[] memory chainIds,
@@ -211,19 +213,19 @@ contract TestAddresses is Test {
 
     function test_revertAddAddressAlreadySet() public {
         vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
-        addresses.addAddress("DEV_MULTISIG", vm.addr(1));
+        addresses.addAddress("DEV_MULTISIG", vm.addr(1), false);
     }
 
     function test_revertAddAddressChainAlreadySet() public {
         vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
-        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 31337);
+        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 31337, false);
     }
 
     function test_revertChangedAddressDoesNotExist() public {
         vm.expectRevert(
             "Address: TEST doesn't exist on chain: 31337. Use addAddress instead"
         );
-        addresses.changeAddress("TEST", vm.addr(1));
+        addresses.changeAddress("TEST", vm.addr(1), false);
     }
 
     function test_revertDuplicateAddressInJson() public {
@@ -231,5 +233,78 @@ contract TestAddresses is Test {
 
         vm.expectRevert("Address: DEV_MULTISIG already set on chain: 31337");
         new Addresses(addressesPath);
+    }
+
+    function test_addAddressCannotBeZero() public {
+        vm.expectRevert("Address cannot be 0");
+        addresses.addAddress("DEV_MULTISIG", address(0), false);
+    }
+
+    function test_addAddressCannotBeZeroChainId() public {
+        vm.expectRevert("ChainId cannot be 0");
+        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+    }
+
+    function test_revertChangeAddressCannotBeZero() public {
+        vm.expectRevert("Address cannot be 0");
+        addresses.changeAddress("DEV_MULTISIG", address(0), false);
+    }
+
+    function test_revertChangeAddresCannotBeZeroChainId() public {
+        vm.expectRevert("ChainId cannot be 0");
+        addresses.changeAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+    }
+
+    function test_isContractFalse() public {
+        assertEq(addresses.isAddressContract("DEV_MULTISIG"), false);
+    }
+
+    function test_isContractTrue() public {
+        address test = vm.addr(1);
+
+        vm.etch(test, "0x01");
+
+        addresses.addAddress("TEST", test, true);
+
+        assertEq(addresses.isAddressContract("TEST"), true);
+    }
+
+    function addressIsPresent() public {
+        address test = vm.addr(1);
+
+        addresses.addAddress("TEST", test, true);
+
+        assertEq(addresses.isAddressSet("TEST"), true);
+    }
+
+    function addressIsNotPresent() public {
+        assertEq(addresses.isAddressSet("TEST"), false);
+    }
+
+    function addressIsPresentOnChain() public {
+        address test = vm.addr(1);
+
+        addresses.addAddress("TEST", test, 123, true);
+
+        assertEq(addresses.isAddressSet("TEST", 123), true);
+    }
+
+    function addressIsNotPresentOnChain() public {
+        assertEq(addresses.isAddressSet("DEV_MULTISIG", 31337), true);
+        assertEq(addresses.isAddressSet("DEV_MULTISIG", 123), false);
+    }
+
+    function test_checkAddressRevertIfNotContract() public {
+        vm.expectRevert("Address: TEST is not a contract on chain: 31337");
+        addresses.addAddress("TEST", vm.addr(1), true);
+    }
+
+    function test_checkAddressRevertIfSetIsContractFalseButIsContract() public {
+        address test = vm.addr(1);
+
+        vm.etch(test, "0x01");
+
+        vm.expectRevert("Address: TEST is a contract on chain: 31337");
+        addresses.addAddress("TEST", test, false);
     }
 }

@@ -24,8 +24,8 @@ contract BRAVO_01 is GovernorBravoProposal {
         Vault timelockVault = new Vault();
         MockToken token = new MockToken();
 
-        addresses.addAddress("VAULT", address(timelockVault));
-        addresses.addAddress("TOKEN_1", address(token));
+        addresses.addAddress("VAULT", address(timelockVault), true);
+        addresses.addAddress("TOKEN_1", address(token), true);
     }
 
     // Transfers vault ownership to timelock.

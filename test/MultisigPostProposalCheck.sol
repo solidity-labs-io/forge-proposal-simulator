@@ -40,13 +40,19 @@ contract MultisigPostProposalCheck is Test {
         // a deployed multisig contract isn't available. In real-world applications,
         // you'd typically have a multisig contract in place. Use this code
         // only as a reference
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-        uint256 multisigSize;
-        assembly {
-            multisigSize := extcodesize(multisig)
-        }
-        if (multisigSize == 0) {
-            vm.etch(multisig, Constants.SAFE_BYTECODE);
+        bool isContract = addresses.isAddressContract("DEV_MULTISIG");
+        address multisig;
+        if (!isContract) {
+            multisig = addresses.getAddress("DEV_MULTISIG");
+            uint256 multisigSize;
+            assembly {
+                multisigSize := extcodesize(multisig)
+            }
+            if (multisigSize == 0) {
+                vm.etch(multisig, Constants.SAFE_BYTECODE);
+            }
+        } else {
+            multisig = addresses.getAddress("DEV_MULTISIG");
         }
 
         suite.setDebug(true);

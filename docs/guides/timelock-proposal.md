@@ -38,8 +38,8 @@ contract TIMELOCK_01 is TimelockProposal {
         MockToken token = new MockToken();
 
         // Add deployed contracts to the address registry
-        addresses.addAddress("VAULT", address(timelockVault));
-        addresses.addAddress("TOKEN_1", address(token));
+        addresses.addAddress("VAULT", address(timelockVault), true);
+        addresses.addAddress("TOKEN_1", address(token), true);
     }
 
     // Transfers vault ownership to timelock.

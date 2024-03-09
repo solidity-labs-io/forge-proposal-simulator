@@ -13,27 +13,32 @@ Deployed contract addresses are registered along with their respective names and
     {
         "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
         "name": "DEV_MULTISIG",
-        "chainId": 1234
+        "chainId": 1234,
+        "isContract": true
     },
     {
         "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
         "name": "TEAM_MULTISIG",
-        "chainId": 1234
+        "chainId": 1234,
+        "isContract": true
     },
     {
         "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
         "name": "PROTOCOL_TIMELOCK",
-        "chainId": 1234
+        "chainId": 1234,
+        "isContract": true
     },
     {
         "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
         "name": "TIMELOCK_PROPOSER",
-        "chainId": 1234
+        "chainId": 1234,
+        "isContract": true
     },
     {
         "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
         "name": "TIMELOCK_EXECUTOR",
-        "chainId": 123
+        "chainId": 123,
+        "isContract": true
     }
 ]
 ```
@@ -45,7 +50,7 @@ construction if such a duplicate is detected.
 
 ## Deployment
 
-Usually `adresses.json` will be deployed as part of the Proposal deployment
+Usually `Addresses.json` will be deployed as part of the Proposal deployment
 process. However, if needed, it can be deployed separately by running:
 
 ```solidity
@@ -58,7 +63,7 @@ contract DeployAddresses is Script {
     Addresses addresses;
 
     function run() public virtual {
-        string memory addressesPath = "./addresses/addresses.json";
+        string memory addressesPath = "./addresses/Addresses.json";
         addresses = new Addresses(addressesPath);
     }
 }
@@ -79,16 +84,22 @@ Addresses can be added to the object during a proposal or test by calling the
 contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
 
 ```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress);
+addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);
 ```
 
 If the address needs to be added to a chain id that is not the current chain id, that address can still be added by calling the same function with an additional chain id parameter.
 
 ```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress, chainId);
+addresses.addAddress("CONTRACT_NAME", contractAddress, chainId, isContract);
 ```
 
-Both functions will revert with the name, address and chain id in human-readable format if the contract name already has an existing address stored.
+FPS has the following type checks implemented for the function `addAddress`:
+
+-   Address must be unique for a given name and chain id.
+-   Address must be non-zero.
+-   Chain id must be non-zero.
+-   Address must be a contract in the specified chain if `isContract` is set to `true`.
+-   Address must not be a contract in the specified chain if `isContract` is set to `false`.
 
 Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment the `getRecordedAddresses` function will return all of the newly deployed addresses, and their respective names and chain id's.
 
@@ -97,7 +108,7 @@ Addresses can be added before the proposal runs by modifying the Addresses JSON 
 If an address is already stored, and the name stays the same, but the address changes during a proposal or test, the `changeAddress` function can be called with the new address for the name.
 
 ```solidity
-addresses.changeAddress("CONTRACT_NAME", contractAddress);
+addresses.changeAddress("CONTRACT_NAME", contractAddress, isContract);
 ```
 
 If the address needs to be updated on a chain id that is not the current chain id, that address can still be updated by calling the same function with an additional chain id parameter.
@@ -106,7 +117,15 @@ If the address needs to be updated on a chain id that is not the current chain i
 addresses.changeAddress("CONTRACT_NAME", contractAddress, chainId);
 ```
 
-Both functions will revert if the address does not already have an address set or the address to be set is the same as the existing address.
+FPS has the following type checks implemented for the function `changeAddress`:
+
+-   Address must be unique for a given name and chain id.
+-   Address must be non-zero.
+-   Chain id must be non-zero.
+-   Address must be a contract in the specified chain if `isContract` is set to `true`.
+-   Address must not be a contract in the specified chain if `isContract` is set to `false`.
+-   Address must be different from the existing address.
+-   An address for the specified name must already exist.
 
 After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain id's.
 
@@ -144,6 +163,32 @@ Addresses changed during the proposals executions can be retrieved by calling th
 addresses.getChangedAddresses();
 ```
 
+## Checks
+
+### Address exists
+
+The `isAddressSet` function checks if an address exists in the Addresses
+contract storage.
+
+```solidity
+addresses.isAddressSet("CONTRACT_NAME");
+```
+
+```solidity
+addresses.isAddressSet("CONTRACT_NAME", chainId);
+```
+
+### Address is a contract
+
+The `isAddressContract` function determines whether an address on the execution chain
+represents a contract. This is useful for distinguishing between contract and
+non-contract addresses, helping to avoid runtime errors when attempting to
+interact with non-existent contracts or contracts not deployed on the current chain.
+
+```solidity
+addresses.isAddressContract("CONTRACT_NAME");
+```
+
 ### Using with Proposals
 
 All proposal [internal functions](./internal-functions.md) receive an `Addresses` instance as the
@@ -162,7 +207,7 @@ contract PROPOSAL_01 is MultisigProposal {
         MyContract myContract = new MyContract();
 
         // Interact with the Addresses object, adding the new contract address
-        addresses.addAddress("CONTRACT_NAME", address(myContract));
+        addresses.addAddress("CONTRACT_NAME", address(myContract), true);
     }
 }
 ```

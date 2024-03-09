@@ -60,7 +60,7 @@ contract GovernorBravoPostProposalCheck is Test {
                 govToken = address(govTokenContract);
 
                 // Update PROTOCOL_GOVERNANCE_TOKEN address
-                addresses.changeAddress("PROTOCOL_GOVERNANCE_TOKEN", govToken);
+                addresses.changeAddress("PROTOCOL_GOVERNANCE_TOKEN", govToken, true);
             }
 
             // Deploy and configure the timelock
@@ -91,9 +91,9 @@ contract GovernorBravoPostProposalCheck is Test {
             GovernorBravoDelegate(governor)._initiate(govAlpha);
 
             // Update PROTOCOL_GOVERNOR address
-            addresses.changeAddress("PROTOCOL_GOVERNOR", governor);
+            addresses.changeAddress("PROTOCOL_GOVERNOR", governor, true);
             // Update PROTOCOL_TIMELOCK address
-            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelock));
+            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelock), true);
         }
 
         suite.setDebug(true);
