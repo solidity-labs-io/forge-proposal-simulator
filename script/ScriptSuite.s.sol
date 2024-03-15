@@ -26,4 +26,11 @@ contract ScriptSuite is Script {
             console.log(recordedNames[j], recordedAddresses[j]);
         }
     }
+
+    function checkProposalCalldatas(
+        address check
+    ) public returns (bool calldataMatches) {
+        console.log("Comparing calldata for proposal vs forked environment.");
+        return proposal.checkCalldata(check, true);
+    }
 }

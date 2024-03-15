@@ -17,6 +17,11 @@ contract TIMELOCK_03 is TimelockProposal {
         return "Withdraw tokens from Vault";
     }
 
+    // Returns the hash of the predecessor proposal.
+    function predecessor() public view override returns (bytes32) {
+        return bytes32(0);
+    }
+
     // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build(Addresses addresses) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");

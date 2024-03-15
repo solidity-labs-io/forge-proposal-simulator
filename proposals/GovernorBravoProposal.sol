@@ -11,6 +11,9 @@ import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-
 contract GovernorBravoProposal is Proposal {
     using Address for address;
 
+    // @notice override this to set the proposal id
+    function id() public view virtual returns (uint256) {}
+
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
     function getCalldata() public view override returns (bytes memory data) {
         (
@@ -35,6 +38,60 @@ contract GovernorBravoProposal is Proposal {
         }
     }
 
+    /// @notice Getter function to get calldata from the proposal id of the forked environment
+    function getForkCalldata(
+        address governor
+    ) public view returns (bytes memory data) {
+        (
+            address[] memory targets,
+            uint[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        ) = GovernorBravoDelegate(governor).getActions(id());
+
+        data = abi.encodeWithSignature(
+            "propose(address[],uint256[],string[],bytes[],string)",
+            targets,
+            values,
+            signatures,
+            calldatas,
+            description()
+        );
+
+        if (DEBUG) {
+            console.log("Calldata for proposal:");
+            console.logBytes(data);
+        }
+    }
+
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(
+        address check,
+        bool debug
+    ) public virtual override returns (bool) {
+        bytes memory dataSim = getCalldata();
+        bytes memory dataFork = getForkCalldata(check);
+
+        bool doMatch = _bytesMatch(dataSim, dataFork);
+
+        if (debug) {
+            console.log("Proposal name:", name());
+            if (doMatch) {
+                console.log(
+                    "  > Simulated calldata matches proposal id %s in the forked environment",
+                    id()
+                );
+            } else {
+                console.log(
+                    "  x Simulated calldata does not match proposal id %s in the forked environment",
+                    id()
+                );
+            }
+        }
+
+        return doMatch;
+    }
+
     /// @notice Simulate governance proposal
     /// @param governorAddress address of the Governor Bravo Delegator contract
     /// @param governanceToken address of the governance token of the system
@@ -47,7 +104,7 @@ contract GovernorBravoProposal is Proposal {
         GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
 
         {
-            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            // Ensure proposer has met minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
             uint256 proposalThreshold = governor.proposalThreshold();
             uint256 votingPower = quorumVotes > proposalThreshold
@@ -107,5 +164,20 @@ contract GovernorBravoProposal is Proposal {
         // Execute the proposal
         governor.execute(proposalId);
         require(governor.state(proposalId) == Bravo.ProposalState.Executed);
+    }
+
+    function _bytesMatch(
+        bytes memory a_,
+        bytes memory b_
+    ) internal pure returns (bool) {
+        if (a_.length != b_.length) {
+            return false;
+        }
+        for (uint i = 0; i < a_.length; i++) {
+            if (a_[i] != b_[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -9,6 +9,19 @@ import "@forge-std/Test.sol";
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract TimelockProposalTest is TimelockPostProposalCheck {
+    // Check if simulated calldatas match the ones from the forked environment.
+    function test_calldataMatch() public {
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        bool[] memory matches = suite.checkProposalCalldatas(timelock);
+        if (checkCalldata) {
+            for (uint256 i; i < matches.length; i++) {
+                assertTrue(matches[i]);
+            }
+        } else {
+            console2.log("Skipping calldata check");
+        }
+    }
+
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");

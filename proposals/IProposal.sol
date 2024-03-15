@@ -42,6 +42,9 @@ interface IProposal {
     // @notice Print proposal calldata
     function getCalldata() external returns (bytes memory data);
 
+    // @notice Check proposal calldata against the forked environment
+    function checkCalldata(address check, bool debug) external returns (bool);
+
     // @notice set the debug flag
     function setDebug(bool debug) external;
 }

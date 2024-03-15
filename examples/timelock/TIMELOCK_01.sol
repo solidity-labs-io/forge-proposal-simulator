@@ -19,6 +19,11 @@ contract TIMELOCK_01 is TimelockProposal {
         return "Timelock proposal mock";
     }
 
+    // Returns the hash of the predecessor proposal.
+    function predecessor() public view override returns (bytes32) {
+        return bytes32(0);
+    }
+
     // Deploys a vault contract and an ERC20 token contract.
     function _deploy(Addresses addresses, address) internal override {
         Vault timelockVault = new Vault();

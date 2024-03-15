@@ -14,6 +14,7 @@ contract TimelockPostProposalCheck is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
     Addresses public addresses;
+    bool public checkCalldata;
 
     function setUp() public {
         TIMELOCK_01 timelockProposal = new TIMELOCK_01();
@@ -39,7 +40,8 @@ contract TimelockPostProposalCheck is Test {
             // retrieve the size of the code, this needs assembly
             timelockSize := extcodesize(timelock)
         }
-        if (timelockSize == 0) {
+        if (timelockSize != 0) checkCalldata = true;
+        else {
             // Get proposer and executor addresses
             address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
             address executor = addresses.getAddress("TIMELOCK_EXECUTOR");

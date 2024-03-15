@@ -17,6 +17,11 @@ contract TIMELOCK_02 is TimelockProposal {
         return "Deposit MockToken into Vault";
     }
 
+    // Returns the hash of the predecessor proposal.
+    function predecessor() public view override returns (bytes32) {
+        return bytes32(0);
+    }
+
     // Sets up actions for the proposal, in this case, depositing MockToken into Vault.
     function _build(Addresses addresses) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
