@@ -12,7 +12,13 @@ contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getCalldata() public view override returns (bytes memory data) {
+    function getCalldata()
+        public
+        view
+        virtual
+        override
+        returns (bytes memory data)
+    {
         (
             address[] memory targets,
             uint256[] memory values,
