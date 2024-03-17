@@ -2,12 +2,13 @@
 
 FPS enables the simulation of proposals within integration tests. This
 capability is essential for verifying the functionality of your proposals and
-ensuring they don't break existing features or ensuring the correctness of a deployment / governance proposal.
+ensuring they don't break existing features or ensuring the correctness of a
+deployment script or governance proposal.
 
 ## Setting Up PostProposalCheck.sol
 
 The first step is to create a `PostProposalCheck.sol` contract, which serves as
-a base for your integration test contracts. This contract is responsable for
+a base for your integration test contracts. This contract is responsible for
 deploying proposal contracts, executing them, and updating the addresses object. We'll illustrate this with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md).
 
 ```solidity
@@ -174,5 +175,5 @@ Executing the integration tests triggers the `setUp()` function before each test
 tests are always executed on a fresh state after the proposals execution.
 
 ```bash
-forge test --mc MultisigProposalIntegrationTest -vvv
+forge test --mc MultisigProposalTest -vvv
 ```
