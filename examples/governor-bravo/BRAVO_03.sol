@@ -5,19 +5,18 @@ import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 
-// Mock proposal that withdraws MockToken from Vault.
+/// @notice Mock proposal that withdraws MockToken from Vault.
 contract BRAVO_03 is GovernorBravoProposal {
-    // Returns the name of the proposal.
-    function name() public pure override returns (string memory) {
-        return "BRAVO_03";
-    }
+    /// @notice proposal name.
+    string public override name = "BRAVO_03";
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
     }
 
-    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    /// @param addresses The addresses contract.
     function _build(Addresses addresses) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
@@ -35,7 +34,8 @@ contract BRAVO_03 is GovernorBravoProposal {
         );
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
+    /// @param addresses The addresses contract.
     function _run(Addresses addresses, address) internal override {
         // Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
@@ -50,7 +50,8 @@ contract BRAVO_03 is GovernorBravoProposal {
         _simulateActions(governor, govToken, proposer);
     }
 
-    // Validates the post-execution state.
+    /// @notice Validates the post-execution state.
+    /// @param addresses The addresses contract.
     function _validate(Addresses addresses, address) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
