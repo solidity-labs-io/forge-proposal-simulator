@@ -72,7 +72,6 @@ contract BRAVO_04 is AlphaProposal, GovernorBravoProposal {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
 
-        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
         assertTrue(
             timelockVault.tokenWhitelist(address(token)),
             "token not whitelisted"
