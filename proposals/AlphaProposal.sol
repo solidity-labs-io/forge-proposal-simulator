@@ -2,10 +2,9 @@ pragma solidity ^0.8.0;
 
 import {Strings} from "@openzeppelin/utils/Strings.sol";
 
-import {Vm, VmSafe} from "@forge-std/Vm.sol";
+import {VmSafe} from "@forge-std/Vm.sol";
 
-import {Proposal} from "./Proposal.sol";
-import {Constants} from "@utils/Constants.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 abstract contract AlphaProposal is Proposal {
