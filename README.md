@@ -2,7 +2,7 @@
 
 The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
 
-For guidance on how to use the library please check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
+For guidance on usage, please read the FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
 
 ## Usage
 
@@ -14,7 +14,7 @@ Add `forge-proposal-simulator` to your project using Forge:
 forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 ```
 
-### Step 2: Remapping
+### Step 2: Remappings
 
 Update your remappings.txt to include:
 
@@ -24,8 +24,8 @@ Update your remappings.txt to include:
 
 ### Step 3: Addresses File
 
-Create a JSON file following the standard on
-[Addresses](docs/overview/architecture/addresses.md). We recommend keeping the
+Create a JSON file following the instructions provided in
+[Addresses.md](docs/overview/architecture/addresses.md). We recommend keeping the
 addresses file in a separate folder, for example `./addresses/addresses.json`.
 Once the file is created, be sure to allow read access to `addresses.json` inside of `foundry.toml`.
 
