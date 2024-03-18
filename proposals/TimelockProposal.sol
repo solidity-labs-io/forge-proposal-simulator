@@ -8,8 +8,11 @@ import {Address} from "@utils/Address.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
+    /// @notice timelock cannot get proposal calldata without timelock address
     function getCalldata() public view virtual override returns (bytes memory) {
-        revert("do not call getcalldata on timelock proposal");
+        revert(
+            "getScheduleCalldata on timelock proposal instead of getCalldata"
+        );
     }
 
     /// @notice get schedule calldata
