@@ -18,7 +18,13 @@ abstract contract MultisigProposal is Proposal {
     }
 
     /// @notice log calldata
-    function getCalldata() public view override returns (bytes memory data) {
+    function getCalldata()
+        public
+        view
+        virtual
+        override
+        returns (bytes memory data)
+    {
         // get proposal actions
         (
             address[] memory targets, // ignore values
