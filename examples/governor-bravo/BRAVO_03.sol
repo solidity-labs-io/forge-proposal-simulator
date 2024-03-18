@@ -4,29 +4,16 @@ import {Vault} from "@examples/Vault.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 /// @notice Mock proposal that withdraws MockToken from Vault.
-contract BRAVO_03 is AlphaProposal, GovernorBravoProposal {
+contract BRAVO_03 is GovernorBravoProposal {
     /// @notice proposal name.
     string public override name = "BRAVO_03";
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
-    }
-
-    /// @notice Returns the calldata for the proposal.
-    /// overrides the AlphaProposal.getCalldata and GovernorBravoProposal.getCalldata functions.
-    /// returns GovernorBravoProposal.getCalldata();
-    function getCalldata()
-        public
-        view
-        override(Proposal, GovernorBravoProposal)
-        returns (bytes memory data)
-    {
-        return GovernorBravoProposal.getCalldata();
     }
 
     /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
