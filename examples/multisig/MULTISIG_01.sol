@@ -1,14 +1,16 @@
 pragma solidity ^0.8.0;
 
-import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {AlphaProposal} from "@proposals/AlphaProposal.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
-contract MULTISIG_01 is MultisigProposal {
+contract MULTISIG_01 is AlphaProposal, MultisigProposal {
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_01";
@@ -17,6 +19,16 @@ contract MULTISIG_01 is MultisigProposal {
     // Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Deploy Vault contract";
+    }
+
+    /// @notice retrieve calldata for the proposal
+    function getCalldata()
+        public
+        view
+        override(Proposal, MultisigProposal)
+        returns (bytes memory data)
+    {
+        return MultisigProposal.getCalldata();
     }
 
     // Deploys a vault contract and an ERC20 token contract.
