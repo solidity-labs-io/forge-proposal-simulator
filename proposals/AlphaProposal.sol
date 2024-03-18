@@ -8,7 +8,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 abstract contract AlphaProposal is Proposal {
-    using Strings for string;
+    using Strings for *;
 
     /// @notice starting snapshot of the contract state before the calls are made
     uint256 private _startSnapshot;
@@ -28,7 +28,7 @@ abstract contract AlphaProposal is Proposal {
     function _startBuild(address caller) internal {
         _startSnapshot = vm.snapshot();
         vm.startPrank(caller);
-        vm.record();
+        vm.startStateDiffRecording();
     }
 
     /// @notice to be used at the end of the build function to snapshot
@@ -36,10 +36,10 @@ abstract contract AlphaProposal is Proposal {
     /// then, stop the prank and record the actions that were taken by the proposal.
     function _endBuild(Addresses addresses) internal {
         vm.stopPrank();
-        /// roll back all state changes made during the governance proposal
-        vm.revertTo(_startSnapshot);
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();
+        /// roll back all state changes made during the governance proposal
+        vm.revertTo(_startSnapshot);
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls, static calls are ignored
@@ -56,16 +56,38 @@ abstract contract AlphaProposal is Proposal {
                     string(
                         abi.encodePacked(
                             "calling ",
-                            accountAccesses[i].account,
+                            accountAccesses[i].account.toHexString(),
                             " with ",
-                            accountAccesses[i].value,
+                            accountAccesses[i].value.toString(),
                             " eth and ",
-                            accountAccesses[i].data,
+                            _bytesToString(accountAccesses[i].data),
                             " data."
                         )
                     )
                 );
             }
         }
+    }
+
+    /// @notice convert bytes to a string
+    /// @param data the bytes to convert to a human readable string
+    function _bytesToString(
+        bytes memory data
+    ) private pure returns (string memory) {
+        /// Initialize an array of characters twice the length of data,
+        /// since each byte will be represented by two hexadecimal characters
+        bytes memory buffer = new bytes(data.length * 2);
+
+        /// Characters for conversion
+        bytes memory characters = "0123456789abcdef";
+
+        for (uint i = 0; i < data.length; i++) {
+            /// For each byte, find the corresponding hexadecimal characters
+            buffer[i * 2] = characters[uint(uint8(data[i] >> 4))];
+            buffer[i * 2 + 1] = characters[uint(uint8(data[i] & 0x0f))];
+        }
+
+        /// Convert the bytes array to a string and return
+        return string(buffer);
     }
 }
