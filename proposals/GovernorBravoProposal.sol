@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@forge-std/console.sol";
-import {Proposal} from "./Proposal.sol";
-import {Address} from "@utils/Address.sol";
-import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
-import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
 import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
+import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
+import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
 
-contract GovernorBravoProposal is Proposal {
+import "@forge-std/console.sol";
+
+import {Address} from "@utils/Address.sol";
+import {Proposal} from "./Proposal.sol";
+
+abstract contract GovernorBravoProposal is Proposal {
     using Address for address;
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
