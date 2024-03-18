@@ -5,7 +5,7 @@ import {Proposal} from "./Proposal.sol";
 import {Address} from "@utils/Address.sol";
 import {Constants} from "@utils/Constants.sol";
 
-contract MultisigProposal is Proposal {
+abstract contract MultisigProposal is Proposal {
     using Address for address;
     bytes32 public constant MULTISIG_BYTECODE_HASH =
         bytes32(
