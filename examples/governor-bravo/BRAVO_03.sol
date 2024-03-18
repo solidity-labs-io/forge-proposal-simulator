@@ -1,12 +1,14 @@
 pragma solidity ^0.8.0;
 
-import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {AlphaProposal} from "@proposals/AlphaProposal.sol";
+import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 /// @notice Mock proposal that withdraws MockToken from Vault.
-contract BRAVO_03 is GovernorBravoProposal {
+contract BRAVO_03 is AlphaProposal, GovernorBravoProposal {
     /// @notice proposal name.
     string public override name = "BRAVO_03";
 
@@ -15,36 +17,51 @@ contract BRAVO_03 is GovernorBravoProposal {
         return "Withdraw tokens from Vault";
     }
 
+    /// @notice Returns the calldata for the proposal.
+    /// overrides the AlphaProposal.getCalldata and GovernorBravoProposal.getCalldata functions.
+    /// returns GovernorBravoProposal.getCalldata();
+    function getCalldata()
+        public
+        view
+        override(Proposal, GovernorBravoProposal)
+        returns (bytes memory data)
+    {
+        return GovernorBravoProposal.getCalldata();
+    }
+
     /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     /// @param addresses The addresses contract.
-    function _build(Addresses addresses) internal override {
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelockVault));
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "withdraw(address,address,uint256)",
-                token,
-                timelock,
-                balance
-            ),
-            "Withdraw tokens from Vault"
-        );
+
+        /// CALL -- filtered out because VM calls are not recorded
+        vm.warp(block.timestamp + 1 weeks + 1);
+
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).withdraw(token, payable(timelock), balance);
     }
 
     /// @notice Executes the proposal actions.
     /// @param addresses The addresses contract.
     function _run(Addresses addresses, address) internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("BRAVO_PROPOSER");
 
-        // Simulate time passing, vault time lock is 1 week
+        /// Simulate time passing, vault time lock is 1 week
         vm.warp(block.timestamp + 1 weeks + 1);
 
         _simulateActions(governor, govToken, proposer);

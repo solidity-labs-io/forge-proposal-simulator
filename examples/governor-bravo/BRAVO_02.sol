@@ -1,13 +1,15 @@
 pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 /// @notice Mock proposal that deposits MockToken into Vault.
-contract BRAVO_02 is GovernorBravoProposal {
-    // Returns the name of the proposal.
+contract BRAVO_02 is AlphaProposal, GovernorBravoProposal {
+    /// @notice Returns the name of the proposal.
     string public override name = "BRAVO_02";
 
     /// @notice Provides a brief description of the proposal.
@@ -15,28 +17,36 @@ contract BRAVO_02 is GovernorBravoProposal {
         return "Deposit MockToken into Vault";
     }
 
+    /// @notice Returns the calldata for the proposal.
+    /// overrides the AlphaProposal.getCalldata and GovernorBravoProposal.getCalldata functions.
+    /// returns GovernorBravoProposal.getCalldata();
+    function getCalldata()
+        public
+        view
+        override(Proposal, GovernorBravoProposal)
+        returns (bytes memory data)
+    {
+        return GovernorBravoProposal.getCalldata();
+    }
+
     /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
     /// @param addresses The addresses contract.
-    function _build(Addresses addresses) internal override {
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelock));
 
-        _pushAction(
-            token,
-            abi.encodeWithSignature(
-                "approve(address,uint256)",
-                timelockVault,
-                balance
-            ),
-            "Approve MockToken for Vault"
-        );
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature("deposit(address,uint256)", token, balance),
-            "Deposit MockToken into Vault"
-        );
+        /// CALLS -- mutative and recorded
+        MockToken(token).approve(timelockVault, balance);
+        Vault(timelockVault).deposit(token, balance);
     }
 
     /// @notice Executes the proposal actions.

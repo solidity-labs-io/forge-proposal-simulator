@@ -17,6 +17,9 @@ contract BRAVO_04 is AlphaProposal, GovernorBravoProposal {
         return "Withdraw tokens from Vault";
     }
 
+    /// @notice Returns the calldata for the proposal.
+    /// overrides the AlphaProposal.getCalldata and GovernorBravoProposal.getCalldata functions.
+    /// returns GovernorBravoProposal.getCalldata();
     function getCalldata()
         public
         view
@@ -69,7 +72,6 @@ contract BRAVO_04 is AlphaProposal, GovernorBravoProposal {
     // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
         MockToken token = MockToken(addresses.getAddress("TOKEN_2"));
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
 
         assertTrue(

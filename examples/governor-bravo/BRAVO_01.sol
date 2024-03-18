@@ -1,20 +1,34 @@
 pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 /// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
 /// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
 /// Finally the proposal whitelist the ERC20 token in the Vault contract
-contract BRAVO_01 is GovernorBravoProposal {
+contract BRAVO_01 is AlphaProposal, GovernorBravoProposal {
     /// @notice Returns the name of the proposal.
     string public override name = "BRAVO_01";
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Governor Bravo proposal mock";
+    }
+
+    /// @notice Returns the calldata for the proposal.
+    /// overrides the AlphaProposal.getCalldata and GovernorBravoProposal.getCalldata functions.
+    /// returns GovernorBravoProposal.getCalldata();
+    function getCalldata()
+        public
+        view
+        override(Proposal, GovernorBravoProposal)
+        returns (bytes memory data)
+    {
+        return GovernorBravoProposal.getCalldata();
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
@@ -52,18 +66,19 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
     /// @param addresses The addresses contract.
-    function _build(Addresses addresses) internal override {
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                token,
-                true
-            ),
-            "Set token to active"
-        );
+
+        /// CALL -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
     /// @notice Executes the proposal actions.
