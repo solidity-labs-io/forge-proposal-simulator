@@ -14,15 +14,18 @@ abstract contract Proposal is Test, Script, IProposal {
         string description;
     }
 
+    /// @notice list of actions to be executed, regardless of proposal type
+    /// they all follow the same structure
     Action[] public actions;
 
+    /// @notice debug flag to print proposal actions and steps
     bool internal DEBUG;
 
     /// @notice override this to set the proposal name
-    function name() external view virtual returns (string memory) {}
+    function name() external view virtual returns (string memory);
 
     /// @notice override this to set the proposal description
-    function description() public view virtual returns (string memory) {}
+    function description() public view virtual returns (string memory);
 
     /// @notice main function
     /// @dev do not override
@@ -81,7 +84,7 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice Print proposal calldata
-    function getCalldata() public virtual returns (bytes memory data) {}
+    function getCalldata() public virtual returns (bytes memory data);
 
     /// @notice Print out proposal actions
     /// @dev do not override
