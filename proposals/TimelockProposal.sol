@@ -8,6 +8,10 @@ import {Address} from "@utils/Address.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
+    function getCalldata() public view override returns (bytes memory) {
+        revert("do not call getcalldata on timelock proposal");
+    }
+
     /// @notice get schedule calldata
     function getScheduleCalldata(
         address timelock
