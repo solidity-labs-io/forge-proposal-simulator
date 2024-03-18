@@ -4,6 +4,7 @@ import "@forge-std/Test.sol";
 import {TestSuite} from "@test/TestSuite.t.sol";
 import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 import {BRAVO_02} from "@examples/governor-bravo/BRAVO_02.sol";
+import {BRAVO_03} from "@examples/governor-bravo/BRAVO_03.sol";
 import {BRAVO_04} from "@examples/governor-bravo/BRAVO_04.sol";
 import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
 import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
@@ -22,13 +23,15 @@ contract GovernorBravoPostProposalCheck is Test {
     function setUp() public virtual {
         BRAVO_01 governorProposal1 = new BRAVO_01();
         BRAVO_02 governorProposal2 = new BRAVO_02();
-        BRAVO_04 governorProposal3 = new BRAVO_04();
+        BRAVO_03 governorProposal3 = new BRAVO_03();
+        BRAVO_04 governorProposal4 = new BRAVO_04();
 
         // Populate addresses array
-        address[] memory proposalsAddresses = new address[](3);
+        address[] memory proposalsAddresses = new address[](4);
         proposalsAddresses[0] = address(governorProposal1);
         proposalsAddresses[1] = address(governorProposal2);
         proposalsAddresses[2] = address(governorProposal3);
+        proposalsAddresses[3] = address(governorProposal4);
 
         // Deploy TestSuite contract
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
