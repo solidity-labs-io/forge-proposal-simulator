@@ -4,32 +4,21 @@ import {Vault} from "@examples/Vault.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
-// Mock proposal that withdraw tokens from Vault
-contract MULTISIG_03 is AlphaProposal, MultisigProposal {
-    // Returns the name of the proposal.
+/// Mock proposal that withdraw tokens from Vault
+contract MULTISIG_03 is MultisigProposal {
+    /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_03";
     }
 
-    // Provides a brief description of the proposal.
+    /// Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
     }
 
-    /// @notice retrieve calldata for the proposal
-    function getCalldata()
-        public
-        view
-        override(Proposal, MultisigProposal)
-        returns (bytes memory data)
-    {
-        return MultisigProposal.getCalldata();
-    }
-
-    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build(
         Addresses addresses
     )
