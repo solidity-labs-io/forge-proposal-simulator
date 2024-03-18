@@ -1,150 +1,28 @@
 import { ethers } from 'ethers';
+import * as fs from 'fs';
 
-// ABI format specified
-const abi = [
-	{
-		"inputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "a",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "b",
-						"type": "uint256"
-					},
-					{
-						"components": [
-							{
-								"internalType": "bytes",
-								"name": "c",
-								"type": "bytes"
-							},
-							{
-								"internalType": "uint256",
-								"name": "d",
-								"type": "uint256"
-							},
-							{
-								"components": [
-									{
-										"internalType": "string",
-										"name": "c",
-										"type": "string"
-									},
-									{
-										"internalType": "uint256",
-										"name": "d",
-										"type": "uint256"
-									}
-								],
-								"internalType": "struct Encoder.StructC",
-								"name": "structC",
-								"type": "tuple"
-							}
-						],
-						"internalType": "struct Encoder.StructB",
-						"name": "structB",
-						"type": "tuple"
-					}
-				],
-				"internalType": "struct Encoder.structA",
-				"name": "simpleStruct",
-				"type": "tuple"
-			},
-			{
-				"internalType": "uint256",
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"inputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "a",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "b",
-						"type": "uint256"
-					},
-					{
-						"components": [
-							{
-								"internalType": "bytes",
-								"name": "c",
-								"type": "bytes"
-							},
-							{
-								"internalType": "uint256",
-								"name": "d",
-								"type": "uint256"
-							},
-							{
-								"components": [
-									{
-										"internalType": "string",
-										"name": "c",
-										"type": "string"
-									},
-									{
-										"internalType": "uint256",
-										"name": "d",
-										"type": "uint256"
-									}
-								],
-								"internalType": "struct Encoder.StructC",
-								"name": "structC",
-								"type": "tuple"
-							}
-						],
-						"internalType": "struct Encoder.StructB",
-						"name": "structB",
-						"type": "tuple"
-					}
-				],
-				"internalType": "struct Encoder.structA",
-				"name": "someStruct",
-				"type": "tuple"
-			},
-			{
-				"internalType": "uint256",
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"name": "encode",
-		"outputs": [
-			{
-				"internalType": "bytes",
-				"name": "",
-				"type": "bytes"
-			}
-		],
-		"stateMutability": "pure",
-		"type": "function"
-	}
-];
+const args = process.argv;
+const contract = args[2];
+const constructorInputs = Array(JSON.parse(args[3]));
+
+function extractABI(contractName: string): any {
+	contractName = contractName.replace(":", "/");
+
+	// TODO: take artifact path directly from foundry.toml
+    const filePath = `out/${contractName}.json`;
+
+    try {
+        const jsonData = fs.readFileSync(filePath, 'utf-8');
+        const contractJSON = JSON.parse(jsonData);
+        
+        return contractJSON.abi;
+    } catch (error) {
+        console.error('Error reading or parsing JSON file:', error);
+        return null;
+    }
+}
+
+const abi = extractABI(contract);
 
 // Function to encode data based on the ABI format
 function encodeData(abi: any[], constructorInputs: any[]): string {
@@ -184,12 +62,12 @@ function encodeData(abi: any[], constructorInputs: any[]): string {
 
     const types = generateTypeArray(abi);
 
-    return ethers.utils.defaultAbiCoder.encode(types, constructorInputs);
+    return ethers.utils.defaultAbiCoder.encode(types, constructorInputs[0]);
 }
 
 // Example usage
-const constructorInputs = [["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2]]], 2, 3];
+// const constructorInputs = [["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2]]], 2, 3];
 
 // Encode the constructor inputs
 const encodedData = encodeData(abi, constructorInputs);
-console.log("Encoded data:", encodedData);
+process.stdout.write(encodedData);
