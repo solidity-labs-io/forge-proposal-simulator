@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
-import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
