@@ -17,7 +17,7 @@ abstract contract AlphaProposal is Proposal {
     modifier buildModifier(address caller, Addresses addresses) {
         _startBuild(caller);
         _;
-        _endBuild(addresses);
+        _endBuild(caller, addresses);
     }
 
     /// @notice to be used by the build function to create a governance proposal
@@ -34,20 +34,27 @@ abstract contract AlphaProposal is Proposal {
     /// @notice to be used at the end of the build function to snapshot
     /// the actions performed by the proposal and revert these changes
     /// then, stop the prank and record the actions that were taken by the proposal.
-    function _endBuild(Addresses addresses) internal {
+    function _endBuild(address caller, Addresses addresses) internal {
         vm.stopPrank();
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();
+
         /// roll back all state changes made during the governance proposal
-        vm.revertTo(_startSnapshot);
+        require(
+            vm.revertTo(_startSnapshot),
+            "failed to revert back to snapshot, unsafe state to run proposal"
+        );
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
-            /// only care about calls, static calls are ignored
-            /// calls to and from Addresses contract are ignored
+            /// only care about calls from the original caller,
+            /// static calls are ignored,
+            /// calls to and from Addresses and the vm contract are ignored
             if (
-                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
                 accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].accessor != address(addresses)
+                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
+                accountAccesses[i].accessor != address(addresses) &&
+                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
+                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
             ) {
                 _pushAction(
                     accountAccesses[i].value,
