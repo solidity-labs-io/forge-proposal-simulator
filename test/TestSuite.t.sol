@@ -70,11 +70,10 @@ contract TestSuite is Test {
                 ,
                 address[] memory recordedAddresses
             ) = addresses.getRecordedAddresses();
+
             for (uint256 j = 0; j < recordedNames.length; j++) {
                 console.log(recordedNames[j], recordedAddresses[j]);
             }
         }
-
-        return postProposalVmSnapshots;
     }
 }
