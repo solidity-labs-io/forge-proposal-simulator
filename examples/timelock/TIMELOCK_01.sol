@@ -4,40 +4,34 @@ import {Vault} from "@examples/Vault.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
-contract TIMELOCK_01 is AlphaProposal, TimelockProposal {
-    // Returns the name of the proposal.
+contract TIMELOCK_01 is TimelockProposal {
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
 
-    /// @notice always reverts, do not use this method for timelock proposals
-    function getCalldata()
-        public
-        view
-        override(Proposal, TimelockProposal)
-        returns (bytes memory data)
-    {
-        return TimelockProposal.getCalldata();
-    }
-
-    // Deploys a vault contract and an ERC20 token contract.
+    /// @notice Deploys a vault contract and an ERC20 token contract.
+    /// @param addresses The addresses contract.
     function _deploy(Addresses addresses, address) internal override {
-        Vault timelockVault = new Vault();
-        MockToken token = new MockToken();
+        if (!addresses.isAddressSet("VAULT")) {
+            Vault timelockVault = new Vault();
+            addresses.addAddress("VAULT", address(timelockVault), true);
+        }
 
-        addresses.addAddress("VAULT", address(timelockVault), true);
-        addresses.addAddress("TOKEN_1", address(token), true);
+        if (!addresses.isAddressSet("TOKEN_1")) {
+            MockToken token = new MockToken();
+            addresses.addAddress("TOKEN_1", address(token), true);
+        }
     }
 
     // Transfers vault ownership to timelock.

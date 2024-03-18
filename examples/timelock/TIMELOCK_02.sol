@@ -4,32 +4,21 @@ import {Vault} from "@examples/Vault.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // Mock proposal that deposits MockToken into Vault.
-contract TIMELOCK_02 is AlphaProposal, TimelockProposal {
-    // Returns the name of the proposal.
+contract TIMELOCK_02 is TimelockProposal {
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_02";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Deposit MockToken into Vault";
     }
 
-    /// @notice always reverts, do not use this method for timelock proposals
-    function getCalldata()
-        public
-        view
-        override(Proposal, TimelockProposal)
-        returns (bytes memory data)
-    {
-        return TimelockProposal.getCalldata();
-    }
-
-    // Sets up actions for the proposal, in this case, depositing MockToken into Vault.
+    /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
     function _build(
         Addresses addresses
     )

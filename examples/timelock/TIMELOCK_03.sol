@@ -4,11 +4,10 @@ import {Vault} from "@examples/Vault.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {AlphaProposal} from "@proposals/AlphaProposal.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // Mock proposal that withdraws MockToken from Vault.
-contract TIMELOCK_03 is AlphaProposal, TimelockProposal {
+contract TIMELOCK_03 is TimelockProposal {
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_PROPOSAL_MOCK";
