@@ -6,7 +6,7 @@ import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 /// @notice Mock proposal that withdraws MockToken from Vault
-/// using the AlphaProposal type.
+/// using the GovernorBravoProposal type.
 contract BRAVO_04 is GovernorBravoProposal {
     string public override name = "BRAVO_04";
 
