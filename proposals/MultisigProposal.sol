@@ -1,8 +1,9 @@
 pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
-import {Proposal} from "./Proposal.sol";
+
 import {Address} from "@utils/Address.sol";
+import {Proposal} from "./Proposal.sol";
 import {Constants} from "@utils/Constants.sol";
 
 abstract contract MultisigProposal is Proposal {
@@ -17,22 +18,16 @@ abstract contract MultisigProposal is Proposal {
         bytes callData;
     }
 
-    /// @notice log calldata
-    function getCalldata()
-        public
-        view
-        virtual
-        override
-        returns (bytes memory data)
-    {
-        // get proposal actions
+    /// @notice return calldata, log if debug is set to true
+    function getCalldata() public view override returns (bytes memory data) {
+        /// get proposal actions
         (
-            address[] memory targets, // ignore values
+            address[] memory targets, /// ignore values
             ,
             bytes[] memory arguments
         ) = getProposalActions();
 
-        // create calls array with targets and arguments
+        /// create calls array with targets and arguments
         Call[] memory calls = new Call[](targets.length);
 
         for (uint256 i; i < calls.length; i++) {
@@ -40,7 +35,7 @@ abstract contract MultisigProposal is Proposal {
             calls[i] = Call({target: targets[i], callData: arguments[i]});
         }
 
-        // generate calldata
+        /// generate calldata
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
 
         if (DEBUG) {
@@ -56,7 +51,8 @@ abstract contract MultisigProposal is Proposal {
         );
         vm.startPrank(multisig);
 
-        // this is a hack because multisig execTransaction requires owners signatures so we can't use to simulate it
+        /// this is a hack because multisig execTransaction requires owners signatures
+        /// so we cannot simulate it exactly as it will be executed on mainnet
         vm.etch(multisig, Constants.MULTICALL_BYTECODE);
 
         bytes memory data = getCalldata();
@@ -67,7 +63,7 @@ abstract contract MultisigProposal is Proposal {
             console.logBytes(result);
         }
 
-        // revert contract code to original safe bytecode
+        /// revert contract code to original safe bytecode
         vm.etch(multisig, Constants.SAFE_BYTECODE);
 
         vm.stopPrank();
