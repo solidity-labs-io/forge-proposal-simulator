@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0
+
 pragma solidity ^0.8.0;
 
 contract ExampleTypeCheck {
@@ -13,17 +15,25 @@ contract ExampleTypeCheck {
     }
     struct StructA {
         address varA1;
-        uint256 varA2;
+        bytes32 varA2;
         StructB structB;
     }
 
-    constructor(StructA memory structA, uint256 arg1, uint256 arg2) {}
+    constructor(
+        StructA memory structA,
+        string[] memory arg1,
+        uint256[] memory arg2,
+        bytes[] memory arg3,
+        StructB[] memory structb
+    ) {}
 
     function encode(
         StructA memory structA,
-        uint256 arg1,
-        uint256 arg2
+        string[] memory arg1,
+        uint256[] memory arg2,
+        bytes[] memory arg3,
+        StructB[] memory structb
     ) external pure returns (bytes memory) {
-        return abi.encode(structA, arg1, arg2);
+        return abi.encode(structA, arg1, arg2, arg3, structb);
     }
 }

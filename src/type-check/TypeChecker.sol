@@ -28,7 +28,6 @@ contract TypeChecker is Test {
         string memory addressesData = string(
             abi.encodePacked(vm.readFile(typeCheckAddressesPath))
         );
-        console.log("Address Data: ", addressesData);
 
         bytes memory parsedJson = vm.parseJson(addressesData);
 
@@ -44,19 +43,7 @@ contract TypeChecker is Test {
             commands[0] = "npx";
             commands[1] = "ts-node";
             commands[2] = "typescript/encode.ts";
-            commands[3] = string(
-                abi.encodePacked(
-                    "'",
-                    savedTypeCheckAddresses[i].constructorArgs,
-                    "'"
-                )
-            );
-            console.log(
-                "Constructor Args: ",
-                savedTypeCheckAddresses[i].constructorArgs
-            );
-            console.log("Name: ", savedTypeCheckAddresses[i].name);
-            console.log("Artifact: ", savedTypeCheckAddresses[i].artifactPath);
+            commands[3] = savedTypeCheckAddresses[i].constructorArgs;
             commands[4] = savedTypeCheckAddresses[i].artifactPath;
 
             bytes memory result = vm.ffi(commands);

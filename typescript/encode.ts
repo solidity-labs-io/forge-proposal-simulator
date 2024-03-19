@@ -2,14 +2,19 @@ import { ethers } from 'ethers';
 import * as fs from 'fs';
 
 const args = process.argv;
-const contract = args[2];
-const constructorInputs = Array(JSON.parse(args[3]));
 
-function extractABI(contractName: string): any {
-	contractName = contractName.replace(":", "/");
+// Removes '\' from command line args
+const cleanedArg = args[2].replace(/\\/g, "");
+
+const constructorInputs = JSON.parse(cleanedArg);
+
+const artifactPath = args[3];
+
+function extractABI(artifactPath: string): any {
+	artifactPath = artifactPath.replace(":", "/");
 
 	// TODO: take artifact path directly from foundry.toml
-    const filePath = `out/${contractName}.json`;
+    const filePath = `out/${artifactPath}.json`;
 
     try {
         const jsonData = fs.readFileSync(filePath, 'utf-8');
@@ -22,7 +27,7 @@ function extractABI(contractName: string): any {
     }
 }
 
-const abi = extractABI(contract);
+const abi = extractABI(artifactPath);
 
 // Function to encode data based on the ABI format
 function encodeData(abi: any[], constructorInputs: any[]): string {
@@ -40,6 +45,9 @@ function encodeData(abi: any[], constructorInputs: any[]): string {
         function traverseInputs(inputs: any, depth: number): any {
             if (depth == 0) {
                 return inputs.map((input: any) => {
+					if (input.type === 'tuple[]') {
+						return `tuple(${traverseInputs(input.components, depth + 1)})[]`
+					}
                     if (input.type === 'tuple') {
                         return `tuple(${traverseInputs(input.components, depth + 1)})`;
                     } else {
@@ -48,7 +56,10 @@ function encodeData(abi: any[], constructorInputs: any[]): string {
                 });
             }
             return inputs.map((input: any) => {
-                if (input.type === 'tuple') {
+				if (input.type === 'tuple[]') {
+					return `tuple(${traverseInputs(input.components, depth + 1)})[]`
+				}
+                else if (input.type === 'tuple') {
                     return `tuple(${traverseInputs(input.components, depth + 1)})`;
                 } else {
                     return input.type;
@@ -62,11 +73,8 @@ function encodeData(abi: any[], constructorInputs: any[]): string {
 
     const types = generateTypeArray(abi);
 
-    return ethers.utils.defaultAbiCoder.encode(types, constructorInputs[0]);
+    return ethers.utils.defaultAbiCoder.encode(types, constructorInputs);
 }
-
-// Example usage
-// const constructorInputs = [["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2, ["0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5", 2]]], 2, 3];
 
 // Encode the constructor inputs
 const encodedData = encodeData(abi, constructorInputs);
