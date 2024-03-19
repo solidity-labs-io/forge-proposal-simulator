@@ -7,37 +7,43 @@ In the `proposals` folder, create a new file called `BRAVO_01.sol` and add the f
 ```solidity
 pragma solidity ^0.8.0;
 
-import { GovernorBravoProposal } from "@proposals/GovernorBravoProposal.sol";
-import { MockToken } from "@examples/MockToken.sol";
-import { Addresses } from "@addresses/Addresses.sol";
-import { Vault } from "@examples/Vault.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
-// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
-// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
-// Finally the proposal whitelist the ERC20 token in the Vault contract
+/// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
+/// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
+/// Finally the proposal whitelist the ERC20 token in the Vault contract
 contract BRAVO_01 is GovernorBravoProposal {
-    // Returns the name of the proposal.
-    function name() public pure override returns (string memory) {
-        return "BRAVO_01";
-    }
+    /// @notice Returns the name of the proposal.
+    string public override name = "BRAVO_01";
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Governor Bravo proposal mock";
     }
 
-    // Deploys a vault contract and an ERC20 token contract.
+    /// @notice Deploys a vault contract and an ERC20 token contract.
+    /// @param addresses The addresses contract.
     function _deploy(Addresses addresses, address) internal override {
-        Vault timelockVault = new Vault();
-        MockToken token = new MockToken();
+        if (!addresses.isAddressSet("VAULT")) {
+            Vault timelockVault = new Vault();
+            addresses.addAddress("VAULT", address(timelockVault), true);
+        }
 
-        addresses.addAddress("VAULT", address(timelockVault), true);
-        addresses.addAddress("TOKEN_1", address(token), true);
+        if (!addresses.isAddressSet("TOKEN_1")) {
+            MockToken token = new MockToken();
+            addresses.addAddress("TOKEN_1", address(token), true);
+        }
     }
 
-    // Transfers vault ownership to timelock.
-    // Transfer token ownership to timelock.
-    // Transfers all tokens to timelock.
+    /// @notice steps:
+    /// 1. Transfers vault ownership to timelock.
+    /// 2. Transfer token ownership to timelock.
+    /// 3. Transfers all tokens to timelock.
+    /// @param addresses The addresses contract.
+    /// @param deployer The contract deployer address.
     function _afterDeploy(
         Addresses addresses,
         address deployer
@@ -51,23 +57,29 @@ contract BRAVO_01 is GovernorBravoProposal {
         token.transfer(timelock, token.balanceOf(address(deployer)));
     }
 
-    // Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build(Addresses addresses) internal override {
+    /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
+    /// @param addresses The addresses contract.
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                token,
-                true
-            ),
-            "Set token to active"
-        );
+
+        /// CALL -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
+    /// @param addresses The addresses contract.
     function _run(Addresses addresses, address) internal override {
+        // Call parent _run function to check if there are actions to execute
+        super._run(addresses, address(0));
+
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("BRAVO_PROPOSER");
@@ -75,7 +87,8 @@ contract BRAVO_01 is GovernorBravoProposal {
         _simulateActions(governor, govToken, proposer);
     }
 
-    // Validates the post-execution state.
+    /// @notice Validates the post-execution state.
+    /// @param addresses The addresses contract.
     function _validate(Addresses addresses, address) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -91,14 +104,14 @@ contract BRAVO_01 is GovernorBravoProposal {
 }
 ```
 
-Let's go through each of the functions we are overriding here.
+Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
 -   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
+-   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. Use the `buildModifier` to ensure that the proposal is only executed by the timelock, which is owned by the governor. If the modifier is not used, actions will not be added to the proposal array and the calldata will be generated incorrectly.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
@@ -138,14 +151,14 @@ involves creating an `addresses.json` file.
 ]
 ```
 
-With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `GovernorBravoScript.s.sol` in the `scripts` folder and add the following code:
+With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `GovernorBravoScript.s.sol` in the `scripts/` folder and add the following code:
 
 ```solidity
 pragma solidity ^0.8.0;
 
-import { ScriptSuite } from "@script/ScriptSuite.s.sol";
-import { BRAVO_01 } from "@examples/governor-bravo/BRAVO_01.sol";
-import { Constants } from "@utils/Constants.sol";
+import {ScriptSuite} from "@script/ScriptSuite.s.sol";
+import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
+import {Constants} from "@utils/Constants.sol";
 
 // @notice GovernorBravoScript is a script that runs BRAVO_01 proposal.
 // BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract

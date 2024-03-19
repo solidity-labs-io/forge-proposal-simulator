@@ -1,38 +1,41 @@
 pragma solidity ^0.8.0;
 
-import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
-// Mock proposal that withdraw tokens from Vault
+/// Mock proposal that withdraw tokens from Vault
 contract MULTISIG_03 is MultisigProposal {
-    // Returns the name of the proposal.
+    /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_03";
     }
 
-    // Provides a brief description of the proposal.
+    /// Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
     }
 
-    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelockVault));
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "withdraw(address,address,uint256)",
-                token,
-                devMultisig,
-                balance
-            ),
-            "Withdraw tokens from Vault"
-        );
+
+        /// CALL -- filtered out because VM calls are not recorded
+        vm.warp(block.timestamp + 1 weeks + 1);
+
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).withdraw(token, payable(devMultisig), balance);
     }
 
     // Executes the proposal actions.

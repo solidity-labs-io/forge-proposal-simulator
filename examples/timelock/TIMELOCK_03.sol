@@ -1,9 +1,9 @@
 pragma solidity ^0.8.0;
 
-import {TimelockProposal} from "@proposals/TimelockProposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // Mock proposal that withdraws MockToken from Vault.
 contract TIMELOCK_03 is TimelockProposal {
@@ -18,21 +18,24 @@ contract TIMELOCK_03 is TimelockProposal {
     }
 
     // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelockVault));
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "withdraw(address,address,uint256)",
-                token,
-                timelock,
-                balance
-            ),
-            "Withdraw tokens from Vault"
-        );
+
+        /// CALL -- filtered out because VM calls are not recorded
+        vm.warp(block.timestamp + 1 weeks + 1);
+
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).withdraw(token, payable(timelock), balance);
     }
 
     // Executes the proposal actions.

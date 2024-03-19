@@ -1,12 +1,21 @@
 pragma solidity ^0.8.0;
 
-import {console} from "@forge-std/console.sol";
-import {Proposal} from "@proposals/Proposal.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+
+import {console} from "@forge-std/console.sol";
+
 import {Address} from "@utils/Address.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
+
+    /// @notice timelock cannot get proposal calldata without timelock address
+    function getCalldata() public view virtual override returns (bytes memory) {
+        revert(
+            "getScheduleCalldata on timelock proposal instead of getCalldata"
+        );
+    }
 
     /// @notice get schedule calldata
     function getScheduleCalldata(

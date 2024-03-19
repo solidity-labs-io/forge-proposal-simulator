@@ -1,31 +1,36 @@
 pragma solidity ^0.8.0;
 
-import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {Vault} from "@examples/Vault.sol";
+import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
-    // Returns the name of the proposal.
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
 
-    // Deploys a vault contract and an ERC20 token contract.
+    /// @notice Deploys a vault contract and an ERC20 token contract.
+    /// @param addresses The addresses contract.
     function _deploy(Addresses addresses, address) internal override {
-        Vault timelockVault = new Vault();
-        MockToken token = new MockToken();
+        if (!addresses.isAddressSet("VAULT")) {
+            Vault timelockVault = new Vault();
+            addresses.addAddress("VAULT", address(timelockVault), true);
+        }
 
-        addresses.addAddress("VAULT", address(timelockVault), true);
-        addresses.addAddress("TOKEN_1", address(token), true);
+        if (!addresses.isAddressSet("TOKEN_1")) {
+            MockToken token = new MockToken();
+            addresses.addAddress("TOKEN_1", address(token), true);
+        }
     }
 
     // Transfers vault ownership to timelock.
@@ -45,18 +50,19 @@ contract TIMELOCK_01 is TimelockProposal {
     }
 
     // Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build(Addresses addresses) internal override {
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                token,
-                true
-            ),
-            "Set token to active"
-        );
+
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
     // Executes the proposal actions.

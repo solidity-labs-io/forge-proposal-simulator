@@ -57,7 +57,7 @@ process. However, if needed, it can be deployed separately by running:
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import { Addresses } from "@addresses/Addresses.sol";
+import {Addresses} from "@addresses/Addresses.sol";
 
 contract DeployAddresses is Script {
     Addresses addresses;
@@ -197,17 +197,20 @@ first paramater. Use the `addresses` variable to add, update, retrieve, and remo
 ```solidity
 pragma solidity ^0.8.0;
 
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
-import { MyContract } from "@path/to/MyContract.sol";
+import {MultisigProposal} from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
+
+import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
+import {MyContract} from "@path/to/MyContract.sol";
 
 contract PROPOSAL_01 is MultisigProposal {
     function _deploy(Addresses addresses, address) internal override {
-        // Deploy a new contract
-        MyContract myContract = new MyContract();
+        if (!addresses.isAddressSet("CONTRACT_NAME")) {
+            /// Deploy a new contract
+            MyContract myContract = new MyContract();
 
-        // Interact with the Addresses object, adding the new contract address
-        addresses.addAddress("CONTRACT_NAME", address(myContract), true);
+            /// Interact with the Addresses object, adding the new contract address
+            addresses.addAddress("CONTRACT_NAME", address(myContract), true);
+        }
     }
 }
 ```
@@ -220,8 +223,8 @@ When writing a script, pass the addresses path to the
 ```solidity
 pragma solidity ^0.8.0;
 
-import { ScriptSuite } from "@forge-proposal-simulator/ScriptSuite.s.sol";
-import { PROPOSAL_01 } from "/path/to/PROPOSAL_01.sol";
+import {ScriptSuite} from "@forge-proposal-simulator/ScriptSuite.s.sol";
+import {PROPOSAL_01} from "/path/to/PROPOSAL_01.sol";
 
 contract ProposalScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
@@ -245,9 +248,10 @@ When writing your [PostProposalCheck](./README.md#post-proposal-check) contract,
 you must pass the addresses path to the `TestSuite.t.sol` constructor.
 
 ```solidity
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { TestSuite } from "@forge-proposal-simulator/test/TestSuite.t.sol";
-import { PROPOSAL_01 } from "path/to/PROPOSAL_01.sol";
+import {PROPOSAL_01} from "path/to/PROPOSAL_01.sol";
+import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
+import {TestSuite} from "@forge-proposal-simulator/test/TestSuite.t.sol";
+
 import "@forge-std/Test.sol";
 
 contract PostProposalCheck is Test {

@@ -1,47 +1,44 @@
 pragma solidity ^0.8.0;
 
-import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
-// Mock proposal that deposit MockToken into Vault.
+/// Mock proposal that deposit MockToken into Vault.
 contract MULTISIG_02 is MultisigProposal {
-    // Returns the name of the proposal.
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_02";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Deposit MockToken into Vault";
     }
 
-    // Sets up actions for the proposal, in this case, depositing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(devMultisig));
-        _pushAction(
-            token,
-            abi.encodeWithSignature(
-                "approve(address,uint256)",
-                timelockVault,
-                balance
-            ),
-            "Approve MockToken for Vault"
-        );
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature("deposit(address,uint256)", token, balance),
-            "Deposit MockToken into Vault"
-        );
+
+        /// CALLS -- mutative and recorded
+        MockToken(token).approve(timelockVault, balance);
+        Vault(timelockVault).deposit(token, balance);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run(Addresses addresses, address) internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
@@ -49,7 +46,7 @@ contract MULTISIG_02 is MultisigProposal {
         _simulateActions(multisig);
     }
 
-    // Validates the post-execution state
+    /// Validates the post-execution state
     function _validate(Addresses addresses, address) internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

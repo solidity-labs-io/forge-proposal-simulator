@@ -12,34 +12,37 @@ In the `proposals` folder, create a new file called `TIMELOCK_01.sol` and add th
 ```solidity
 pragma solidity ^0.8.0;
 
-import { TimelockProposal } from "@forge-proposal-simulator/proposals/TimelockProposal.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "path/to/Vault.sol";
-import { MockToken } from "path/to/MockToken.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
-    // Returns the name of the proposal.
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
 
-    // Deploys a vault contract and an ERC20 token contract.
+    /// @notice Deploys a vault contract and an ERC20 token contract.
+    /// @param addresses The addresses contract.
     function _deploy(Addresses addresses, address) internal override {
-        // Deploy needed contracts
-        Vault timelockVault = new Vault();
-        MockToken token = new MockToken();
+        if (!addresses.isAddressSet("VAULT")) {
+            Vault timelockVault = new Vault();
+            addresses.addAddress("VAULT", address(timelockVault), true);
+        }
 
-        // Add deployed contracts to the address registry
-        addresses.addAddress("VAULT", address(timelockVault), true);
-        addresses.addAddress("TOKEN_1", address(token), true);
+        if (!addresses.isAddressSet("TOKEN_1")) {
+            MockToken token = new MockToken();
+            addresses.addAddress("TOKEN_1", address(token), true);
+        }
     }
 
     // Transfers vault ownership to timelock.
@@ -49,35 +52,29 @@ contract TIMELOCK_01 is TimelockProposal {
         Addresses addresses,
         address deployer
     ) internal override {
-        // Get needed addresses from addresses registry
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        // Transfer ownership of the contracts to the multisig address
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-
-        // Transfer tokens from deployer to multisig address
         token.transfer(timelock, token.balanceOf(address(deployer)));
     }
 
     // Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build(Addresses addresses) internal override {
-        // Get vault and token addresses (deployed on _deploy step)
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
 
-        // Push action to whitelist the MockToken
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                token,
-                true
-            ),
-            "Set token to active"
-        );
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
     // Executes the proposal actions.
@@ -85,51 +82,43 @@ contract TIMELOCK_01 is TimelockProposal {
         // Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
 
-        // Get needed addresses from addresses registry
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-        // Simulates actions on TimelockController
         _simulateActions(timelock, proposer, executor);
     }
 
     // Validates the post-execution state.
     function _validate(Addresses addresses, address) internal override {
-        // Get needed addresses from addresses registry
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        // Validate post-execution state
-        // Vault ownership should be transferred to timelock
         assertEq(timelockVault.owner(), timelock);
-        // Token should be whitelisted on the Vault contract
         assertTrue(timelockVault.tokenWhitelist(address(token)));
-        // Vault should not be paused
         assertFalse(timelockVault.paused());
-        // Token ownership should be transferred to timelock
+
         assertEq(token.owner(), timelock);
-        // Token balance of multisig should be equal to total supply
         assertEq(token.balanceOf(timelock), token.totalSupply());
     }
 }
 ```
 
-Let's go through each of the functions we are overriding here.
+Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
 -   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build(`): Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
+-   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. Use the `buildModifier` to ensure that the proposal is only executed by the timelock, which is owned by the governor. If the modifier is not used, actions will not be added to the proposal array and the calldata will be generated incorrectly.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
-    `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [excheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+    `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
-With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
+With the proposal contract prepared, it can now be executed. There are two options available:
 
 1. **Using `foundry test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
 2. **Using `foundry script`**: This is the chosen method for this scenario.
@@ -158,14 +147,15 @@ involves creating an `addresses.json` file.
 ]
 ```
 
-With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `TimelockScript.s.sol` in the `scripts` folder and add the following code:
+With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `TimelockScript.s.sol` in the `scripts/` folder and add the following code:
 
 ```solidity
 pragma solidity ^0.8.0;
 
-import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import { TimelockController } from "@openzeppelin/governance/TimelockController.sol";
-import { TIMELOCK_01 } from "proposals/TIMELOCK_01.sol";
+import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+
+import {TIMELOCK_01} from "proposals/TIMELOCK_01.sol";
+import {ScriptSuite} from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
 
 // @notice TimelockScript is a script that run TIMELOCK_01 proposal
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
