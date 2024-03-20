@@ -2,7 +2,7 @@
 pragma solidity =0.8.19;
 
 import "forge-std/Script.sol";
-import "../src/ExampleTypeCheck.sol";
+import "../src/type-check/ExampleTypeCheck.sol";
 
 contract MyScript is Script {
     function run() external {
