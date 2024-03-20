@@ -49,6 +49,26 @@ contract TypeChecker is Test {
             bytes memory result = vm.ffi(commands);
             console.log("Results :");
             emit log_bytes(result);
+
+            address contractAddress = deployCode(
+                savedTypeCheckAddresses[i].artifactPath,
+                result
+            );
+            console.log("New deployed code: ");
+            emit log_bytes(contractAddress.code);
+            console.log("Already deployed code: ");
+            emit log_bytes(
+                addresses.getAddress(savedTypeCheckAddresses[i].name).code
+            );
+            require(
+                keccak256(contractAddress.code) ==
+                    keccak256(
+                        addresses
+                            .getAddress(savedTypeCheckAddresses[i].name)
+                            .code
+                    ),
+                "Deployed bytecode not matched"
+            );
         }
     }
 }
