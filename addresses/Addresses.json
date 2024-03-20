@@ -52,6 +52,11 @@
         "name": "BRAVO_PROPOSER",
         "chainId": 31337,
         "isContract": false
-
+    },
+    {
+        "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
+        "chainId": 11155111,
+        "name": "ExampleTypeCheck",
+        "isContract": true
     }
 ]
