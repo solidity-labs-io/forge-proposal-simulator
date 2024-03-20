@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.0;
+pragma solidity =0.8.19;
 
 contract ExampleTypeCheck {
     struct StructC {
@@ -23,7 +23,6 @@ contract ExampleTypeCheck {
         StructA memory structA,
         string[] memory arg1,
         uint256[] memory arg2,
-        bytes[] memory arg3,
         StructB[] memory structb
     ) {}
 
@@ -31,9 +30,8 @@ contract ExampleTypeCheck {
         StructA memory structA,
         string[] memory arg1,
         uint256[] memory arg2,
-        bytes[] memory arg3,
         StructB[] memory structb
     ) external pure returns (bytes memory) {
-        return abi.encode(structA, arg1, arg2, arg3, structb);
+        return abi.encode(structA, arg1, arg2, structb);
     }
 }

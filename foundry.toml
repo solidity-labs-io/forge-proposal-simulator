@@ -3,3 +3,5 @@ libs = ['lib']
 test = 'test'
 fs_permissions = [{ access = "read", path = "./"}]
 evm_version = 'paris'
+optimizer = true
+optimizer_runs = 200
