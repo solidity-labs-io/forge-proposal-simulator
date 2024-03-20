@@ -5,6 +5,7 @@ import {TestSuite} from "@test/TestSuite.t.sol";
 import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 import {BRAVO_02} from "@examples/governor-bravo/BRAVO_02.sol";
 import {BRAVO_03} from "@examples/governor-bravo/BRAVO_03.sol";
+import {BRAVO_04} from "@examples/governor-bravo/BRAVO_04.sol";
 import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
 import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
 import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
@@ -12,8 +13,8 @@ import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol"
 import {Timelock} from "@comp-governance/Timelock.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
-// @notice this is a helper contract to execute proposals before running integration tests.
-// @dev should be inherited by integration test contracts.
+/// @notice this is a helper contract to execute proposals before running integration tests.
+/// @dev should be inherited by integration test contracts.
 contract GovernorBravoPostProposalCheck is Test {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
@@ -23,12 +24,14 @@ contract GovernorBravoPostProposalCheck is Test {
         BRAVO_01 governorProposal1 = new BRAVO_01();
         BRAVO_02 governorProposal2 = new BRAVO_02();
         BRAVO_03 governorProposal3 = new BRAVO_03();
+        BRAVO_04 governorProposal4 = new BRAVO_04();
 
         // Populate addresses array
-        address[] memory proposalsAddresses = new address[](3);
+        address[] memory proposalsAddresses = new address[](4);
         proposalsAddresses[0] = address(governorProposal1);
         proposalsAddresses[1] = address(governorProposal2);
         proposalsAddresses[2] = address(governorProposal3);
+        proposalsAddresses[3] = address(governorProposal4);
 
         // Deploy TestSuite contract
         suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
@@ -60,7 +63,11 @@ contract GovernorBravoPostProposalCheck is Test {
                 govToken = address(govTokenContract);
 
                 // Update PROTOCOL_GOVERNANCE_TOKEN address
-                addresses.changeAddress("PROTOCOL_GOVERNANCE_TOKEN", govToken, true);
+                addresses.changeAddress(
+                    "PROTOCOL_GOVERNANCE_TOKEN",
+                    govToken,
+                    true
+                );
             }
 
             // Deploy and configure the timelock
@@ -93,7 +100,11 @@ contract GovernorBravoPostProposalCheck is Test {
             // Update PROTOCOL_GOVERNOR address
             addresses.changeAddress("PROTOCOL_GOVERNOR", governor, true);
             // Update PROTOCOL_TIMELOCK address
-            addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelock), true);
+            addresses.changeAddress(
+                "PROTOCOL_TIMELOCK",
+                address(timelock),
+                true
+            );
         }
 
         suite.setDebug(true);

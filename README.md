@@ -1,12 +1,12 @@
 # Overview
 
-The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment parameterization and governance action bugs.
+The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment and governance action bugs.
 
-For guidance on how to use the library please check FPS [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
+For guidance on tool usage, please read the [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/).
 
 ## Usage
 
-### Step 1: Add Dependency
+### Step 1: Install
 
 Add `forge-proposal-simulator` to your project using Forge:
 
@@ -14,7 +14,7 @@ Add `forge-proposal-simulator` to your project using Forge:
 forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 ```
 
-### Step 2: Remapping
+### Step 2: Set Remappings
 
 Update your remappings.txt to include:
 
@@ -22,10 +22,10 @@ Update your remappings.txt to include:
 @forge-proposal-simulator=lib/forge-proposal-simulator/
 ```
 
-### Step 3: Addresses File
+### Step 3: Create Addresses File
 
-Create a JSON file following the standard on
-[Addresses](docs/overview/architecture/addresses.md). We recommend keeping the
+Create a JSON file following the instructions provided in
+[Addresses.md](docs/overview/architecture/addresses.md). We recommend keeping the
 addresses file in a separate folder, for example `./addresses/addresses.json`.
 Once the file is created, be sure to allow read access to `addresses.json` inside of `foundry.toml`.
 
@@ -37,7 +37,7 @@ fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
 
 ### Step 4: Create a Proposal
 
-Create a proposal. Choose a model that fits your needs:
+Choose a model that fits your needs:
 
 -   [Multisig Proposal](docs/guides/multisig-proposal.md)
 -   [Timelock Proposal](docs/guides/timelock-proposal.md)
@@ -49,7 +49,7 @@ Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) an
 
 ## Contribute
 
-There are many ways you can participate and help build high quality software. Check out the [contribution guide](CONTRIBUTING.md)!
+There are many ways you can participate and help build the next version of FPS. Check out the [contribution guide](CONTRIBUTING.md)!
 
 ## License
 

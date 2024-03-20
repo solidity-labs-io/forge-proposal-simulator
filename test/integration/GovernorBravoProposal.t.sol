@@ -40,12 +40,16 @@ contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address token = addresses.getAddress("TOKEN_1");
 
-        vm.startPrank(timelock);
+        vm.prank(timelock);
         MockToken(token).mint(address(this), 100);
+
         MockToken(token).approve(address(timelockVault), 100);
         timelockVault.deposit(address(token), 100);
 
-        (uint256 amount, ) = timelockVault.deposits(address(token), timelock);
+        (uint256 amount, ) = timelockVault.deposits(
+            address(token),
+            address(this)
+        );
         assertTrue(amount == 100, "Token should be deposited");
     }
 }

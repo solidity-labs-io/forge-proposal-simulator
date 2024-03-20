@@ -7,10 +7,10 @@ Proposal files are located in the `proposals` folder. Create a new file called `
 ```solidity
 pragma solidity ^0.8.0;
 
-import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "path/to/Vault.sol";
-import { MockToken } from "path/to/MockToken.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
@@ -26,97 +26,96 @@ contract MULTISIG_01 is MultisigProposal {
         return "Deploy Vault contract";
     }
 
-    // Deploys a vault contract and an ERC20 token contract.
+    /// @notice Deploys a vault contract and an ERC20 token contract.
+    /// @param addresses The addresses contract.
     function _deploy(Addresses addresses, address) internal override {
-        // Deploy needed contracts
-        Vault timelockVault = new Vault();
-        MockToken token = new MockToken();
+        if (!addresses.isAddressSet("VAULT")) {
+            Vault timelockVault = new Vault();
+            addresses.addAddress("VAULT", address(timelockVault), true);
+        }
 
-        // Add deployed contracts to the address registry
-        addresses.addAddress("VAULT", address(timelockVault), true);
-        addresses.addAddress("TOKEN_1", address(token), true);
+        if (!addresses.isAddressSet("TOKEN_1")) {
+            MockToken token = new MockToken();
+            addresses.addAddress("TOKEN_1", address(token), true);
+        }
     }
 
-    // Transfers vault ownership to dev multisig.
-    // Transfer token ownership to dev multisig.
-    // Transfers all tokens to dev multisig.
+    /// @notice proposal action steps:
+    /// 1. Transfers vault ownership to dev multisig.
+    /// 2. Transfer token ownership to dev multisig.
+    /// 3. Transfers all tokens to dev multisig.
+    /// @param addresses The addresses contract.
     function _afterDeploy(
         Addresses addresses,
         address deployer
     ) internal override {
-        // Get needed addresses from addresses registry
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
-        // Transfer ownership of the contracts to the multisig address
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
-
-        // Transfer tokens from deployer to multisig address
         token.transfer(devMultisig, token.balanceOf(address(deployer)));
     }
 
-    // Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build(Addresses addresses) internal override {
-        // Get vault and token addresses (deployed on _deploy step)
+    /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
+    /// @param addresses The addresses contract.
+    function _build(
+        Addresses addresses
+    )
+        internal
+        override
+        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
+    {
+        /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
 
-        // Push action to whitelist the MockToken
-        _pushAction(
-            timelockVault,
-            abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                token,
-                true
-            ),
-            "Set token to active"
-        );
+        /// CALLS -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
+    /// @param addresses The addresses contract.
     function _run(Addresses addresses, address) internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
 
-        // Get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        // Simulates actions on Multisig address
         _simulateActions(multisig);
     }
 
-    // Validates the post-execution state.
+    /// @notice Validates the post-execution state.
+    /// @param addresses The addresses contract.
     function _validate(Addresses addresses, address) internal override {
-        // Get needed addresses from addresses registry
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
-
-        // Validate post-execution state
-        // Vault ownership should be transferred to multisig
+        /// Validate post-execution state
+        /// Vault ownership should be transferred to multisig
         assertEq(timelockVault.owner(), devMultisig);
-        // Token should be whitelisted on the Vault contract
+        /// Token should be whitelisted on the Vault contract
         assertTrue(timelockVault.tokenWhitelist(address(token)));
-        // Vault should not be paused
+        /// Vault should not be paused
         assertFalse(timelockVault.paused());
-        // Token ownership should be transferred to multisig
+
+        /// Token ownership should be transferred to multisig
         assertEq(token.owner(), devMultisig);
-        // Token balance of multisig should be equal to total supply
+        /// Token balance of multisig should be equal to total supply
         assertEq(token.balanceOf(devMultisig), token.totalSupply());
     }
 }
 ```
 
-Let's go through each of the functions we are overriding here.
+Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
 -   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build(`): Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract
+-   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. Use the `buildModifier` to ensure that the proposal is only executed by the timelock, which is owned by the governor. If the modifier is not used, actions will not be added to the proposal array and the calldata will be generated incorrectly.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
@@ -146,8 +145,8 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 ```solidity
 pragma solidity ^0.8.0;
 
-import { ScriptSuite } from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-import { MULTISIG_01 } from "proposals/MULTISIG_01.sol";
+import {ScriptSuite} from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
+import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -170,9 +169,9 @@ contract MultisigScript is ScriptSuite {
 }
 ```
 
-Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail, displaying the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
+Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail with the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
 
-For those who wish to complete this tutorial on a local blockchain without the necessity of deploying a Gnosis Safe Account, it is possible to modify `MultisigScript` as follows:
+For those who wish to complete this tutorial on a local blockchain without needing to deploy a Gnosis Safe Account, modify the `MultisigScript` as follows:
 
 ```solidity
 contract MultisigScript is ScriptSuite {
