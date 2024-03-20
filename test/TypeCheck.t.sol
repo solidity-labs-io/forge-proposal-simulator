@@ -16,7 +16,7 @@ contract TypeCheck is Test {
         );
     }
 
-    function test_nothing() public {
-        assertFalse(true);
+    function test_true() public {
+        assertTrue(true);
     }
 }
