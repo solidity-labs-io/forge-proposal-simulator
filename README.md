@@ -47,6 +47,18 @@ Choose a model that fits your needs:
 
 Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) and [Integration Tests](docs/testing/integration-tests.md).
 
+## Type Checking
+
+Type checking in fps is checking deployed bytecode of any deployed contracts with the bytecode from the local artifacts. This is to make sure if dev A deploys some contracts, dev B can verify A's deployments by just running the type checking script. Can also be used by A to verify the deployments. A can take following steps:
+
+- Adds the deployed contracts to `Addresses.json`. In `TypeCheckAddresses.json` add the constructor args in nested array format where double quotes are escaped.
+- Install npm packages in typescript directory.
+- Run the following command to typecheck all contracts added in `TypeCheckAddresses.json`
+
+```bash
+forge test --mc TypeCheck --ffi --fork-url <rpc_url> -vv
+```
+
 ## Contribute
 
 There are many ways you can participate and help build the next version of FPS. Check out the [contribution guide](CONTRIBUTING.md)!
