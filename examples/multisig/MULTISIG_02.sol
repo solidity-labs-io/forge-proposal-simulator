@@ -18,13 +18,7 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");

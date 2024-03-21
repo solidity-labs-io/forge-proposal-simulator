@@ -70,7 +70,6 @@ contract MULTISIG_01 is MultisigProposal {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
-
         /// CALLS -- mutative and recorded
         Vault(timelockVault).whitelistToken(token, true);
     }
@@ -80,9 +79,7 @@ contract MULTISIG_01 is MultisigProposal {
     function _run(Addresses addresses, address) internal override {
         /// Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
-
         address multisig = addresses.getAddress("DEV_MULTISIG");
-
         _simulateActions(multisig);
     }
 
@@ -99,7 +96,6 @@ contract MULTISIG_01 is MultisigProposal {
         assertTrue(timelockVault.tokenWhitelist(address(token)));
         /// Vault should not be paused
         assertFalse(timelockVault.paused());
-
         /// Token ownership should be transferred to multisig
         assertEq(token.owner(), devMultisig);
         /// Token balance of multisig should be equal to total supply
@@ -144,7 +140,6 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 
 ```solidity
 pragma solidity ^0.8.0;
-
 import {ScriptSuite} from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
 import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
 
@@ -162,7 +157,6 @@ contract MultisigScript is ScriptSuite {
 
     function run() public override {
         proposal.setDebug(true);
-
         // Execute proposal
         super.run();
     }
@@ -184,10 +178,8 @@ contract MultisigScript is ScriptSuite {
 
     function run() public override {
         proposal.setDebug(true);
-
         // Set Gnosis Safe bytecode
         vm.etch(addresses.getAddress("DEV_MULTISIG"), SAFE_BYTECODE);
-
         // Execute proposal
         super.run();
     }

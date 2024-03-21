@@ -21,6 +21,7 @@
         "clean": "rm -rf cache out",
         "build": "forge build",
         "lint": "solhint --config ./.solhintrc {addresses,proposals,utils,test,examples}/**/*.sol",
+        "lint:write": "solhint --config ./.solhintrc {addresses,proposals,utils,test,examples}/**/*.sol --fix",
         "prettier": "prettier \"**/*\" --ignore-path .prettierignore --list-different",
         "prettier:write": "prettier \"**/*\" --ignore-path .prettierignore -w",
         "test": "forge test",

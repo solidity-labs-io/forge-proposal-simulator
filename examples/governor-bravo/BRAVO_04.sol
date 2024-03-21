@@ -25,13 +25,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     /// Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICALL -- not recorded for the run stage
         address token = addresses.getAddress("TOKEN_2");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

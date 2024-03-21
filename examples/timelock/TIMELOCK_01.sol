@@ -50,13 +50,7 @@ contract TIMELOCK_01 is TimelockProposal {
     }
 
     // Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -70,11 +64,10 @@ contract TIMELOCK_01 is TimelockProposal {
         // Call parent _run function to check if there are actions to execute
         super._run(addresses, address(0));
 
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-        _simulateActions(timelock, proposer, executor);
+        _simulateActions(proposer, executor);
     }
 
     // Validates the post-execution state.

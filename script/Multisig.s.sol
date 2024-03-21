@@ -13,8 +13,16 @@ import {Constants} from "@utils/Constants.sol";
 // `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
+    string public caller = "DEV_MULTISIG";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
+    constructor()
+        ScriptSuite(
+            ADDRESSES_PATH,
+            new MULTISIG_01(),
+            vm.envUint("PRIVATE_KEY"), // deployer private key
+            caller
+        )
+    {}
 
     function run() public override {
         // @dev Verify if the multisig address is a contract; if it is not

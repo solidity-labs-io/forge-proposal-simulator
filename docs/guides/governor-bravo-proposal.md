@@ -59,13 +59,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
     /// @param addresses The addresses contract.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -170,7 +164,9 @@ import {Constants} from "@utils/Constants.sol";
 contract GovernorBravoScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new BRAVO_01()) {}
+    constructor()
+        ScriptSuite(ADDRESSES_PATH, new BRAVO_01(), vm.envUint("PRIVATE_KEY"))
+    {}
 
     function run() public override {
         // Execute proposal
@@ -183,7 +179,7 @@ contract GovernorBravoScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script script/GovernorBravoScript.s.sol
+forge script script/GovernorBravo.s.sol
 ```
 
 The script will output the following:

@@ -21,14 +21,27 @@ contract TestSuite is Test {
 
     Addresses public addresses;
     Proposal[] public proposals;
+    string[] public buildCallers;
     bool public debug;
 
-    constructor(string memory addressesPath, address[] memory _proposals) {
+    constructor(
+        string memory addressesPath,
+        address[] memory _proposals,
+        string[] memory _buildCallers
+    ) {
+        require(_proposals.length > 0, "No proposals provided");
+        require(
+            _buildCallers.length == _proposals.length,
+            "Mismatched proposal and callers length"
+        );
         addresses = new Addresses(addressesPath);
 
         proposals = new Proposal[](_proposals.length);
+        buildCallers = new string[](_buildCallers.length);
+
         for (uint256 i; i < _proposals.length; i++) {
             proposals[i] = Proposal(_proposals[i]);
+            buildCallers[i] = _buildCallers[i];
         }
     }
 
@@ -56,24 +69,11 @@ contract TestSuite is Test {
                 console.log("Proposal name:", name);
             }
 
-            proposals[i].run(addresses, address(this));
-
-            /// take new snapshot
+            uint256 privateKeyDeployer = 123;
+            proposals[i].initialize(addresses);
+            proposals[i].run(privateKeyDeployer, buildCallers[i]);
+            // take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
-        }
-
-        if (debug) {
-            console.log("Addresses added after running proposals:");
-            /// output deployed contract addresses and names
-            (
-                string[] memory recordedNames,
-                ,
-                address[] memory recordedAddresses
-            ) = addresses.getRecordedAddresses();
-
-            for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log(recordedNames[j], recordedAddresses[j]);
-            }
         }
     }
 }
