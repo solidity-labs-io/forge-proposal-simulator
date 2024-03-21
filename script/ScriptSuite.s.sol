@@ -7,14 +7,20 @@ import {Addresses} from "@addresses/Addresses.sol";
 contract ScriptSuite is Script {
     IProposal proposal;
     Addresses addresses;
+    uint256 private privateKey;
 
-    constructor(string memory ADDRESS_PATH, IProposal _proposal) {
+    constructor(
+        string memory ADDRESS_PATH,
+        IProposal _proposal,
+        uint256 _privateKey
+    ) {
         addresses = new Addresses(ADDRESS_PATH);
         proposal = _proposal;
+        privateKey = _privateKey;
     }
 
     function run() public virtual {
-        proposal.run(addresses, msg.sender);
+        proposal.run(addresses, privateKey);
 
         console.log("Addresses added after running proposals:");
         (

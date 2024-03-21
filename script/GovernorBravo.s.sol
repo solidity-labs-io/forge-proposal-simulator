@@ -14,7 +14,9 @@ import {Constants} from "@utils/Constants.sol";
 contract GovernorBravoScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new BRAVO_01()) {}
+    constructor()
+        ScriptSuite(ADDRESSES_PATH, new BRAVO_01(), vm.envUint("PRIVATE_KEY"))
+    {}
 
     function run() public override {
         // Execute proposal

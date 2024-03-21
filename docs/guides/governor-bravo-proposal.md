@@ -170,7 +170,9 @@ import {Constants} from "@utils/Constants.sol";
 contract GovernorBravoScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new BRAVO_01()) {}
+    constructor()
+        ScriptSuite(ADDRESSES_PATH, new BRAVO_01(), vm.envUint("PRIVATE_KEY"))
+    {}
 
     function run() public override {
         // Execute proposal
@@ -183,7 +185,7 @@ contract GovernorBravoScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script script/GovernorBravoScript.s.sol
+forge script script/GovernorBravo.s.sol
 ```
 
 The script will output the following:

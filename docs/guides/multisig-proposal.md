@@ -154,11 +154,17 @@ import {MULTISIG_01} from "proposals/MULTISIG_01.sol";
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
-// `forge script script/MultisigScript.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
+// `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
+    constructor()
+        ScriptSuite(
+            ADDRESSES_PATH,
+            new MULTISIG_01(),
+            vm.envUint("PRIVATE_KEY") // deployer private key
+        )
+    {}
 
     function run() public override {
         proposal.setDebug(true);
@@ -177,7 +183,7 @@ For those who wish to complete this tutorial on a local blockchain without needi
 contract MultisigScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01()) {}
+    constructor() ScriptSuite(ADDRESSES_PATH, new MULTISIG_01(), vm.envUint("PRIVATE_KEY") {}
 
     bytes public constant SAFE_BYTECODE =
         hex"608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033";
@@ -197,7 +203,7 @@ contract MultisigScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script script/MultisigScript.s.sol
+forge script script/Multisig.s.sol
 ```
 
 The script will output the following:

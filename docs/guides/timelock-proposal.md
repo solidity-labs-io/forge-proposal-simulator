@@ -163,11 +163,17 @@ import {ScriptSuite} from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
-// `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
+// `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url ${rpc} --broadcast --verify --etherscan-api-key ${key}`
 contract TimelockScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() ScriptSuite(ADDRESSES_PATH, new TIMELOCK_01()) {}
+    constructor()
+        ScriptSuite(
+            ADDRESSES_PATH,
+            new TIMELOCK_01(),
+            vm.envUint("PRIVATE_KEY")
+        )
+    {}
 
     function run() public override {
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
@@ -213,7 +219,7 @@ contract TimelockScript is ScriptSuite {
 Running the script:
 
 ```sh
-forge script script/TimelockScript.s.sol
+forge script script/Timelock.s.sol
 ```
 
 The script will output the following:

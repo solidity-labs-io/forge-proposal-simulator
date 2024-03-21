@@ -123,13 +123,16 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(Addresses addresses, address deployer) external {
+    function run(Addresses addresses, uint256 privateKey) external {
+        address deployer = vm.addr(privateKey);
+
         vm.startBroadcast(deployer);
         _deploy(addresses, deployer);
         _afterDeploy(addresses, deployer);
         vm.stopBroadcast();
 
         _build(addresses);
+        _outerBuild(addresses, deployer);
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);
@@ -139,7 +142,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev do not override
     function run(
         Addresses addresses,
-        address deployer,
+        uint256 privateKey,
         bool doDeploy,
         bool doBuild,
         bool doAfterDeploy,
@@ -147,7 +150,9 @@ abstract contract Proposal is Test, Script, IProposal {
         bool doTeardown,
         bool doValidate
     ) external {
-        vm.startBroadcast(deployer);
+        address deployer = vm.addr(privateKey);
+
+        vm.startBroadcast(privateKey);
 
         if (doDeploy) {
             _deploy(addresses, deployer);
@@ -290,6 +295,14 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @dev After finishing deploy and deploy cleanup, build the proposal
     function _build(Addresses) internal virtual {}
+
+    function _outerBuild(Addresses addresses, address caller) internal virtual {
+        _startBuild(caller);
+
+        _build(addresses);
+
+        _endBuild(caller, addresses);
+    }
 
     /// @dev Actually run the proposal (e.g. queue actions in the Timelock,
     /// or execute a serie of Multisig calls...).
