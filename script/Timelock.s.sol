@@ -14,12 +14,14 @@ import {Constants} from "@utils/Constants.sol";
 // `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
 contract TimelockScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
+    string public caller = "PROTOCOL_TIMELOCK";
 
     constructor()
         ScriptSuite(
             ADDRESSES_PATH,
             new TIMELOCK_01(),
-            vm.envUint("PRIVATE_KEY") // deployer private key
+            vm.envUint("PRIVATE_KEY"), // deployer private key
+            caller
         )
     {}
 

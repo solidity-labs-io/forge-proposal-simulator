@@ -19,8 +19,9 @@ interface IProposal {
     /// @dev review the implementation to determine which internal functions
     /// might need overriding for you proposal
     /// @param privateKey the private key to use for the proposal
-    /// @param buildCaller the address of the contract that called the build function
-    function run(uint256 privateKey, address buildCaller) external;
+    /// @param buildCallerName the name of address that should be used as the
+    /// caller
+    function run(uint256 privateKey, string memory buildCallerName) external;
 
     /// @notice Print proposal actions
     function getProposalActions()

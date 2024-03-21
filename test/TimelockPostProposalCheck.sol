@@ -6,6 +6,7 @@ import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {TIMELOCK_02} from "@examples/timelock/TIMELOCK_02.sol";
 import {TIMELOCK_03} from "@examples/timelock/TIMELOCK_03.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.
@@ -72,8 +73,21 @@ contract TimelockPostProposalCheck is Test {
         }
 
         suite.setDebug(true);
+
         // Execute proposals
-        suite.testProposals();
+        for (uint256 i = 0; i < 3; i++) {
+            string memory name = suite.proposals(i).name();
+
+            TimelockProposal proposal = TimelockProposal(
+                address(suite.proposals(i))
+            );
+            uint256 privateKeyDeployer = 123;
+            proposal.initialize(
+                addresses,
+                suite.addresses().getAddress("PROTOCOL_TIMELOCK")
+            );
+            proposal.run(privateKeyDeployer, suite.buildCallers(i));
+        }
 
         // Proposals execution may change addresses, so we need to update the addresses object.
         addresses = suite.addresses();

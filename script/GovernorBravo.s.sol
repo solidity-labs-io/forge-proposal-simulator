@@ -13,9 +13,15 @@ import {Constants} from "@utils/Constants.sol";
 // `forge script script/GovernorBravo.s.sol:GovernorBravoScript -vvvv --rpc-url ${rpc} --broadcast --verify --etherscan-api-key ${key}`
 contract GovernorBravoScript is ScriptSuite {
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
+    string public caller = "PROTOCOL_TIMELOCK";
 
     constructor()
-        ScriptSuite(ADDRESSES_PATH, new BRAVO_01(), vm.envUint("PRIVATE_KEY"))
+        ScriptSuite(
+            ADDRESSES_PATH,
+            new BRAVO_01(),
+            vm.envUint("PRIVATE_KEY"),
+            caller
+        )
     {}
 
     function run() public override {

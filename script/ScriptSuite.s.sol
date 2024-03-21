@@ -8,19 +8,22 @@ contract ScriptSuite is Script {
     IProposal proposal;
     Addresses addresses;
     uint256 private privateKey;
+    string private buildCallerName;
 
     constructor(
         string memory ADDRESS_PATH,
         IProposal _proposal,
-        uint256 _privateKey
+        uint256 _privateKey,
+        string memory _buildCallerName
     ) {
         addresses = new Addresses(ADDRESS_PATH);
         proposal = _proposal;
         privateKey = _privateKey;
+        buildCallerName = _buildCallerName;
         proposal.initialize(addresses);
     }
 
     function run() public virtual {
-        proposal.run(privateKey, vm.addr(privateKey));
+        proposal.run(privateKey, buildCallerName);
     }
 }

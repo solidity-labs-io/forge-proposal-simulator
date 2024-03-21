@@ -49,7 +49,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(uint256 privateKey, address actionsCaller) external {
+    function run(uint256 privateKey, string memory buildCallerName) external {
         if (address(addresses) == address(0)) {
             revert(
                 "Addresses not set, please call initialize(addresses) first."
@@ -63,7 +63,7 @@ abstract contract Proposal is Test, Script, IProposal {
         _afterDeploy(addresses, deployer);
         vm.stopBroadcast();
 
-        _outerBuild(actionsCaller);
+        _outerBuild(addresses.getAddress(buildCallerName));
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);

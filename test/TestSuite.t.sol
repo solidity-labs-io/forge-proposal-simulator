@@ -21,7 +21,7 @@ contract TestSuite is Test {
 
     Addresses public addresses;
     Proposal[] public proposals;
-    address[] public buildCallers;
+    string[] public buildCallers;
     bool public debug;
 
     constructor(
@@ -37,11 +37,11 @@ contract TestSuite is Test {
         addresses = new Addresses(addressesPath);
 
         proposals = new Proposal[](_proposals.length);
-        buildCallers = new address[](_buildCallers.length);
+        buildCallers = new string[](_buildCallers.length);
 
         for (uint256 i; i < _proposals.length; i++) {
             proposals[i] = Proposal(_proposals[i]);
-            buildCallers[i] = addresses.getAddress(_buildCallers[i]);
+            buildCallers[i] = _buildCallers[i];
         }
     }
 
