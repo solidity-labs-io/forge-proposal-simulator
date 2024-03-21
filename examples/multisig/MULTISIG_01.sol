@@ -53,13 +53,7 @@ contract MULTISIG_01 is MultisigProposal {
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
     /// @param addresses The addresses contract.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");

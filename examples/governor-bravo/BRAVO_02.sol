@@ -17,13 +17,7 @@ contract BRAVO_02 is GovernorBravoProposal {
 
     /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
     /// @param addresses The addresses contract.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK"), addresses)
-    {
+    function _build(Addresses addresses) internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");

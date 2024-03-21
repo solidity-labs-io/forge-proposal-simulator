@@ -57,7 +57,8 @@ contract TestSuite is Test {
             }
 
             uint256 privateKeyDeployer = 123;
-            proposals[i].run(addresses, privateKeyDeployer);
+            proposals[i].initialize(addresses);
+            proposals[i].run(privateKeyDeployer, address(this));
 
             /// take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();

@@ -30,89 +30,15 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice debug flag to print proposal actions and steps
     bool internal DEBUG;
 
-    /// @notice to be used by the build function easily create a governance proposal
-    modifier buildModifier(address caller, Addresses addresses) {
-        _startBuild(caller);
-        _;
-        _endBuild(caller, addresses);
-    }
+    /// @notice Addresses contract
+    Addresses public addresses;
 
-    /// @notice to be used by the build function to create a governance proposal
-    /// kick off the process of creating a governance proposal by:
-    ///  1). taking a snapshot of the current state of the contract
-    ///  2). starting prank as the caller
-    ///  3). starting a $recording of all calls created during the proposal
-    function _startBuild(address caller) private {
-        _startSnapshot = vm.snapshot();
-        vm.startPrank(caller);
-        vm.startStateDiffRecording();
-    }
-
-    /// @notice to be used at the end of the build function to snapshot
-    /// the actions performed by the proposal and revert these changes
-    /// then, stop the prank and record the actions that were taken by the proposal.
-    function _endBuild(address caller, Addresses addresses) private {
-        vm.stopPrank();
-        VmSafe.AccountAccess[] memory accountAccesses = vm
-            .stopAndReturnStateDiff();
-
-        /// roll back all state changes made during the governance proposal
+    function initialize(Addresses _addresses) public override {
         require(
-            vm.revertTo(_startSnapshot),
-            "failed to revert back to snapshot, unsafe state to run proposal"
+            address(addresses) == address(0),
+            "Proposal already initialized"
         );
-
-        for (uint256 i = 0; i < accountAccesses.length; i++) {
-            /// only care about calls from the original caller,
-            /// static calls are ignored,
-            /// calls to and from Addresses and the vm contract are ignored
-            if (
-                accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
-                accountAccesses[i].accessor != address(addresses) &&
-                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
-            ) {
-                _pushAction(
-                    accountAccesses[i].value,
-                    accountAccesses[i].account,
-                    accountAccesses[i].data,
-                    string(
-                        abi.encodePacked(
-                            "calling ",
-                            accountAccesses[i].account.toHexString(),
-                            " with ",
-                            accountAccesses[i].value.toString(),
-                            " eth and ",
-                            _bytesToString(accountAccesses[i].data),
-                            " data."
-                        )
-                    )
-                );
-            }
-        }
-    }
-
-    /// @notice convert bytes to a string
-    /// @param data the bytes to convert to a human readable string
-    function _bytesToString(
-        bytes memory data
-    ) private pure returns (string memory) {
-        /// Initialize an array of characters twice the length of data,
-        /// since each byte will be represented by two hexadecimal characters
-        bytes memory buffer = new bytes(data.length * 2);
-
-        /// Characters for conversion
-        bytes memory characters = "0123456789abcdef";
-
-        for (uint256 i = 0; i < data.length; i++) {
-            /// For each byte, find the corresponding hexadecimal characters
-            buffer[i * 2] = characters[uint256(uint8(data[i] >> 4))];
-            buffer[i * 2 + 1] = characters[uint256(uint8(data[i] & 0x0f))];
-        }
-
-        /// Convert the bytes array to a string and return
-        return string(buffer);
+        addresses = _addresses;
     }
 
     /// @notice override this to set the proposal name
@@ -123,7 +49,13 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(Addresses addresses, uint256 privateKey) external {
+    function run(uint256 privateKey, address actionsCaller) external {
+        if (address(addresses) == address(0)) {
+            revert(
+                "Addresses not set, please call initialize(addresses) first."
+            );
+        }
+
         address deployer = vm.addr(privateKey);
 
         vm.startBroadcast(deployer);
@@ -131,16 +63,24 @@ abstract contract Proposal is Test, Script, IProposal {
         _afterDeploy(addresses, deployer);
         vm.stopBroadcast();
 
-        _build(addresses);
+        _outerBuild(actionsCaller);
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);
 
         if (DEBUG) {
-            _printRecordedAddresses(addresses);
+            _printRecordedAddresses();
             _printActions();
             _printCalldata();
         }
+    }
+
+    function _outerBuild(address caller) public {
+        _startBuild(caller);
+
+        _build(addresses);
+
+        _endBuild(caller);
     }
 
     /// @dev set the debug flag
@@ -273,9 +213,15 @@ abstract contract Proposal is Test, Script, IProposal {
     /// states that are expected to have change during your run() step.
     function _validate(Addresses, address) internal virtual {}
 
+    /// @dev Print proposal calldata
+    function _printCalldata() internal virtual {
+        console.log("Calldata:");
+        console.logBytes(getCalldata());
+    }
+
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
-    /// -------------------------- View functions -------------------------
+    /// -------------------------- Private functions -------------------------
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
 
@@ -293,14 +239,8 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
-    /// @dev Print proposal calldata
-    function _printCalldata() private {
-        console.log("Calldata:");
-        console.logBytes(getCalldata());
-    }
-
     /// @dev Print recorded addresses
-    function _printRecordedAddresses(Addresses addresses) private view {
+    function _printRecordedAddresses() private view {
         (
             string[] memory recordedNames,
             ,
@@ -320,5 +260,83 @@ abstract contract Proposal is Test, Script, IProposal {
                 );
             }
         }
+    }
+
+    /// @notice to be used by the build function to create a governance proposal
+    /// kick off the process of creating a governance proposal by:
+    ///  1). taking a snapshot of the current state of the contract
+    ///  2). starting prank as the caller
+    ///  3). starting a $recording of all calls created during the proposal
+    function _startBuild(address caller) private {
+        _startSnapshot = vm.snapshot();
+        vm.startPrank(caller);
+        vm.startStateDiffRecording();
+    }
+
+    /// @notice to be used at the end of the build function to snapshot
+    /// the actions performed by the proposal and revert these changes
+    /// then, stop the prank and record the actions that were taken by the proposal.
+    function _endBuild(address caller) private {
+        vm.stopPrank();
+        VmSafe.AccountAccess[] memory accountAccesses = vm
+            .stopAndReturnStateDiff();
+
+        /// roll back all state changes made during the governance proposal
+        require(
+            vm.revertTo(_startSnapshot),
+            "failed to revert back to snapshot, unsafe state to run proposal"
+        );
+
+        for (uint256 i = 0; i < accountAccesses.length; i++) {
+            /// only care about calls from the original caller,
+            /// static calls are ignored,
+            /// calls to and from Addresses and the vm contract are ignored
+            if (
+                accountAccesses[i].account != address(addresses) &&
+                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
+                accountAccesses[i].accessor != address(addresses) &&
+                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
+                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
+            ) {
+                _pushAction(
+                    accountAccesses[i].value,
+                    accountAccesses[i].account,
+                    accountAccesses[i].data,
+                    string(
+                        abi.encodePacked(
+                            "calling ",
+                            accountAccesses[i].account.toHexString(),
+                            " with ",
+                            accountAccesses[i].value.toString(),
+                            " eth and ",
+                            _bytesToString(accountAccesses[i].data),
+                            " data."
+                        )
+                    )
+                );
+            }
+        }
+    }
+
+    /// @notice convert bytes to a string
+    /// @param data the bytes to convert to a human readable string
+    function _bytesToString(
+        bytes memory data
+    ) private pure returns (string memory) {
+        /// Initialize an array of characters twice the length of data,
+        /// since each byte will be represented by two hexadecimal characters
+        bytes memory buffer = new bytes(data.length * 2);
+
+        /// Characters for conversion
+        bytes memory characters = "0123456789abcdef";
+
+        for (uint256 i = 0; i < data.length; i++) {
+            /// For each byte, find the corresponding hexadecimal characters
+            buffer[i * 2] = characters[uint256(uint8(data[i] >> 4))];
+            buffer[i * 2 + 1] = characters[uint256(uint8(data[i] & 0x0f))];
+        }
+
+        /// Convert the bytes array to a string and return
+        return string(buffer);
     }
 }

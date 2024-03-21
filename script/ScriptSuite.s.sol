@@ -17,9 +17,10 @@ contract ScriptSuite is Script {
         addresses = new Addresses(ADDRESS_PATH);
         proposal = _proposal;
         privateKey = _privateKey;
+        proposal.initialize(addresses);
     }
 
     function run() public virtual {
-        proposal.run(addresses, privateKey);
+        proposal.run(privateKey, vm.addr(privateKey));
     }
 }

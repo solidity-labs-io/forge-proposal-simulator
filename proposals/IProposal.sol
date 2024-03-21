@@ -3,20 +3,26 @@ pragma solidity ^0.8.0;
 import {Addresses} from "@addresses/Addresses.sol";
 
 interface IProposal {
-    // @notice proposal name, e.g. "BIP15"
-    // @dev override this to set the proposal name
+    /// @notice proposal name, e.g. "BIP15"
+    /// @dev override this to set the proposal name
     function name() external view returns (string memory);
 
-    // @notice proposal description
-    // @dev override this to set the proposal description
+    /// @notice proposal description
+    /// @dev override this to set the proposal description
     function description() external view returns (string memory);
 
-    // @notice actually run the proposal
-    // @dev review the implementation to determine which internal functions
-    // might need overriding for you proposal
-    function run(Addresses addresses, uint256 privateKey) external;
+    /// @notice initialize the proposal
+    /// @param addresses the addresses contract
+    function initialize(Addresses addresses) external;
 
-    // @notice Print proposal actions
+    /// @notice actually run the proposal
+    /// @dev review the implementation to determine which internal functions
+    /// might need overriding for you proposal
+    /// @param privateKey the private key to use for the proposal
+    /// @param buildCaller the address of the contract that called the build function
+    function run(uint256 privateKey, address buildCaller) external;
+
+    /// @notice Print proposal actions
     function getProposalActions()
         external
         returns (
@@ -25,9 +31,9 @@ interface IProposal {
             bytes[] memory arguments
         );
 
-    // @notice Print proposal calldata
+    /// @notice Print proposal calldata
     function getCalldata() external returns (bytes memory data);
 
-    // @notice set the debug flag
+    /// @notice set the debug flag
     function setDebug(bool debug) external;
 }

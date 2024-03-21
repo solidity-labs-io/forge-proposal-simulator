@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
+import {Addresses} from "@addresses/Addresses.sol";
 import {console} from "@forge-std/console.sol";
 
 import {Address} from "@utils/Address.sol";
@@ -10,17 +11,22 @@ import {Proposal} from "@proposals/Proposal.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
-    /// @notice timelock cannot get proposal calldata without timelock address
-    function getCalldata() public view virtual override returns (bytes memory) {
-        revert(
-            "getScheduleCalldata on timelock proposal instead of getCalldata"
-        );
+    address public timelock;
+
+    function initialize(Addresses addresses, address _timelock) public {
+        require(timelock == address(0), "Timelock already initialized");
+        timelock = _timelock;
+
+        Proposal.initialize(addresses);
     }
 
     /// @notice get schedule calldata
-    function getScheduleCalldata(
-        address timelock
-    ) public view returns (bytes memory scheduleCalldata) {
+    function getCalldata()
+        public
+        view
+        override
+        returns (bytes memory scheduleCalldata)
+    {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
         bytes32 predecessor = bytes32(0);
 
@@ -40,11 +46,6 @@ abstract contract TimelockProposal is Proposal {
             salt,
             delay
         );
-
-        if (DEBUG) {
-            console.log("Calldata for scheduleBatch:");
-            console.logBytes(scheduleCalldata);
-        }
     }
 
     /// @notice get execute calldata
@@ -70,19 +71,12 @@ abstract contract TimelockProposal is Proposal {
             predecessor,
             salt
         );
-
-        if (DEBUG) {
-            console.log("Calldata for executeBatch:");
-            console.logBytes(executeCalldata);
-        }
     }
 
     /// @notice simulate timelock proposal
-    /// @param timelockAddress to execute the proposal against
     /// @param proposerAddress account to propose the proposal to the timelock
     /// @param executorAddress account to execute the proposal on the timelock
     function _simulateActions(
-        address timelockAddress,
         address proposerAddress,
         address executorAddress
     ) internal {
@@ -94,11 +88,11 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(salt);
         }
 
-        bytes memory scheduleCalldata = getScheduleCalldata(timelockAddress);
+        bytes memory scheduleCalldata = getCalldata();
         bytes memory executeCalldata = getExecuteCalldata();
 
-        TimelockController timelock = TimelockController(
-            payable(timelockAddress)
+        TimelockController timelockController = TimelockController(
+            payable(timelock)
         );
         (
             address[] memory targets,
@@ -106,7 +100,7 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 proposalId = timelock.hashOperationBatch(
+        bytes32 proposalId = timelockController.hashOperationBatch(
             targets,
             values,
             payloads,
@@ -115,14 +109,15 @@ abstract contract TimelockProposal is Proposal {
         );
 
         if (
-            !timelock.isOperationPending(proposalId) &&
-            !timelock.isOperation(proposalId)
+            !timelockController.isOperationPending(proposalId) &&
+            !timelockController.isOperation(proposalId)
         ) {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(timelockAddress))
-                .functionCall(scheduleCalldata);
+            bytes memory returndata = address(payable(timelock)).functionCall(
+                scheduleCalldata
+            );
 
             if (DEBUG) {
                 console.log(
@@ -141,15 +136,16 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(proposalId);
         }
 
-        uint256 delay = timelock.getMinDelay();
+        uint256 delay = timelockController.getMinDelay();
         vm.warp(block.timestamp + delay);
 
-        if (!timelock.isOperationDone(proposalId)) {
+        if (!timelockController.isOperationDone(proposalId)) {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(timelockAddress))
-                .functionCall(executeCalldata);
+            bytes memory returndata = address(payable(timelock)).functionCall(
+                executeCalldata
+            );
 
             if (DEBUG) {
                 console.log("executed batch calldata");
@@ -162,5 +158,18 @@ abstract contract TimelockProposal is Proposal {
         } else if (DEBUG) {
             console.log("proposal already executed");
         }
+    }
+
+    /// @notice print schedule and execute calldata
+    function _printCalldata() internal view override {
+        console.log(
+            "\n\n------------------ Schedule Calldata ------------------"
+        );
+        console.logBytes(getCalldata());
+
+        console.log(
+            "\n\n------------------ Execute Calldata ------------------"
+        );
+        console.logBytes(getExecuteCalldata());
     }
 }
