@@ -58,5 +58,11 @@
         "chainId": 11155111,
         "name": "ExampleTypeCheck",
         "isContract": true
+    },
+    {
+        "addr": "0x9D7A602541230B2bA04D9aA542fad73B8aaBA4ED",
+        "chainId": 11155111,
+        "name": "ExampleTypeCheck_02",
+        "isContract": true
     }
 ]
