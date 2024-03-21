@@ -135,47 +135,11 @@ abstract contract Proposal is Test, Script, IProposal {
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);
-        _printRecordedAddresses(addresses);
-        _printActions();
-        _printCalldata();
-    }
 
-    /// @notice main function with more granularity control
-    /// @dev do not override
-    function run(
-        Addresses addresses,
-        uint256 privateKey,
-        bool doDeploy,
-        bool doBuild,
-        bool doAfterDeploy,
-        bool doRun,
-        bool doTeardown,
-        bool doValidate
-    ) external {
-        address deployer = vm.addr(privateKey);
-
-        vm.startBroadcast(privateKey);
-
-        if (doDeploy) {
-            _deploy(addresses, deployer);
-        }
-        if (doAfterDeploy) {
-            _afterDeploy(addresses, deployer);
-        }
-
-        vm.stopBroadcast();
-
-        if (doBuild) {
-            _build(addresses);
-        }
-        if (doRun) {
-            _run(addresses, deployer);
-        }
-        if (doTeardown) {
-            _teardown(addresses, deployer);
-        }
-        if (doValidate) {
-            _validate(addresses, deployer);
+        if (DEBUG) {
+            _printRecordedAddresses(addresses);
+            _printActions();
+            _printCalldata();
         }
     }
 
@@ -307,19 +271,16 @@ abstract contract Proposal is Test, Script, IProposal {
     /// contracts you deployed, to make sure your deploy() and afterDeploy()
     /// steps have deployed contracts in a correct configuration, or read
     /// states that are expected to have change during your run() step.
-    /// Note that there is a set of tests that run post-proposal in
-    /// contracts/test/integration/post-proposal-checks, as well as
-    /// tests that read state before proposals & after, in
-    /// contracts/test/integration/proposal-checks, so this validate()
-    /// step should only be used for small checks.
-    /// If you want to add extensive validation of a new component
-    /// deployed by your proposal, you might want to add a post-proposal
-    /// test file instead.
-    /// address param is the address of the proposal executor
     function _validate(Addresses, address) internal virtual {}
 
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+    /// -------------------------- View functions -------------------------
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+
     /// @dev Print proposal actions
-    function _printActions() private {
+    function _printActions() private view {
         console.log("Proposal Description: %s", description());
         console.log(
             "\n\n------------------ Proposal Actions ------------------"
@@ -338,7 +299,8 @@ abstract contract Proposal is Test, Script, IProposal {
         console.logBytes(getCalldata());
     }
 
-    function _printRecordedAddresses(Addresses addresses) private {
+    /// @dev Print recorded addresses
+    function _printRecordedAddresses(Addresses addresses) private view {
         (
             string[] memory recordedNames,
             ,
