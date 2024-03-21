@@ -41,7 +41,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// kick off the process of creating a governance proposal by:
     ///  1). taking a snapshot of the current state of the contract
     ///  2). starting prank as the caller
-    ///  3). starting a recording of all calls created during the proposal
+    ///  3). starting a $recording of all calls created during the proposal
     function _startBuild(address caller) private {
         _startSnapshot = vm.snapshot();
         vm.startPrank(caller);
@@ -132,10 +132,12 @@ abstract contract Proposal is Test, Script, IProposal {
         vm.stopBroadcast();
 
         _build(addresses);
-        _outerBuild(addresses, deployer);
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);
+        _printRecordedAddresses(addresses);
+        _printActions();
+        _printCalldata();
     }
 
     /// @notice main function with more granularity control
@@ -185,7 +187,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice Print proposal calldata
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice Print out proposal actions
+    /// @notice get proposal actions
     /// @dev do not override
     function getProposalActions()
         public
@@ -204,13 +206,6 @@ abstract contract Proposal is Test, Script, IProposal {
         values = new uint256[](actionsLength);
         arguments = new bytes[](actionsLength);
 
-        if (DEBUG) {
-            console.log("\n\nProposal Description:\n\n%s", description());
-            console.log(
-                "\n\n------------------ Proposal Actions ------------------"
-            );
-        }
-
         for (uint256 i; i < actionsLength; i++) {
             require(
                 actions[i].target != address(0),
@@ -225,13 +220,6 @@ abstract contract Proposal is Test, Script, IProposal {
             targets[i] = actions[i].target;
             arguments[i] = actions[i].arguments;
             values[i] = actions[i].value;
-
-            if (DEBUG) {
-                console.log("%d). %s", i + 1, actions[i].description);
-                console.log("target: %s\npayload", actions[i].target);
-                console.logBytes(actions[i].arguments);
-                console.log("\n");
-            }
         }
     }
 
@@ -296,14 +284,6 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev After finishing deploy and deploy cleanup, build the proposal
     function _build(Addresses) internal virtual {}
 
-    function _outerBuild(Addresses addresses, address caller) internal virtual {
-        _startBuild(caller);
-
-        _build(addresses);
-
-        _endBuild(caller, addresses);
-    }
-
     /// @dev Actually run the proposal (e.g. queue actions in the Timelock,
     /// or execute a serie of Multisig calls...).
     /// See proposals for helper contracts.
@@ -335,5 +315,47 @@ abstract contract Proposal is Test, Script, IProposal {
     /// If you want to add extensive validation of a new component
     /// deployed by your proposal, you might want to add a post-proposal
     /// test file instead.
+    /// address param is the address of the proposal executor
     function _validate(Addresses, address) internal virtual {}
+
+    /// @dev Print proposal actions
+    function _printActions() private {
+        console.log("Proposal Description: %s", description());
+        console.log(
+            "\n\n------------------ Proposal Actions ------------------"
+        );
+        for (uint256 i; i < actions.length; i++) {
+            console.log("%d). %s", i + 1, actions[i].description);
+            console.log("target: %s\npayload", actions[i].target);
+            console.logBytes(actions[i].arguments);
+            console.log("\n");
+        }
+    }
+
+    /// @dev Print proposal calldata
+    function _printCalldata() private {
+        console.log("Calldata:");
+        console.logBytes(getCalldata());
+    }
+
+    function _printRecordedAddresses(Addresses addresses) private {
+        (
+            string[] memory recordedNames,
+            ,
+            address[] memory recordedAddresses
+        ) = addresses.getRecordedAddresses();
+        if (recordedNames.length > 0) {
+            console.log("Addresses added after running proposals:");
+            for (uint256 j = 0; j < recordedNames.length; j++) {
+                console.log('{\n        "addr": "%s", ', recordedAddresses[j]);
+                console.log('        "chainId": %d,', block.chainid);
+                console.log('        "isContract": %s', true, ",");
+                console.log(
+                    '        "name": "%s"\n}%s',
+                    recordedNames[j],
+                    j < recordedNames.length - 1 ? "," : ""
+                );
+            }
+        }
+    }
 }
