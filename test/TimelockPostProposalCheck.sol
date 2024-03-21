@@ -26,8 +26,13 @@ contract TimelockPostProposalCheck is Test {
         proposalsAddresses[1] = address(timelockProposal2);
         proposalsAddresses[2] = address(timelockProposal3);
 
+        string[] memory buildCallers = new string[](3);
+        buildCallers[0] = "PROTOCOL_TIMELOCK";
+        buildCallers[1] = "PROTOCOL_TIMELOCK";
+        buildCallers[2] = "PROTOCOL_TIMELOCK";
+
         // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses, buildCallers);
 
         // Set addresses object
         addresses = suite.addresses();

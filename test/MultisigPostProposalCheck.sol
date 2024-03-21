@@ -29,8 +29,13 @@ contract MultisigPostProposalCheck is Test {
         proposalsAddresses[1] = address(multisigProposal2);
         proposalsAddresses[2] = address(multisigProposal3);
 
+        string[] memory buildCallers = new string[](3);
+        buildCallers[0] = "DEV_MULTISIG";
+        buildCallers[1] = "DEV_MULTISIG";
+        buildCallers[2] = "DEV_MULTISIG";
+
         /// Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses, buildCallers);
 
         /// Set addresses object
         addresses = suite.addresses();
