@@ -4,7 +4,7 @@ The Forge Proposal Simulator (FPS) offers a framework for creating secure govern
 
 For guidance on tool usage, please read the [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/).
 
-## Usage
+## Usage for Proposal Simulation
 
 ### Step 1: Install
 
@@ -47,16 +47,20 @@ Choose a model that fits your needs:
 
 Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) and [Integration Tests](docs/testing/integration-tests.md).
 
-## Type Checking
+## Usage for Type Checking
 
 Type checking allows for checking of the deployed bytecode on any deployed contracts with the bytecode from the local artifacts. This enables developer `A` to deploy some contracts, and then developer `B` can verify `A`'s deployments by just running the type checking script. This can also be used by developer `A` to verify the deployments. `A` can take following steps:
 
-- Adds the deployed contracts to `Addresses.json`. In `TypeCheckAddresses.json` add the constructor args in nested array format where double quotes are escaped.
-- Install npm packages in typescript directory.
-- Run the following command to typecheck all contracts added in `TypeCheckAddresses.json`
+- Follow steps 1 to 3 in usage for proposal simulation section.
+- Add the deployed contracts to `Addresses.json`. In `TypeCheckAddresses.json` add the constructor args in nested array format where double quotes are escaped.
+- Change directory into `lib/forge-proposal-simulator/typescript` and install npm packages in typescript directory using npm install.
+``` bash
+cd lib/forge-proposal-simulator/typescript && npm i
+```
+- Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`. `https://ethereum-sepolia-rpc.publicnode.com` this public rpc url can be used.
 
 ```bash
-forge test --mc TypeCheck --ffi --fork-url <rpc_url> -vv
+cd ../ && forge test --mc TypeCheck --ffi --fork-url <rpc_url> -vv
 ```
 
 ## Contribute
