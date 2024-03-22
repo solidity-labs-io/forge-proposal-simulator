@@ -5,7 +5,7 @@ function extractABI(artifactPath: string): any {
 	artifactPath = artifactPath.replace(":", "/");
 
 	// TODO: take artifact path directly from foundry.toml
-    const filePath = `out/${artifactPath}.json`;
+    const filePath = `../../out/${artifactPath}.json`;
 
     try {
         const jsonData = fs.readFileSync(filePath, 'utf-8');
