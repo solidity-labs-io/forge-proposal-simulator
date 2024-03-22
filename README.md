@@ -49,7 +49,7 @@ Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) an
 
 ## Type Checking
 
-Type checking in fps is checking deployed bytecode of any deployed contracts with the bytecode from the local artifacts. This is to make sure if dev A deploys some contracts, dev B can verify A's deployments by just running the type checking script. Can also be used by A to verify the deployments. A can take following steps:
+Type checking allows for checking of the deployed bytecode on any deployed contracts with the bytecode from the local artifacts. This enables developer `A` to deploy some contracts, and then developer `B` can verify `A`'s deployments by just running the type checking script. This can also be used by developer `A` to verify the deployments. `A` can take following steps:
 
 - Adds the deployed contracts to `Addresses.json`. In `TypeCheckAddresses.json` add the constructor args in nested array format where double quotes are escaped.
 - Install npm packages in typescript directory.
