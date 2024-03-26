@@ -89,7 +89,10 @@ jobs:
               run: "cd typescript/ && npm install && cd ../"
 
             - name: "Run the tests"
-              run: "forge test --ffi --fork-url sepolia"
+              run: "forge test --nmc TypeCheck"
+
+            - name: "Run typecheck tests"
+              run: "forge test --mc TypeCheck --ffi --fork-url sepolia"
 
             - name: "Add test summary"
               run: |
