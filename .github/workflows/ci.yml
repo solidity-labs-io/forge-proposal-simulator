@@ -79,9 +79,17 @@ jobs:
                   echo "FOUNDRY_FUZZ_SEED=$(
                     echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
                   )" >> $GITHUB_ENV
+            
+            - name: "Install Node.js"
+              uses: "actions/setup-node@v3"
+              with:
+                  node-version: "lts/*"
+
+            - name: "Install the Node.js dependencies"
+              run: "cd typescript/ && npm install && cd ../"
 
             - name: "Run the tests"
-              run: "forge test"
+              run: "forge test --ffi --fork-url sepolia"
 
             - name: "Add test summary"
               run: |

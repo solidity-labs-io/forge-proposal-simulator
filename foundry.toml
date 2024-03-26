@@ -5,3 +5,6 @@ fs_permissions = [{ access = "read", path = "../../"}]
 evm_version = 'paris'
 optimizer = true
 optimizer_runs = 200
+
+[rpc_endpoints]
+sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
