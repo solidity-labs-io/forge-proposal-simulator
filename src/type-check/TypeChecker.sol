@@ -10,6 +10,10 @@ contract TypeChecker is Test {
 
     Addresses public addresses;
 
+    bytes constant IPFS = hex"69706673";
+
+    bytes constant SOLC = hex"736f6c63";
+
     struct SavedTypeCheckAddresses {
         /// Artifact path
         string artifactPath;
@@ -21,7 +25,8 @@ contract TypeChecker is Test {
 
     constructor(
         string memory addressesPath,
-        string memory typeCheckAddressesPath
+        string memory typeCheckAddressesPath,
+        string memory artifactDirectory
     ) {
         addresses = new Addresses(addressesPath);
 
@@ -37,7 +42,7 @@ contract TypeChecker is Test {
         );
 
         for (uint256 i = 0; i < savedTypeCheckAddresses.length; i++) {
-            string[] memory commands = new string[](5);
+            string[] memory commands = new string[](6);
 
             /// note to future self, ffi absolutely flips out if you try to set env vars
             commands[0] = "npx";
@@ -45,6 +50,9 @@ contract TypeChecker is Test {
             commands[2] = "typescript/encode.ts";
             commands[3] = savedTypeCheckAddresses[i].constructorArgs;
             commands[4] = savedTypeCheckAddresses[i].artifactPath;
+            commands[5] = artifactDirectory;
+
+            console.log("\nContract:", savedTypeCheckAddresses[i].name);
 
             bytes memory encodedConstructorArgs = vm.ffi(commands);
             console.log("Encoded contructor args :");
@@ -59,24 +67,24 @@ contract TypeChecker is Test {
                 .getAddress(savedTypeCheckAddresses[i].name)
                 .code;
 
-            bytes memory trimmedDeployedBytecode = _removeMetadata(
-                deployedBytecode
-            );
-
             bytes memory localDeployedBytecode = contractAddress.code;
 
-            bytes memory trimmedLocalDeployedBytecode = _removeMetadata(
-                localDeployedBytecode
-            );
+            if (
+                matchPattern(localDeployedBytecode, IPFS) &&
+                matchPattern(localDeployedBytecode, SOLC)
+            ) {
+                deployedBytecode = _removeMetadata(deployedBytecode);
 
-            console.log("Trimmed local deployed bytecode: ");
-            emit log_bytes(trimmedLocalDeployedBytecode);
-            console.log("Trimmed deployed bytecode: ");
-            emit log_bytes(trimmedDeployedBytecode);
+                localDeployedBytecode = _removeMetadata(localDeployedBytecode);
+            }
+
+            console.log("Local deployed bytecode: ");
+            emit log_bytes(localDeployedBytecode);
+            console.log("Deployed bytecode: ");
+            emit log_bytes(deployedBytecode);
 
             require(
-                keccak256(trimmedDeployedBytecode) ==
-                    keccak256(trimmedLocalDeployedBytecode),
+                keccak256(deployedBytecode) == keccak256(localDeployedBytecode),
                 "Deployed bytecode not matched"
             );
         }
@@ -109,5 +117,29 @@ contract TypeChecker is Test {
         }
 
         return trimmedData;
+    }
+
+    function matchPattern(
+        bytes memory data,
+        bytes memory pattern
+    ) public pure returns (bool) {
+        require(
+            data.length >= pattern.length,
+            "Data length is less than pattern length"
+        );
+
+        for (uint256 i = 0; i <= data.length - pattern.length; i++) {
+            bool isMatch = true;
+            for (uint256 j = 0; j < pattern.length; j++) {
+                if (data[i + j] != pattern[j]) {
+                    isMatch = false;
+                    break;
+                }
+            }
+            if (isMatch) {
+                return true;
+            }
+        }
+        return false;
     }
 }

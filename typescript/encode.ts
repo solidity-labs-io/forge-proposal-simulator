@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 import * as fs from 'fs';
 
-function extractABI(artifactPath: string): any {
+function extractABI(artifactPath: string, artifactDirectory: string): any {
 	artifactPath = artifactPath.replace(":", "/");
 
 	// TODO: take artifact path directly from foundry.toml
-    const filePath = `../../out/${artifactPath}.json`;
+    const filePath = `${artifactDirectory}${artifactPath}.json`;
 
     try {
         const jsonData = fs.readFileSync(filePath, 'utf-8');
@@ -75,7 +75,9 @@ const constructorInputs = JSON.parse(cleanedArg);
 
 const artifactPath = args[3];
 
-const abi = extractABI(artifactPath);
+const artifactDirectory = args[4];
+
+const abi = extractABI(artifactPath, artifactDirectory);
 
 // Encode the constructor inputs
 const encodedData = encodeData(abi, constructorInputs);
