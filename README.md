@@ -60,7 +60,7 @@ cd lib/forge-proposal-simulator/typescript && npm i
 - Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`. `https://ethereum-sepolia-rpc.publicnode.com` this public rpc url can be used.
 
 ```bash
-cd ../ && forge test --mc TypeCheck --ffi --fork-url <rpc_url> -vv
+cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url <rpc_url> -vv
 ```
 
 ## Contribute
