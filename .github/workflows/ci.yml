@@ -19,9 +19,6 @@ jobs:
               with:
                   submodules: "recursive"
 
-            - name: "Install Foundry"
-              uses: "foundry-rs/foundry-toolchain@v1"
-
             - name: "Install Node.js"
               uses: "actions/setup-node@v3"
               with:
@@ -38,27 +35,8 @@ jobs:
                   echo "## Lint result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
 
-    build:
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Check out the repo"
-              uses: "actions/checkout@v3"
-              with:
-                  submodules: "recursive"
-
-            - name: "Install Foundry"
-              uses: "foundry-rs/foundry-toolchain@v1"
-
-            - name: "Build the contracts and print their size"
-              run: "forge build --sizes"
-
-            - name: "Add build summary"
-              run: |
-                  echo "## Build result" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
-
-    test:
-        needs: ["lint", "build"]
+    proposal-simulator-test:
+        needs: ["lint"]
         runs-on: "ubuntu-latest"
         steps:
             - name: "Check out the repo"
@@ -80,6 +58,32 @@ jobs:
                     echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
                   )" >> $GITHUB_ENV
             
+            - name: "Build the contracts and print their size"
+              run: "forge build --sizes"
+
+            - name: "Run the tests"
+              run: "forge test --nmc TypeCheck"
+
+            - name: "Add test summary"
+              run: |
+                  echo "## Proposal simulator tests result" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+    type-check-test:
+        needs: ["lint"]
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: "actions/checkout@v3"
+              with:
+                  submodules: "recursive"
+
+            - name: "Install Foundry"
+              uses: "foundry-rs/foundry-toolchain@v1"
+
+            - name: "Show the Foundry config"
+              run: "forge config"
+            
             - name: "Install Node.js"
               uses: "actions/setup-node@v3"
               with:
@@ -88,13 +92,10 @@ jobs:
             - name: "Install the Node.js dependencies"
               run: "cd typescript/ && npm install && cd ../"
 
-            - name: "Run the tests"
-              run: "forge test --nmc TypeCheck"
-
             - name: "Run typecheck tests"
               run: "forge test --mc TypeCheck --ffi --fork-url sepolia"
 
             - name: "Add test summary"
               run: |
-                  echo "## Tests result" >> $GITHUB_STEP_SUMMARY
+                  echo "## Type check tests result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
