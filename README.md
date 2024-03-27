@@ -57,10 +57,10 @@ Type checking allows for checking of the deployed bytecode on any deployed contr
 ``` bash
 cd lib/forge-proposal-simulator/typescript && npm i
 ```
-- Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`. `https://ethereum-sepolia-rpc.publicnode.com` this public rpc url can be used.
+- Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`.
 
 ```bash
-cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url <rpc_url> -vv
+cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
 ```
 
 ## Contribute
