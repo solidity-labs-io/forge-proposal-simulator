@@ -13,7 +13,6 @@ import {MULTISIG_03} from "@examples/multisig/MULTISIG_03.sol";
 /// @notice this is a helper contract to execute proposals before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract MultisigPostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
     Addresses public addresses;
 
@@ -30,10 +29,10 @@ contract MultisigPostProposalCheck is Test {
         proposalsAddresses[2] = address(multisigProposal3);
 
         /// Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+        suite = new TestSuite(proposalsAddresses);
 
         /// Set addresses object
-        addresses = suite.addresses();
+        addresses = multisigProposal.addresses();
 
         /// @dev Verify if the multisig address is a contract; if it is not
         /// (e.g. running on a empty blockchain node), set the multisig
@@ -62,6 +61,6 @@ contract MultisigPostProposalCheck is Test {
         suite.testProposals();
 
         /// Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
+        //    addresses = suite.addresses();
     }
 }

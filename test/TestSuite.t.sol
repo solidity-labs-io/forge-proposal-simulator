@@ -19,14 +19,11 @@ Or, from another Solidity file (for post-proposal integration testing):
 contract TestSuite is Test {
     using Strings for string;
 
-    Addresses public addresses;
     Proposal[] public proposals;
     bool public debug;
 
-    constructor(string memory addressesPath, address[] memory _proposals) {
+    constructor(address[] memory _proposals) {
         require(_proposals.length > 0, "No proposals provided");
-        addresses = new Addresses(addressesPath);
-
         proposals = new Proposal[](_proposals.length);
 
         for (uint256 i; i < _proposals.length; i++) {

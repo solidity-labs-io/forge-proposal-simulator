@@ -49,6 +49,13 @@ abstract contract Proposal is Test, Script, IProposal {
         deployer = _deployer;
     }
 
+    /// @notice set the addresses contract
+    /// @dev this is useful for testing as we may want to deploy a mock contract
+    /// to run the proposal against a empty blockchain environment
+    function setAddresses(Addresses _addresses) public {
+        addresses = _addresses;
+    }
+
     /// @notice override this to set the proposal name
     function name() external view virtual returns (string memory);
 

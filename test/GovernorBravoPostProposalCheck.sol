@@ -16,8 +16,8 @@ import {Addresses} from "@addresses/Addresses.sol";
 /// @notice this is a helper contract to execute proposals before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract GovernorBravoPostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
+
     Addresses public addresses;
 
     function setUp() public virtual {
@@ -34,10 +34,9 @@ contract GovernorBravoPostProposalCheck is Test {
         proposalsAddresses[3] = address(governorProposal4);
 
         // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+        suite = new TestSuite(proposalsAddresses);
 
-        // Set addresses object
-        addresses = suite.addresses();
+        addresses = governorProposal1.addresses();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         uint256 governorSize;
@@ -105,13 +104,17 @@ contract GovernorBravoPostProposalCheck is Test {
                 address(timelock),
                 true
             );
+
+            for (uint i = 0; i < 4; i++) {
+                governorProposal1.setAddresses(addresses);
+                governorProposal2.setAddresses(addresses);
+                governorProposal3.setAddresses(addresses);
+                governorProposal4.setAddresses(addresses);
+            }
         }
 
         suite.setDebug(true);
         // Execute proposals
         suite.testProposals();
-
-        // Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
     }
 }

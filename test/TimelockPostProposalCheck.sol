@@ -8,11 +8,11 @@ import {TIMELOCK_03} from "@examples/timelock/TIMELOCK_03.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {IProposal} from "@proposals/IProposal.sol";
 
 // @notice this is a helper contract to execute proposals before running integration tests.
 // @dev should be inherited by integration test contracts.
 contract TimelockPostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
     TestSuite public suite;
     Addresses public addresses;
 
@@ -28,10 +28,10 @@ contract TimelockPostProposalCheck is Test {
         proposalsAddresses[2] = address(timelockProposal3);
 
         // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
+        suite = new TestSuite(proposalsAddresses);
 
         // Set addresses object
-        addresses = suite.addresses();
+        addresses = timelockProposal.addresses();
 
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -65,21 +65,14 @@ contract TimelockPostProposalCheck is Test {
                 address(timelockController),
                 true
             );
+
+            for (uint i = 0; i < proposalsAddresses.length; i++) {
+                IProposal(proposalsAddresses[i]).setAddresses(addresses);
+            }
         }
 
         suite.setDebug(true);
 
-        // Execute proposals
-        for (uint256 i = 0; i < 3; i++) {
-            string memory name = suite.proposals(i).name();
-
-            TimelockProposal proposal = TimelockProposal(
-                address(suite.proposals(i))
-            );
-            proposal.run();
-        }
-
-        // Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
+        suite.testProposals();
     }
 }
