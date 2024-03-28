@@ -9,6 +9,12 @@ import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract MULTISIG_01 is MultisigProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(ADDRESSES_PATH, 0x3dd46846eed8D147841AE162C8425c08BD8E1b41)
+    {}
+
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_01";

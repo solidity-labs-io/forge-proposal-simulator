@@ -11,15 +11,6 @@ import {Proposal} from "@proposals/Proposal.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
-    address public timelock;
-
-    function initialize(Addresses addresses, address _timelock) public {
-        require(timelock == address(0), "Timelock already initialized");
-        timelock = _timelock;
-
-        Proposal.initialize(addresses);
-    }
-
     /// @notice get schedule calldata
     function getCalldata()
         public
@@ -35,7 +26,7 @@ abstract contract TimelockProposal is Proposal {
             uint256[] memory values,
             bytes[] memory payloads
         ) = getProposalActions();
-        uint256 delay = TimelockController(payable(timelock)).getMinDelay();
+        uint256 delay = TimelockController(payable(caller)).getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -92,7 +83,7 @@ abstract contract TimelockProposal is Proposal {
         bytes memory executeCalldata = getExecuteCalldata();
 
         TimelockController timelockController = TimelockController(
-            payable(timelock)
+            payable(caller)
         );
         (
             address[] memory targets,
@@ -115,7 +106,7 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(timelock)).functionCall(
+            bytes memory returndata = address(payable(caller)).functionCall(
                 scheduleCalldata
             );
 
@@ -143,7 +134,7 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(timelock)).functionCall(
+            bytes memory returndata = address(payable(caller)).functionCall(
                 executeCalldata
             );
 

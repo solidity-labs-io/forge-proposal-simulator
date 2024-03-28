@@ -20,10 +20,9 @@ contract ScriptSuite is Script {
         proposal = _proposal;
         privateKey = _privateKey;
         buildCallerName = _buildCallerName;
-        proposal.initialize(addresses);
     }
 
     function run() public virtual {
-        proposal.run(privateKey, buildCallerName);
+        proposal.run(privateKey);
     }
 }

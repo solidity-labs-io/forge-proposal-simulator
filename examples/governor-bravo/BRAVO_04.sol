@@ -4,11 +4,18 @@ import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 /// @notice Mock proposal that withdraws MockToken from Vault
 /// using the GovernorBravoProposal type.
 contract BRAVO_04 is GovernorBravoProposal {
     string public override name = "BRAVO_04";
+
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(ADDRESSES_PATH, 0x1a9C8182C09F50C8318d769245beA52c32BE35BC)
+    {}
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {

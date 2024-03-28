@@ -33,12 +33,12 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice Addresses contract
     Addresses public addresses;
 
-    function initialize(Addresses _addresses) public override {
-        require(
-            address(addresses) == address(0),
-            "Proposal already initialized"
-        );
-        addresses = _addresses;
+    /// @notice the proposal calls caller
+    address public caller;
+
+    constructor(string memory addressesPath, address _caller) {
+        addresses = new Addresses(addressesPath);
+        caller = _caller;
     }
 
     /// @notice override this to set the proposal name
@@ -49,7 +49,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(uint256 privateKey, string memory buildCallerName) external {
+    function run(uint256 privateKey) external {
         if (address(addresses) == address(0)) {
             revert(
                 "Addresses not set, please call initialize(addresses) first."
@@ -63,7 +63,7 @@ abstract contract Proposal is Test, Script, IProposal {
         _afterDeploy(addresses, deployer);
         vm.stopBroadcast();
 
-        _outerBuild(addresses.getAddress(buildCallerName));
+        _outerBuild();
         _run(addresses, deployer);
         _teardown(addresses, deployer);
         _validate(addresses, deployer);
@@ -75,12 +75,12 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
-    function _outerBuild(address caller) public {
-        _startBuild(caller);
+    function _outerBuild() public {
+        _startBuild();
 
         _build(addresses);
 
-        _endBuild(caller);
+        _endBuild();
     }
 
     /// @dev set the debug flag
@@ -267,7 +267,7 @@ abstract contract Proposal is Test, Script, IProposal {
     ///  1). taking a snapshot of the current state of the contract
     ///  2). starting prank as the caller
     ///  3). starting a $recording of all calls created during the proposal
-    function _startBuild(address caller) private {
+    function _startBuild() private {
         _startSnapshot = vm.snapshot();
         vm.startPrank(caller);
         vm.startStateDiffRecording();
@@ -276,7 +276,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice to be used at the end of the build function to snapshot
     /// the actions performed by the proposal and revert these changes
     /// then, stop the prank and record the actions that were taken by the proposal.
-    function _endBuild(address caller) private {
+    function _endBuild() private {
         vm.stopPrank();
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();

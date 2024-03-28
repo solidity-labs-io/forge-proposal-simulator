@@ -27,13 +27,8 @@ contract TimelockPostProposalCheck is Test {
         proposalsAddresses[1] = address(timelockProposal2);
         proposalsAddresses[2] = address(timelockProposal3);
 
-        string[] memory buildCallers = new string[](3);
-        buildCallers[0] = "PROTOCOL_TIMELOCK";
-        buildCallers[1] = "PROTOCOL_TIMELOCK";
-        buildCallers[2] = "PROTOCOL_TIMELOCK";
-
         // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses, buildCallers);
+        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
         // Set addresses object
         addresses = suite.addresses();
@@ -82,11 +77,7 @@ contract TimelockPostProposalCheck is Test {
                 address(suite.proposals(i))
             );
             uint256 privateKeyDeployer = 123;
-            proposal.initialize(
-                addresses,
-                suite.addresses().getAddress("PROTOCOL_TIMELOCK")
-            );
-            proposal.run(privateKeyDeployer, suite.buildCallers(i));
+            proposal.run(privateKeyDeployer);
         }
 
         // Proposals execution may change addresses, so we need to update the addresses object.

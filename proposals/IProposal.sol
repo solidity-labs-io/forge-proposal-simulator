@@ -11,17 +11,11 @@ interface IProposal {
     /// @dev override this to set the proposal description
     function description() external view returns (string memory);
 
-    /// @notice initialize the proposal
-    /// @param addresses the addresses contract
-    function initialize(Addresses addresses) external;
-
     /// @notice actually run the proposal
     /// @dev review the implementation to determine which internal functions
     /// might need overriding for you proposal
     /// @param privateKey the private key to use for the proposal
-    /// @param buildCallerName the name of address that should be used as the
-    /// caller
-    function run(uint256 privateKey, string memory buildCallerName) external;
+    function run(uint256 privateKey) external;
 
     /// @notice Print proposal actions
     function getProposalActions()

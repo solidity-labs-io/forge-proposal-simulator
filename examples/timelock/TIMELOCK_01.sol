@@ -4,11 +4,18 @@ import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(ADDRESSES_PATH, 0x1a9C8182C09F50C8318d769245beA52c32BE35BC)
+    {}
+
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";

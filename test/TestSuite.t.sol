@@ -21,27 +21,16 @@ contract TestSuite is Test {
 
     Addresses public addresses;
     Proposal[] public proposals;
-    string[] public buildCallers;
     bool public debug;
 
-    constructor(
-        string memory addressesPath,
-        address[] memory _proposals,
-        string[] memory _buildCallers
-    ) {
+    constructor(string memory addressesPath, address[] memory _proposals) {
         require(_proposals.length > 0, "No proposals provided");
-        require(
-            _buildCallers.length == _proposals.length,
-            "Mismatched proposal and callers length"
-        );
         addresses = new Addresses(addressesPath);
 
         proposals = new Proposal[](_proposals.length);
-        buildCallers = new string[](_buildCallers.length);
 
         for (uint256 i; i < _proposals.length; i++) {
             proposals[i] = Proposal(_proposals[i]);
-            buildCallers[i] = _buildCallers[i];
         }
     }
 
@@ -70,8 +59,7 @@ contract TestSuite is Test {
             }
 
             uint256 privateKeyDeployer = 123;
-            proposals[i].initialize(addresses);
-            proposals[i].run(privateKeyDeployer, buildCallers[i]);
+            proposals[i].run(privateKeyDeployer);
             // take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
         }

@@ -33,14 +33,8 @@ contract GovernorBravoPostProposalCheck is Test {
         proposalsAddresses[2] = address(governorProposal3);
         proposalsAddresses[3] = address(governorProposal4);
 
-        string[] memory buildCallers = new string[](4);
-        buildCallers[0] = "PROTOCOL_TIMELOCK";
-        buildCallers[1] = "PROTOCOL_TIMELOCK";
-        buildCallers[2] = "PROTOCOL_TIMELOCK";
-        buildCallers[3] = "PROTOCOL_TIMELOCK";
-
         // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses, buildCallers);
+        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
 
         // Set addresses object
         addresses = suite.addresses();

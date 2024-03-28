@@ -4,9 +4,16 @@ import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 /// Mock proposal that withdraw tokens from Vault
 contract MULTISIG_03 is MultisigProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(ADDRESSES_PATH, 0x3dd46846eed8D147841AE162C8425c08BD8E1b41)
+    {}
+
     /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_03";
