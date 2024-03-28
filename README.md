@@ -54,7 +54,7 @@ Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) an
 Type checking allows for checking of the deployed bytecode on any deployed contracts with the bytecode from the local artifacts. This enables developer `A` to deploy some contracts, and then developer `B` can verify `A`'s deployments by just running the type checking script. This can also be used by developer `A` to verify the deployments. `A` can take following steps:
 
 - Follow steps 1 to 3 in usage for proposal simulation section.
-- Add the deployed contracts to `Addresses.json`. In `TypeCheckAddresses.json` add the constructor args in nested array format where double quotes are escaped.
+- Add the deployed contracts to `Addresses.json`. Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
 - Change directory into `lib/forge-proposal-simulator/typescript` and install npm packages in typescript directory using npm install.
 ``` bash
 cd lib/forge-proposal-simulator/typescript && npm i
