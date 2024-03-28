@@ -1,8 +1,10 @@
 pragma solidity ^0.8.0;
 
-import {ScriptSuite} from "@script/ScriptSuite.s.sol";
+import "forge-std/Script.sol";
+
 import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 import {Constants} from "@utils/Constants.sol";
+import {IProposal} from "@proposals/IProposal.sol";
 
 // @notice GovernorBravoScript is a script that runs BRAVO_01 proposal.
 // BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -11,22 +13,16 @@ import {Constants} from "@utils/Constants.sol";
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
 // `forge script script/GovernorBravo.s.sol:GovernorBravoScript -vvvv --rpc-url ${rpc} --broadcast --verify --etherscan-api-key ${key}`
-contract GovernorBravoScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    string public caller = "PROTOCOL_TIMELOCK";
+contract GovernorBravoScript is Script {
+    IProposal proposal;
 
-    constructor()
-        ScriptSuite(
-            ADDRESSES_PATH,
-            new BRAVO_01(),
-            vm.envUint("PRIVATE_KEY"),
-            caller
-        )
-    {}
+    constructor() {
+        proposal = new BRAVO_01();
+    }
 
-    function run() public override {
+    function run() public {
         // Execute proposal
         proposal.setDebug(true);
-        super.run();
+        proposal.run();
     }
 }

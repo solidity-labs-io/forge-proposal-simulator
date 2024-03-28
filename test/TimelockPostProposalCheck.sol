@@ -76,8 +76,7 @@ contract TimelockPostProposalCheck is Test {
             TimelockProposal proposal = TimelockProposal(
                 address(suite.proposals(i))
             );
-            uint256 privateKeyDeployer = 123;
-            proposal.run(privateKeyDeployer);
+            proposal.run();
         }
 
         // Proposals execution may change addresses, so we need to update the addresses object.

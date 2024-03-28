@@ -4,6 +4,7 @@ import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
@@ -12,7 +13,11 @@ contract MULTISIG_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
     constructor()
-        Proposal(ADDRESSES_PATH, 0x3dd46846eed8D147841AE162C8425c08BD8E1b41)
+        Proposal(
+            ADDRESSES_PATH,
+            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+        )
     {}
 
     // Returns the name of the proposal.

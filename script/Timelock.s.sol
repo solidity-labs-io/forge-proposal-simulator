@@ -1,9 +1,12 @@
 pragma solidity ^0.8.0;
 
-import {ScriptSuite} from "@script/ScriptSuite.s.sol";
+import "forge-std/Script.sol";
+
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 import {Constants} from "@utils/Constants.sol";
+import {IProposal} from "@proposals/IProposal.sol";
+import {Addresses} from "@addresses/Addresses.sol";
 
 // @notice TimelockScript is a script that run TIMELOCK_01 proposal
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -12,20 +15,16 @@ import {Constants} from "@utils/Constants.sol";
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
 // `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
-contract TimelockScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    string public caller = "PROTOCOL_TIMELOCK";
+contract TimelockScript is Script {
+    IProposal proposal;
 
-    constructor()
-        ScriptSuite(
-            ADDRESSES_PATH,
-            new TIMELOCK_01(),
-            vm.envUint("PRIVATE_KEY"), // deployer private key
-            caller
-        )
-    {}
+    constructor() {
+        proposal = new TIMELOCK_01();
+    }
 
-    function run() public override {
+    function run() public {
+        Addresses addresses = proposal.addresses();
+
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         uint256 timelockSize;
@@ -61,7 +60,7 @@ contract TimelockScript is ScriptSuite {
             proposal.setDebug(true);
 
             // Execute proposal
-            super.run();
+            proposal.run();
         }
     }
 }

@@ -14,8 +14,7 @@ interface IProposal {
     /// @notice actually run the proposal
     /// @dev review the implementation to determine which internal functions
     /// might need overriding for you proposal
-    /// @param privateKey the private key to use for the proposal
-    function run(uint256 privateKey) external;
+    function run() external;
 
     /// @notice Print proposal actions
     function getProposalActions()
@@ -31,4 +30,6 @@ interface IProposal {
 
     /// @notice set the debug flag
     function setDebug(bool debug) external;
+
+    function addresses() external view returns (Addresses);
 }

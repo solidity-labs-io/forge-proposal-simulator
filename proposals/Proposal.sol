@@ -36,9 +36,17 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the proposal calls caller
     address public caller;
 
-    constructor(string memory addressesPath, address _caller) {
+    /// @notice the proposal contracts deployer (if proposal deploys contracts)
+    address public deployer;
+
+    constructor(
+        string memory addressesPath,
+        address _caller,
+        address _deployer
+    ) {
         addresses = new Addresses(addressesPath);
         caller = _caller;
+        deployer = _deployer;
     }
 
     /// @notice override this to set the proposal name
@@ -49,15 +57,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(uint256 privateKey) external {
-        if (address(addresses) == address(0)) {
-            revert(
-                "Addresses not set, please call initialize(addresses) first."
-            );
-        }
-
-        address deployer = vm.addr(privateKey);
-
+    function run() external {
         vm.startBroadcast(deployer);
         _deploy(addresses, deployer);
         _afterDeploy(addresses, deployer);

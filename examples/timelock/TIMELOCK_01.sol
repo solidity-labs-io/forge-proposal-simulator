@@ -13,7 +13,11 @@ contract TIMELOCK_01 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
     constructor()
-        Proposal(ADDRESSES_PATH, 0x1a9C8182C09F50C8318d769245beA52c32BE35BC)
+        Proposal(
+            ADDRESSES_PATH,
+            0x1a9C8182C09F50C8318d769245beA52c32BE35BC,
+            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+        )
     {}
 
     /// @notice Returns the name of the proposal.

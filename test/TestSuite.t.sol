@@ -58,8 +58,7 @@ contract TestSuite is Test {
                 console.log("Proposal name:", name);
             }
 
-            uint256 privateKeyDeployer = 123;
-            proposals[i].run(privateKeyDeployer);
+            proposals[i].run();
             // take new snapshot
             postProposalVmSnapshots[i] = vm.snapshot();
         }

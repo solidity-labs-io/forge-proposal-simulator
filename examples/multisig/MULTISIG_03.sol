@@ -11,7 +11,11 @@ contract MULTISIG_03 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
     constructor()
-        Proposal(ADDRESSES_PATH, 0x3dd46846eed8D147841AE162C8425c08BD8E1b41)
+        Proposal(
+            ADDRESSES_PATH,
+            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+        )
     {}
 
     /// Returns the name of the proposal.

@@ -1,8 +1,10 @@
 pragma solidity ^0.8.0;
 
-import {ScriptSuite} from "@script/ScriptSuite.s.sol";
+import "forge-std/Script.sol";
+
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 import {Constants} from "@utils/Constants.sol";
+import {IProposal} from "@proposals/IProposal.sol";
 
 // @notice MultisigScript is a script that run MULTISIG_01 proposal
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
@@ -11,20 +13,14 @@ import {Constants} from "@utils/Constants.sol";
 // @dev Use this script to simulates or run a single proposal
 // Use this as a template to create your own script
 // `forge script script/Multisig.s.sol:MultisigScript -vvvv --rpc-url {rpc} --broadcast --verify --etherscan-api-key {key}`
-contract MultisigScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    string public caller = "DEV_MULTISIG";
+contract MultisigScript is Script {
+    IProposal proposal;
 
-    constructor()
-        ScriptSuite(
-            ADDRESSES_PATH,
-            new MULTISIG_01(),
-            vm.envUint("PRIVATE_KEY"), // deployer private key
-            caller
-        )
-    {}
+    constructor() {
+        proposal = new MULTISIG_01();
+    }
 
-    function run() public override {
+    function run() public {
         // @dev Verify if the multisig address is a contract; if it is not
         // (e.g. running on a empty blockchain node), set the multisig
         // code to Safe Multisig code
@@ -32,7 +28,7 @@ contract MultisigScript is ScriptSuite {
         // a deployed multisig contract isn't available. In real-world applications,
         // you'd typically have a multisig contract in place. Use this code
         // only as a reference.
-        address multisig = addresses.getAddress("DEV_MULTISIG");
+        address multisig = proposal.addresses().getAddress("DEV_MULTISIG");
 
         uint256 multisigSize;
         assembly {
@@ -45,6 +41,6 @@ contract MultisigScript is ScriptSuite {
         proposal.setDebug(true);
 
         // Execute proposal
-        super.run();
+        proposal.run();
     }
 }
