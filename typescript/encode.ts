@@ -4,7 +4,6 @@ import * as fs from 'fs';
 function extractABI(artifactPath: string, artifactDirectory: string): any {
 	artifactPath = artifactPath.replace(":", "/");
 
-	// TODO: take artifact path directly from foundry.toml
     const filePath = `${artifactDirectory}${artifactPath}.json`;
 
     try {
@@ -13,8 +12,7 @@ function extractABI(artifactPath: string, artifactDirectory: string): any {
         
         return contractJSON.abi;
     } catch (error) {
-        console.error('Error reading or parsing JSON file:', error);
-        return null;
+        throw new Error(`ABI not found on path.`);
     }
 }
 
