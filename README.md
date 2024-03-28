@@ -6,7 +6,9 @@ For guidance on tool usage, please read the [documentation](https://solidity-lab
 
 ## Usage
 
-### Step 1: Install
+### Proposal Simulation
+
+#### Step 1: Install
 
 Add `forge-proposal-simulator` to your project using Forge:
 
@@ -14,7 +16,7 @@ Add `forge-proposal-simulator` to your project using Forge:
 forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 ```
 
-### Step 2: Set Remappings
+#### Step 2: Set Remappings
 
 Update your remappings.txt to include:
 
@@ -22,7 +24,7 @@ Update your remappings.txt to include:
 @forge-proposal-simulator=lib/forge-proposal-simulator/
 ```
 
-### Step 3: Create Addresses File
+#### Step 3: Create Addresses File
 
 Create a JSON file following the instructions provided in
 [Addresses.md](docs/overview/architecture/addresses.md). We recommend keeping the
@@ -35,7 +37,7 @@ Once the file is created, be sure to allow read access to `addresses.json` insid
 fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
 ```
 
-### Step 4: Create a Proposal
+#### Step 4: Create a Proposal
 
 Choose a model that fits your needs:
 
@@ -43,9 +45,25 @@ Choose a model that fits your needs:
 -   [Timelock Proposal](docs/guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](docs/guides/governor-bravo-proposal.md)
 
-### Step 5: Implement Scripts and Tests
+#### Step 5: Implement Scripts and Tests
 
 Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) and [Integration Tests](docs/testing/integration-tests.md).
+
+### Type Checking
+
+Type checking allows for checking of the deployed bytecode on any deployed contracts with the bytecode from the local artifacts. This enables developer `A` to deploy some contracts, and then developer `B` can verify `A`'s deployments by just running the type checking script. This can also be used by developer `A` to verify the deployments. `A` can take following steps:
+
+- Follow steps 1 to 3 in usage for proposal simulation section.
+- Add the deployed contracts to `Addresses.json`. Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
+- Change directory into `lib/forge-proposal-simulator/typescript` and install npm packages in typescript directory using npm install.
+``` bash
+cd lib/forge-proposal-simulator/typescript && npm i
+```
+- Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`.
+
+```bash
+cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
+```
 
 ## Contribute
 

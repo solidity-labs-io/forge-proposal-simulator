@@ -1,6 +1,7 @@
 @forge-std/=lib/forge-std/src/
 @test=test/
-@proposals/=proposals/
+@proposals/=src/proposals/
+@type-check/=src/type-check/
 @addresses/=addresses/
 @utils/=utils/
 @examples/=examples/
