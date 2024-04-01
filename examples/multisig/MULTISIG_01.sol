@@ -81,9 +81,6 @@ contract MULTISIG_01 is MultisigProposal {
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        address timelockVault = addresses.getAddress("VAULT");
-        address token = addresses.getAddress("TOKEN_1");
-
         /// CALLS -- mutative and recorded
         _simulateActions(multisig);
     }
