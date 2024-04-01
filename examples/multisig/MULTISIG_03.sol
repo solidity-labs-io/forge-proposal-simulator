@@ -13,7 +13,7 @@ contract MULTISIG_03 is MultisigProposal {
     constructor()
         Proposal(
             ADDRESSES_PATH,
-            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            "DEV_MULTISIG",
             0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
         )
     {}

@@ -52,6 +52,5 @@
         "name": "BRAVO_PROPOSER",
         "chainId": 31337,
         "isContract": false
-
     }
 ]

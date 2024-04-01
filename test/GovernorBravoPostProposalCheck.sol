@@ -1,11 +1,8 @@
 pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 import {TestSuite} from "@test/TestSuite.t.sol";
-import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
-import {BRAVO_02} from "@examples/governor-bravo/BRAVO_02.sol";
-import {BRAVO_03} from "@examples/governor-bravo/BRAVO_03.sol";
-import {BRAVO_04} from "@examples/governor-bravo/BRAVO_04.sol";
 import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
 import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
 import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
@@ -13,30 +10,16 @@ import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol"
 import {Timelock} from "@comp-governance/Timelock.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
-/// @notice this is a helper contract to execute proposals before running integration tests.
+/// @notice this is a helper contract to execute a proposal before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract GovernorBravoPostProposalCheck is Test {
-    TestSuite public suite;
+    Proposal public proposal;
 
     Addresses public addresses;
 
     function setUp() public virtual {
-        BRAVO_01 governorProposal1 = new BRAVO_01();
-        BRAVO_02 governorProposal2 = new BRAVO_02();
-        BRAVO_03 governorProposal3 = new BRAVO_03();
-        BRAVO_04 governorProposal4 = new BRAVO_04();
-
-        // Populate addresses array
-        address[] memory proposalsAddresses = new address[](4);
-        proposalsAddresses[0] = address(governorProposal1);
-        proposalsAddresses[1] = address(governorProposal2);
-        proposalsAddresses[2] = address(governorProposal3);
-        proposalsAddresses[3] = address(governorProposal4);
-
-        // Deploy TestSuite contract
-        suite = new TestSuite(proposalsAddresses);
-
-        addresses = governorProposal1.addresses();
+        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        addresses = proposal.addresses();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         uint256 governorSize;
@@ -105,16 +88,8 @@ contract GovernorBravoPostProposalCheck is Test {
                 true
             );
 
-            for (uint i = 0; i < 4; i++) {
-                governorProposal1.setAddresses(addresses);
-                governorProposal2.setAddresses(addresses);
-                governorProposal3.setAddresses(addresses);
-                governorProposal4.setAddresses(addresses);
-            }
         }
 
-        suite.setDebug(true);
-        // Execute proposals
-        suite.testProposals();
+        proposal.run();
     }
 }

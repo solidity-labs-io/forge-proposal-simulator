@@ -33,15 +33,15 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice Addresses contract
     Addresses public addresses;
 
-    /// @notice the proposal calls caller
-    address public caller;
+    /// @notice the actions caller name in the Addresses JSON
+    string public caller;
 
     /// @notice the proposal contracts deployer (if proposal deploys contracts)
     address public deployer;
 
     constructor(
         string memory addressesPath,
-        address _caller,
+        string memory _caller,
         address _deployer
     ) {
         addresses = new Addresses(addressesPath);
@@ -276,7 +276,7 @@ abstract contract Proposal is Test, Script, IProposal {
     ///  3). starting a $recording of all calls created during the proposal
     function _startBuild() private {
         _startSnapshot = vm.snapshot();
-        vm.startPrank(caller);
+        vm.startPrank(addresses.getAddress(caller));
         vm.startStateDiffRecording();
     }
 
@@ -303,7 +303,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
                 accountAccesses[i].accessor != address(addresses) &&
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
+                accountAccesses[i].accessor == addresses.getAddress(caller )/// caller is correct, not a subcall
             ) {
                 _pushAction(
                     accountAccesses[i].value,
