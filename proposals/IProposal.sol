@@ -32,9 +32,4 @@ interface IProposal {
     function setDebug(bool debug) external;
 
     function addresses() external view returns (Addresses);
-
-    /// @notice set the addresses contract
-    /// @dev this is useful for testing as we may want to deploy a mock contract
-    /// to run the proposal against a empty blockchain environment
-    function setAddresses(Addresses _addresses) external;
 }
