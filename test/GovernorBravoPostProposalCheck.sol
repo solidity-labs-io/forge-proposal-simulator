@@ -2,7 +2,6 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 import {Proposal} from "@proposals/Proposal.sol";
-import {TestSuite} from "@test/TestSuite.t.sol";
 import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
 import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
 import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
@@ -14,7 +13,6 @@ import {Addresses} from "@addresses/Addresses.sol";
 /// @dev should be inherited by integration test contracts.
 contract GovernorBravoPostProposalCheck is Test {
     Proposal public proposal;
-
     Addresses public addresses;
 
     function setUp() public virtual {

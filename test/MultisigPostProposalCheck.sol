@@ -2,9 +2,9 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 
-import {TestSuite} from "@test/TestSuite.t.sol";
 import {Constants} from "@utils/Constants.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 import {MULTISIG_02} from "@examples/multisig/MULTISIG_02.sol";
@@ -13,26 +13,12 @@ import {MULTISIG_03} from "@examples/multisig/MULTISIG_03.sol";
 /// @notice this is a helper contract to execute proposals before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract MultisigPostProposalCheck is Test {
-    TestSuite public suite;
+    Proposal public proposal;
     Addresses public addresses;
 
     function setUp() public virtual {
-        /// Create proposals contracts
-        MULTISIG_01 multisigProposal = new MULTISIG_01();
-        MULTISIG_02 multisigProposal2 = new MULTISIG_02();
-        MULTISIG_03 multisigProposal3 = new MULTISIG_03();
-
-        /// Populate addresses array
-        address[] memory proposalsAddresses = new address[](3);
-        proposalsAddresses[0] = address(multisigProposal);
-        proposalsAddresses[1] = address(multisigProposal2);
-        proposalsAddresses[2] = address(multisigProposal3);
-
-        /// Deploy TestSuite contract
-        suite = new TestSuite(proposalsAddresses);
-
-        /// Set addresses object
-        addresses = multisigProposal.addresses();
+        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        addresses = proposal.addresses();
 
         /// @dev Verify if the multisig address is a contract; if it is not
         /// (e.g. running on a empty blockchain node), set the multisig
@@ -56,11 +42,7 @@ contract MultisigPostProposalCheck is Test {
             multisig = addresses.getAddress("DEV_MULTISIG");
         }
 
-        suite.setDebug(true);
-        /// Execute proposals
-        suite.testProposals();
+        proposal.run();
 
-        /// Proposals execution may change addresses, so we need to update the addresses object.
-        //    addresses = suite.addresses();
     }
 }

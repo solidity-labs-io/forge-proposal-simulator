@@ -3,12 +3,17 @@ pragma solidity ^0.8.0;
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {MultisigPostProposalCheck} from "@test/MultisigPostProposalCheck.sol";
+import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 
 // @dev This test contract inherits MultisigPostProposalCheck, granting it
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract MultisigProposalTest is MultisigPostProposalCheck {
-    // Tests if the Vault contract can be paused
+    function setUp() override public {
+        proposal = new MULTISIG_01();
+        super.setUp();
+    }
+
     function test_vaultIsPausable() public {
         // Retrieves the Vault instance using its address from the Addresses contract
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
