@@ -1,17 +1,9 @@
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
-import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
-import "@forge-std/Test.sol";
-import {Proposal} from "@proposals/Proposal.sol";
-import {Addresses} from "@addresses/Addresses.sol";
-import {Timelock} from "@comp-governance/Timelock.sol";
-import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
-import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
-import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
 import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
+
 import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalCheck.sol";
 
 contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {

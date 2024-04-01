@@ -2,9 +2,9 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 
-import {Proposal} from "@proposals/Proposal.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
-import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+
+import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 // @notice this is a helper contract to execute a proposal before running integration tests.

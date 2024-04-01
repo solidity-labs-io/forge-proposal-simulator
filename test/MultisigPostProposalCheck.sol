@@ -6,10 +6,6 @@ import {Constants} from "@utils/Constants.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 
-import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
-import {MULTISIG_02} from "@examples/multisig/MULTISIG_02.sol";
-import {MULTISIG_03} from "@examples/multisig/MULTISIG_03.sol";
-
 /// @notice this is a helper contract to execute a proposal before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract MultisigPostProposalCheck is Test {
