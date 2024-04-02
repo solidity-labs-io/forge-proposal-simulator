@@ -1,6 +1,5 @@
 pragma solidity ^0.8.0;
 
-import { console } from "@forge-std/console.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
@@ -31,7 +30,6 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    
     function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
@@ -61,7 +59,6 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -72,7 +69,6 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Executes the proposal actions.
-    
     function _run() internal override {
         /// Call parent _run function to check if there are actions to execute
         super._run();
@@ -84,7 +80,6 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Validates the post-execution state.
-    
     function _validate() internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
