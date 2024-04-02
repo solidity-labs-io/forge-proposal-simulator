@@ -53,17 +53,33 @@ Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) an
 
 Type checking allows verification of deployed bytecode on any contracts with the bytecode present in local artifacts. With this feature, developer `A` can easily deploy some contracts, and developer `B` can verify `A`'s deployments by simply running the type checking script. Additionaly, `A` can also use this feature to verify their own deployments. `A` can take the following steps:
 
-- Follow the steps 1 to 3 on [Proposal Simulation](#proposal-simulation) section
-- Add the deployed contracts to `Addresses.json`. 
-- Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
-- Enter `lib/forge-proposal-simulator/typescript` directory and install npm packages.
-``` bash
-cd lib/forge-proposal-simulator/typescript && npm i
-```
-- Run the following command at forge-proposal-simulator root to type check all contracts added in `TypeCheckAddresses.json`.
+-   Follow the steps 1 to 3 on [Proposal Simulation](#proposal-simulation) section
+-   Add the deployed contracts to `Addresses.json`.
+-   Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
+-   Enter `lib/forge-proposal-simulator/typescript` directory and install npm packages.
 
 ```bash
-cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
+cd lib/forge-proposal-simulator/typescript && npm i
+```
+
+-   Change directory again to the root repo
+
+```bash
+cd ../../../
+```
+
+-   Add below environment variables to `.env`.
+
+```
+ADDRESSES_PATH                # Path to addresses.json file
+TYPE_CHECK_ADDRESSES_PATH     # Path to typeCheckAddresses.json file
+ARTIFACT_PATH                 # Path of artifact folder
+```
+
+-   Run the following command on root repo to type check all contracts added in `TypeCheckAddresses.json`.
+
+```bash
+forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
 ```
 
 ## Contribute

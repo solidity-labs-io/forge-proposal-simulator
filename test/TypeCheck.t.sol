@@ -12,13 +12,15 @@ contract TypeCheck is Test {
         "addresses/TypeCheckAddressesIncorrect.json";
     string public constant ADDRESSES_PATH_INCORRECT =
         "addresses/AddressesIncorrect.json";
+    string public constant LIB_PATH = "";
     TypeChecker public typechecker;
 
     function test_typeCheck() public {
         typechecker = new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH,
-            ARTIFACT_DIRECTORY
+            ARTIFACT_DIRECTORY,
+            LIB_PATH
         );
     }
 
@@ -30,7 +32,8 @@ contract TypeCheck is Test {
         typechecker = new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH_INCORRECT,
-            ARTIFACT_DIRECTORY
+            ARTIFACT_DIRECTORY,
+            LIB_PATH
         );
     }
 
@@ -40,7 +43,8 @@ contract TypeCheck is Test {
         typechecker = new TypeChecker(
             ADDRESSES_PATH_INCORRECT,
             TYPE_CHECK_ADDRESSES_PATH,
-            ARTIFACT_DIRECTORY
+            ARTIFACT_DIRECTORY,
+            LIB_PATH
         );
     }
 }

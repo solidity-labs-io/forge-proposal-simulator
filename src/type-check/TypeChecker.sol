@@ -26,7 +26,8 @@ contract TypeChecker is Test {
     constructor(
         string memory addressesPath,
         string memory typeCheckAddressesPath,
-        string memory artifactDirectory
+        string memory artifactDirectory,
+        string memory libPath
     ) {
         addresses = new Addresses(addressesPath);
 
@@ -47,7 +48,9 @@ contract TypeChecker is Test {
             /// note to future self, ffi absolutely flips out if you try to set env vars
             commands[0] = "npx";
             commands[1] = "ts-node";
-            commands[2] = "typescript/encode.ts";
+            commands[2] = string(
+                abi.encodePacked(libPath, "typescript/encode.ts")
+            );
             commands[3] = savedTypeCheckAddresses[i].constructorArgs;
             commands[4] = savedTypeCheckAddresses[i].artifactPath;
             commands[5] = artifactDirectory;

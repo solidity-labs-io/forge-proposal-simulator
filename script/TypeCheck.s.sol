@@ -4,15 +4,19 @@ import "forge-std/Script.sol";
 import {TypeChecker} from "@type-check/TypeChecker.sol";
 
 contract TypeCheck is Script {
-    string public constant ADDRESSES_PATH = "../../addresses/Addresses.json";
-    string public constant TYPE_CHECK_ADDRESSES_PATH =
-        "../../addresses/TypeCheckAddresses.json";
-    string public constant ARTIFACT_PATH = "../../out/";
+    string public ADDRESSES_PATH = vm.envString("ADDRESSES_PATH");
+    string public TYPE_CHECK_ADDRESSES_PATH =
+        vm.envString("TYPE_CHECK_ADDRESSES_PATH");
+    string public ARTIFACT_PATH = vm.envString("ARTIFACT_PATH");
+    string public LIB_PATH =
+        vm.envOr("LIB_PATH", string("lib/forge-proposal-simulator/"));
+
     function run() public virtual {
         new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH,
-            ARTIFACT_PATH
+            ARTIFACT_PATH,
+            LIB_PATH
         );
     }
 }

@@ -48,12 +48,7 @@ contract DeployExampleTypeCheck is Script {
             structC: structC
         });
 
-        ExampleTypeCheck exampleTypeCheck = new ExampleTypeCheck(
-            structA,
-            stringArg,
-            uintArg,
-            structBArrayArg
-        );
+        new ExampleTypeCheck(structA, stringArg, uintArg, structBArrayArg);
 
         vm.stopBroadcast();
     }
