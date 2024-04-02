@@ -9,7 +9,7 @@ contract TypeCheck is Script {
         "../../addresses/TypeCheckAddresses.json";
     string public constant ARTIFACT_PATH = "../../out/";
     function run() public virtual {
-        TypeChecker typechecker = new TypeChecker(
+        new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH,
             ARTIFACT_PATH

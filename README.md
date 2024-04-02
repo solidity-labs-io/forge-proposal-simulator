@@ -51,15 +51,16 @@ Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) an
 
 ### Type Checking
 
-Type checking allows for checking of the deployed bytecode on any deployed contracts with the bytecode from the local artifacts. This enables developer `A` to deploy some contracts, and then developer `B` can verify `A`'s deployments by just running the type checking script. This can also be used by developer `A` to verify the deployments. `A` can take following steps:
+Type checking allows verification of deployed bytecode on any contracts with the bytecode present in local artifacts. With this feature, developer `A` can easily deploy some contracts, and developer `B` can verify `A`'s deployments by simply running the type checking script. Additionaly, `A` can also use this feature to verify their own deployments. `A` can take the following steps:
 
-- Follow steps 1 to 3 in usage for proposal simulation section.
-- Add the deployed contracts to `Addresses.json`. Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
-- Change directory into `lib/forge-proposal-simulator/typescript` and install npm packages in typescript directory using npm install.
+- Follow the steps 1 to 3 on [Proposal Simulation](#proposal-simulation) section
+- Add the deployed contracts to `Addresses.json`. 
+- Create a `TypeCheckAddresses.json` file following the instructions provided in [type-check.md](docs/guides/type-check.md).
+- Enter `lib/forge-proposal-simulator/typescript` directory and install npm packages.
 ``` bash
 cd lib/forge-proposal-simulator/typescript && npm i
 ```
-- Run the following command at forge-proposal-simulator root to typecheck all contracts added in `TypeCheckAddresses.json`.
+- Run the following command at forge-proposal-simulator root to type check all contracts added in `TypeCheckAddresses.json`.
 
 ```bash
 cd ../ && forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
