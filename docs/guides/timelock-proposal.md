@@ -2,20 +2,29 @@
 
 After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to the timelock controller, along with the whitelisting of the token and minting of tokens to the timelock.
 
-In your project `proposals` folder, create a new file called `TIMELOCK_01.sol` and add the following code:
+The following contract is present in the `examples/timelock` folder. We will use this contract as a reference for the tutorial.
 
 ```solidity
 pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(
+            ADDRESSES_PATH,
+            "PROTOCOL_TIMELOCK"
+        )
+    {}
+
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_01";
@@ -27,7 +36,6 @@ contract TIMELOCK_01 is TimelockProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    
     function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
@@ -40,9 +48,9 @@ contract TIMELOCK_01 is TimelockProposal {
         }
     }
 
-    // Transfers vault ownership to timelock.
-    // Transfer token ownership to timelock.
-    // Transfers all tokens to timelock.
+    // @notice Transfers vault ownership to timelock.
+    //         Transfer token ownership to timelock.
+    //         Transfers all tokens to timelock.
     function _afterDeploy() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -50,10 +58,11 @@ contract TIMELOCK_01 is TimelockProposal {
 
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-        token.transfer(timelock, token.balanceOf(address(deployer)));
+        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
     }
 
-    // Sets up actions for the proposal, in this case, setting the MockToken to active.
+    // @notice Set up actions for the proposal, in this case, setting the MockToken to active.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -63,19 +72,18 @@ contract TIMELOCK_01 is TimelockProposal {
         Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // Executes the proposal actions.
+    // @notice Executes the proposal actions.
     function _run() internal override {
         // Call parent _run function to check if there are actions to execute
         super._run();
 
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-        _simulateActions(timelock, proposer, executor);
+        _simulateActions(proposer, executor);
     }
 
-    // Validates the post-execution state.
+    // @notice Validates the post-execution state.
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -104,163 +112,151 @@ Let's go through each of the functions that are overridden.
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
+Constructor parameters are passed to the `Proposal` contract. The
+`ADDRESSES_PATH` is the path to the `Addresses.json` file, and `PROTOCOL_TIMELOCK` is
+the timelock that will be used to simulate the proposal actions.
+
 With the proposal contract prepared, it can now be executed. There are two options available:
 
-1. **Using `foundry test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
-2. **Using `foundry script`**: This is the chosen method for this scenario.
+1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
+2. **Using `forge script`**: This is the chosen method for this tutorial.
 
-Before proceeding with the `foundry script`, it is necessary to set up the
-[Addresses](../overview/architecture/addresses.md) contract. The next step
-involves creating an `addresses.json` file.
+## Running the Proposal with `forge script`
+
+### Setting Up Your Deployer Address
+
+The deployer address is the the one you'll use to broadcast the transactions
+deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
+
+We prioritize security when it comes to private key management. To avoid storing
+the private key as an environment variable, we use Foundry's cast tool.
+
+If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+
+```sh
+cast wallet import ${wallet_name} --interactive
+```
+
+### Deploying a Timelock Controller on Testnet
+
+You'll need a Timelock Controller contract set up on the testnet before running the proposal.
+
+We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process. 
+
+Before running the script, you must add the `TIMELOCK_PROPOSER`and
+`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file. 
 
 ```json
 [
     {
-        "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
-        "name": "PROTOCOL_TIMELOCK",
-        "chainId": 31337
-    },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
+        "addr": "YOUR_TIMELOCK_PROPOSER_ADDRESS",
         "name": "TIMELOCK_PROPOSER",
-        "chainId": 31337
+        "chainId": 31337,
+        "isContract": false
     },
     {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
+        "addr": "YOUR_TIMELOCK_EXECUTOR_ADDRESS",
         "name": "TIMELOCK_EXECUTOR",
-        "chainId": 31337
+        "chainId": 31337,
+        "isContract": false
     }
 ]
 ```
 
-With the JSON file prepared for use with `Addresses.sol`, the next step is to create a script that inherits from `ScriptSuite`. Create file `TimelockScript.s.sol` in the `scripts/` folder and add the following code:
-
-```solidity
-pragma solidity ^0.8.0;
-
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
-
-import {TIMELOCK_01} from "proposals/TIMELOCK_01.sol";
-import {ScriptSuite} from "@forge-proposal-simulator/script/ScriptSuite.s.sol";
-
-// @notice TimelockScript is a script that run TIMELOCK_01 proposal
-// TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
-// Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
-// Finally the proposal whitelist the ERC20 token in the Vault contract
-// @dev Use this script to simulates or run a single proposal
-// Use this as a template to create your own script
-// `forge script script/Timelock.s.sol:TimelockScript -vvvv --rpc-url ${rpc} --broadcast --verify --etherscan-api-key ${key}`
-contract TimelockScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-
-    constructor()
-        ScriptSuite(
-            ADDRESSES_PATH,
-            new TIMELOCK_01(),
-            vm.envUint("PRIVATE_KEY")
-        )
-    {}
-
-    function run() public override {
-        // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-        uint256 timelockSize;
-        assembly {
-            // retrieve the size of the code, this needs assembly
-            timelockSize := extcodesize(timelock)
-        }
-        if (timelockSize == 0) {
-            // Get proposer and executor addresses
-            address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-            address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
-
-            // Create arrays of addresses to pass to the TimelockController constructor
-            address[] memory proposers = new address[](1);
-            proposers[0] = proposer;
-            address[] memory executors = new address[](1);
-            executors[0] = executor;
-
-            // Deploy a new TimelockController
-            TimelockController timelockController = new TimelockController(
-                10_000,
-                proposers,
-                executors,
-                address(0)
-            );
-            // Update PROTOCOL_TIMELOCK address
-            addresses.changeAddress(
-                "PROTOCOL_TIMELOCK",
-                address(timelockController)
-            );
-
-            proposal.setDebug(true);
-
-            // Execute proposal
-            super.run();
-        }
-    }
-}
-```
-
-Running the script:
+After adding the addresses, run the script:
 
 ```sh
-forge script script/Timelock.s.sol
+forge script script/DeployTimelock.s.sol --account testnet --broadcast --rpc-url
+sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
 ```
+
+Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
+`~/.foundry/keystores/`.
+
+### Setting Up the Addresses JSON
+
+Add the Timelock Controller address and deployer address to it. The file should look like this:
+
+```json
+[
+    {
+        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "name": "PROTOCOL_TIMELOCK",
+        "chainId": 11155111,
+        "isContract": true
+    },
+    {
+        "addr": "YOUR_TIMELOCK_PROPOSER_ADDRESS",
+        "name": "TIMELOCK_PROPOSER",
+        "chainId": 11155111,
+        "isContract": false
+    },
+    {
+        "addr": "YOUR_TIMELOCK_EXECUTOR_ADDRESS",
+        "name": "TIMELOCK_EXECUTOR",
+        "chainId": 11155111,
+        "isContract": false
+    },
+    {
+        "addr": "YOUR_DEPLOYER_EOA",
+        "name": "DEPLOYER",
+        "chainId": 11155111,
+        "isContract": false
+    }
+]
+```
+
+### Running the Proposal
+
+```sh
+forge script examples/timelock/TIMELOCK_01.sol --account ${wallet_name} --broadcast --fork-url sepolia --slow --sender ${wallet_address} -vvvv
+```
+
+Before you execute the proposal script, double-check that the ${wallet_name} and
+${wallet_address} accurately match the wallet details saved in
+`~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly
+listed as the deployer address in the Addresses.json file. If these don't align,
+the script execution will fail.
 
 The script will output the following:
 
 ```sh
 == Logs ==
-Proposal Description:
 
-Timelock proposal mock
+--------- Addresses added after running proposal ---------
+  {
+          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7', 
+          'chainId': 11155111,
+          'isContract': true ,
+          'name': 'VAULT'
+},
+  {
+          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931', 
+          'chainId': 11155111,
+          'isContract': true ,
+          'name': 'TOKEN_1'
+}
+  
 
-
------------------- Proposal Actions ------------------
-  1). Set token to active
-  target: 0x90193C961A926261B756D1E5bb255e67ff9498A1
-payload
-  0x0ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c004960000000000000000000000000000000000000000000000000000000000000001
-
-
-  Calldata for scheduleBatch:
-  0x8f2a0bb000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000000238c9fb6d28e3dd9c74cc712adacdd43b8bda99137a1dc4751a7d6671fa25fda0000000000000000000000000000000000000000000000000000000000002710000000000000000000000000000000000000000000000000000000000000000100000000000000000000000090193c961a926261b756d1e5bb255e67ff9498a1000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c00496000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
-
-
-Proposal Description:
-
-Timelock proposal mock
-
-
------------------- Proposal Actions ------------------
-  1). Set token to active
-  target: 0x90193C961A926261B756D1E5bb255e67ff9498A1
-payload
-  0x0ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c004960000000000000000000000000000000000000000000000000000000000000001
-
-
-  Calldata for executeBatch:
-  0xe38335e500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000000238c9fb6d28e3dd9c74cc712adacdd43b8bda99137a1dc4751a7d6671fa25fda000000000000000000000000000000000000000000000000000000000000000100000000000000000000000090193c961a926261b756d1e5bb255e67ff9498a1000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c00496000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
-
-
-Proposal Description:
-
-Timelock proposal mock
-
+---------------- Proposal Description ----------------
+  Timelock proposal mock
+  
 
 ------------------ Proposal Actions ------------------
-  1). Set token to active
-  target: 0x90193C961A926261B756D1E5bb255e67ff9498A1
+  1). calling 0x61a7a6f1553cbb39c87959623bb23833838406d7 with 0 eth and 0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001 data.
+  target: 0x61A7A6F1553cbB39c87959623bb23833838406D7
 payload
-  0x0ffb1d8b000000000000000000000000a8452ec99ce0c64f20701db7dd3abdb607c004960000000000000000000000000000000000000000000000000000000000000001
+  0x0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001
+  
 
+  
 
-  schedule batch calldata with  1 action
-  executed batch calldata
-  Addresses added after running proposals:
-  VAULT 0x90193C961A926261B756D1E5bb255e67ff9498A1
-  TOKEN_1 0xA8452Ec99ce0C64f20701dB7dD3abDb607c00496
+------------------ Schedule Calldata ------------------
+  0x8f2a0bb000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000003c000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
+  
+
+------------------ Execute Calldata ------------------
+  0xe38335e500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
 ```
 
 As the Timelock executor, you have the ability to run the script to execute the proposal. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.

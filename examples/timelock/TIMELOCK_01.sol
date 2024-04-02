@@ -29,7 +29,6 @@ contract TIMELOCK_01 is TimelockProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    
     function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
@@ -42,9 +41,9 @@ contract TIMELOCK_01 is TimelockProposal {
         }
     }
 
-    // Transfers vault ownership to timelock.
-    // Transfer token ownership to timelock.
-    // Transfers all tokens to timelock.
+    // @notice Transfers vault ownership to timelock.
+    //         Transfer token ownership to timelock.
+    //         Transfers all tokens to timelock.
     function _afterDeploy() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -56,7 +55,7 @@ contract TIMELOCK_01 is TimelockProposal {
         token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
     }
 
-    // Sets up actions for the proposal, in this case, setting the MockToken to active.
+    // @notice Set up actions for the proposal, in this case, setting the MockToken to active.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -66,7 +65,7 @@ contract TIMELOCK_01 is TimelockProposal {
         Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // Executes the proposal actions.
+    // @notice Executes the proposal actions.
     function _run() internal override {
         // Call parent _run function to check if there are actions to execute
         super._run();
@@ -77,7 +76,7 @@ contract TIMELOCK_01 is TimelockProposal {
         _simulateActions(proposer, executor);
     }
 
-    // Validates the post-execution state.
+    // @notice Validates the post-execution state.
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

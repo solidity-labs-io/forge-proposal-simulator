@@ -112,17 +112,10 @@ abstract contract TimelockProposal is Proposal {
                 scheduleCalldata
             );
 
-            if (DEBUG) {
-                console.log(
-                    "schedule batch calldata with ",
-                    actions.length,
-                    (actions.length > 1 ? "actions" : "action")
-                );
-
-                if (returndata.length > 0) {
-                    console.log("returndata");
-                    console.logBytes(returndata);
-                }
+            
+            if (DEBUG && returndata.length > 0) {
+                console.log("returndata");
+                console.logBytes(returndata);
             }
         } else if (DEBUG) {
             console.log("proposal already scheduled for id");
@@ -140,13 +133,9 @@ abstract contract TimelockProposal is Proposal {
                 executeCalldata
             );
 
-            if (DEBUG) {
-                console.log("executed batch calldata");
-
-                if (returndata.length > 0) {
-                    console.log("returndata");
-                    console.logBytes(returndata);
-                }
+            if (DEBUG && returndata.length > 0) {
+                console.log("returndata");
+                console.logBytes(returndata);
             }
         } else if (DEBUG) {
             console.log("proposal already executed");

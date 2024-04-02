@@ -2,7 +2,7 @@
 
 After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to a multisig wallet, along with the whitelisting of the token and minting of tokens to the multisig.
 
-In your project `proposals` folder, create a new file called `MULTISIG_01.sol` and add the following code:
+The following contract is present in the `examples/multisig` folder. We will use this contract as a reference for the tutorial.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -117,37 +117,40 @@ Let's go through each of the functions that are overridden.
 
 Constructor parameters are passed to the `Proposal` contract. The
 `ADDRESSES_PATH` is the path to the `Addresses.json` file, and `DEV_MULTISIG` is
-the name of the address that will be used to execute the proposal actions.
+the Multisig that will be used to simulate the proposal actions.
 
-With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
+With the proposal contract prepared, it can now be executed. There are two options available:
 
 1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
-2. **Using `forge script`**: This is the chosen method for this scenario.
+2. **Using `forge script`**: This is the chosen method for this tutorial.
 
 ## Running the Proposal with `forge script`
 
-### Deploying a Gnosis Safe Multisig on Sepolia Testnet
+### Deploying a Gnosis Safe Multisig on Testnet
 
-To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the Sepolia testnet. Let's dive in:
+To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the testnet. 
 
-1. First things first, head over to [Gnosis Safe](https://app.safe.global/). Once there, pick your preferred testnet (we're using Sepolia for this tutorial). Follow the on-screen instructions to spin up a new Safe Account.
+1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet
+   (we're using Sepolia for this tutorial). Follow the on-screen instructions to
+   generate a new Safe Account.
 
 2. After setting up your Safe, you'll find the address in the details section of your Safe Account. Make sure to copy this address and keep it handy for later steps.
 
 ### Setting Up Your Deployer Address
 
-The deployer address is the the one you'll use to broadcast the transactions deploying proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
+The deployer address is the the one you'll use to broadcast the transactions
+deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
 
 We prioritize security when it comes to private key management. To avoid storing
 the private key as an environment variable, we use Foundry's cast tool.
 
-If you're missing a wallet in ~/.foundry/keystores/, create one by executing:
+If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
 ```
 
-### Set up the Addresses JSON
+### Setting Up the Addresses JSON
 
 Set up Addresses.json file and add the Gnosis Safe address and deployer address to it. The file should look like this:
 
@@ -170,7 +173,7 @@ Set up Addresses.json file and add the Gnosis Safe address and deployer address 
 
 Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail with the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
 
-### Run the proposal
+### Running the Proposal
 
 ```sh
 forge script examples/multisig/MULTISIG_01.sol --account ${wallet_name} --broadcast --fork-url sepolia --slow --sender ${wallet_address} -vvvv
