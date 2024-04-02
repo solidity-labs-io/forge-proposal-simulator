@@ -12,6 +12,7 @@ models. FPS has been tested and confirmed to be compatible with:
 
 1. [Gnosis Safe Multisig](./multisig-proposal.md)
 2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
+3. [Governor Bravo](./governor-bravo-proposal.md)
 
 ## Example Contracts
 

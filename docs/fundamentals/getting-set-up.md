@@ -26,15 +26,16 @@ Once you have the file, you should allow read access on `foundry.toml`.
 ```toml
 [profile.default]
 ...
-fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
+fs_permissions = [{ access = "read", path = "./addresses/Addresses.json"}]
 ```
 
 ## Step 4: Create a Proposal
 
 Create a proposal. Choose a model that fits your needs:
 
--   [Multisig Proposal](../guides/multisig-proposal.md)
--   [Timelock Proposal](../guides/timelock-proposal.md)
+- [Multisig Proposal](../guides/multisig-proposal.md)
+- [Timelock Proposal](../guides/timelock-proposal.md)
+- [Bravo Proposal](../guides/governor-bravo-proposal.md)
 
 ## Step 5: Implement Scripts and Tests
 

@@ -231,7 +231,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev Print proposal actions
     function _printActions() private view {
         console.log(
-                    "\n\n------------------ Proposal Description ------------------"
+                    "\n\n---------------- Proposal Description ----------------"
         );
         console.log(description());
         console.log(
@@ -255,9 +255,9 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (recordedNames.length > 0) {
             console.log(
-                 "\n\n----------- Addresses added after running proposal -----------");
+                 "\n\n--------- Addresses added after running proposal ---------");
             for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log("{\n        'addr': '%s', ", recordedAddresses[j]);
+                console.log("{\n          'addr': '%s', ", recordedAddresses[j]);
                 console.log("        'chainId': %d,", block.chainid);
                 console.log("        'isContract': %s", true, ",");
                 console.log(
@@ -277,10 +277,10 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (changedNames.length > 0) {
             console.log(
-                        "\n\n---------- Addresses changed after running proposal ----------");
+                        "\n\n-------- Addresses changed after running proposal --------");
 
             for (uint256 j = 0; j < changedNames.length; j++) {
-                console.log("{\n        'addr': '%s', ", changedAddresses[j]);
+                console.log("{\n          'addr': '%s', ", changedAddresses[j]);
                 console.log();
                 console.log("        'chainId': %d,", block.chainid);
                 console.log("        'isContract': %s", true, ",");

@@ -37,12 +37,7 @@ abstract contract MultisigProposal is Proposal {
 
         /// generate calldata
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
-
-        if (DEBUG) {
-            console.log("Calldata:");
-            console.logBytes(data);
         }
-    }
 
     function _simulateActions(address multisig) internal {
         require(
@@ -56,12 +51,8 @@ abstract contract MultisigProposal is Proposal {
         vm.etch(multisig, Constants.MULTICALL_BYTECODE);
 
         bytes memory data = getCalldata();
-        bytes memory result = multisig.functionCall(data);
 
-        if (DEBUG && result.length > 0) {
-            console.log("Multicall result:");
-            console.logBytes(result);
-        }
+        multisig.functionCall(data);
 
         /// revert contract code to original safe bytecode
         vm.etch(multisig, Constants.SAFE_BYTECODE);
