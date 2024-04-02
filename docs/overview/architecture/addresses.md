@@ -2,7 +2,8 @@
 
 ## Overview
 
-The Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
+The Addresses contract plays a pivotal role in managing and storing the
+addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
 
 ## Structure
 
@@ -48,34 +49,7 @@ different networks. However, duplicates on the same network are not
 permitted. The `Addresses.sol` contract enforces this rule by reverting during
 construction if such a duplicate is detected.
 
-## Deployment
-
-Usually `Addresses.json` will be deployed as part of the Proposal deployment
-process. However, if needed, it can be deployed separately by running:
-
-```solidity
-pragma solidity ^0.8.0;
-
-import "forge-std/Script.sol";
-import {Addresses} from "@addresses/Addresses.sol";
-
-contract DeployAddresses is Script {
-    ;
-
-    function run() public virtual {
-        string memory addressesPath = "./addresses/Addresses.json";
-        addresses = new Addresses(addressesPath);
-    }
-}
-```
-
-and then running:
-
-```bash
-forge script script/path/to/DeployAddresses.s.sol
-```
-
-## Usage
+## Functions
 
 ### Adding
 
@@ -163,8 +137,6 @@ Addresses changed during the proposals executions can be retrieved by calling th
 addresses.getChangedAddresses();
 ```
 
-## Checks
-
 ### Address exists
 
 The `isAddressSet` function checks if an address exists in the Addresses
@@ -189,10 +161,12 @@ interact with non-existent contracts or contracts not deployed on the current ch
 addresses.isAddressContract("CONTRACT_NAME");
 ```
 
-### Using with Proposals
+## Usage
 
-All proposal [internal functions](./internal-functions.md) receive an `Addresses` instance as the
-first paramater. Use the `addresses` variable to add, update, retrieve, and remove addresses.
+When writing a proposal, pass the addresses path to the proposal constructor.
+[Proposal.sol](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/main/proposals/Proposal.sol)
+will load the addresses from the path and make them available to the proposal.
+Use the `addresses` object to add, update, retrieve, and remove addresses.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -203,6 +177,15 @@ import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
 import {MyContract} from "@path/to/MyContract.sol";
 
 contract PROPOSAL_01 is MultisigProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(
+            ADDRESSES_PATH,
+            "DEV_MULTISIG"
+        )
+    {}
+    
     function _deploy() internal override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract
@@ -214,72 +197,3 @@ contract PROPOSAL_01 is MultisigProposal {
     }
 }
 ```
-
-### Using with Scripts
-
-When writing a script, pass the addresses path to the
-`ScriptSuite.s.sol` constructor.
-
-```solidity
-pragma solidity ^0.8.0;
-
-import {ScriptSuite} from "@forge-proposal-simulator/ScriptSuite.s.sol";
-import {PROPOSAL_01} from "/path/to/PROPOSAL_01.sol";
-
-contract ProposalScript is ScriptSuite {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-
-    constructor() ScriptSuite(ADDRESSES_PATH, new PROPOSAL_01()) {}
-
-    function run() public virtual override {
-        // Addresses object is available here
-        addresses.getAddress("CONTRACT_NAME");
-
-        super.run();
-    }
-}
-```
-
-This will give you access to the `addresses` variable, which is an instance of the `Addresses.sol` contract
-
-### Using with Tests
-
-When writing your [PostProposalCheck](./README.md#post-proposal-check) contract,
-you must pass the addresses path to the `TestSuite.t.sol` constructor.
-
-```solidity
-import {PROPOSAL_01} from "path/to/PROPOSAL_01.sol";
-import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
-import {TestSuite} from "@forge-proposal-simulator/test/TestSuite.t.sol";
-
-import "@forge-std/Test.sol";
-
-contract PostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    Addresses public addresses;
-    TestSuite public suite;
-
-    function setUp() public virtual override {
-        // Deploy a new Proposal
-        PROPOSAL_01 proposal = new PROPOSAL_01();
-
-        // Add proposal to proposals array
-        address[] memory proposalAddresses = new address[](1);
-        proposalAddresses[0] = address(proposal);
-
-        // Create TestSuite
-        suite = new TestSuite(ADDRESSES_PATH, proposalAddresses);
-
-        // Addresses object is available here
-        addresses = suite.addresses();
-
-        // Execute proposals
-        suite.testProposals();
-
-        // Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
-    }
-}
-```
-
-Now, your test contract will have access to the `addresses` variable, which is an instance of the `Addresses.sol` contract.
