@@ -4,10 +4,9 @@ pragma solidity =0.8.19;
 import "forge-std/Script.sol";
 import "../src/type-check/ExampleTypeCheck.sol";
 
-contract DeployExempleTypeCheck is Script {
+contract DeployExampleTypeCheck is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
 
         ExampleTypeCheck.StructC memory structC = ExampleTypeCheck.StructC({
             varC1: "0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5",
