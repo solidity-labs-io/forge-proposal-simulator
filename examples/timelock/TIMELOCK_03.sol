@@ -13,8 +13,7 @@ contract TIMELOCK_03 is TimelockProposal {
     constructor()
         Proposal(
             ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK",
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+            "PROTOCOL_TIMELOCK"
         )
     {}
 
@@ -29,7 +28,7 @@ contract TIMELOCK_03 is TimelockProposal {
     }
 
     // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         address timelockVault = addresses.getAddress("VAULT");
@@ -44,9 +43,9 @@ contract TIMELOCK_03 is TimelockProposal {
     }
 
     // Executes the proposal actions.
-    function _run(Addresses addresses, address) internal override {
+    function _run() internal override {
         // Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
@@ -58,7 +57,7 @@ contract TIMELOCK_03 is TimelockProposal {
     }
 
     // Validates the post-execution state.
-    function _validate(Addresses addresses, address) internal override {
+    function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

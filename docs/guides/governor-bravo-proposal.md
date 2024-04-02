@@ -25,8 +25,8 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    /// @param addresses The addresses contract.
-    function _deploy(Addresses addresses, address) internal override {
+    
+    function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
             addresses.addAddress("VAULT", address(timelockVault), true);
@@ -42,10 +42,10 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// 1. Transfers vault ownership to timelock.
     /// 2. Transfer token ownership to timelock.
     /// 3. Transfers all tokens to timelock.
-    /// @param addresses The addresses contract.
-    /// @param deployer The contract deployer address.
+    
+    
     function _afterDeploy(
-        Addresses addresses,
+        ,
         address deployer
     ) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -58,8 +58,8 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    /// @param addresses The addresses contract.
-    function _build(Addresses addresses) internal override {
+    
+    function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -69,10 +69,10 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Executes the proposal actions.
-    /// @param addresses The addresses contract.
-    function _run(Addresses addresses, address) internal override {
+    
+    function _run() internal override {
         // Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
@@ -82,8 +82,8 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Validates the post-execution state.
-    /// @param addresses The addresses contract.
-    function _validate(Addresses addresses, address) internal override {
+    
+    function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

@@ -36,17 +36,12 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    /// @notice the proposal contracts deployer (if proposal deploys contracts)
-    address public deployer;
-
     constructor(
         string memory addressesPath,
-        string memory _caller,
-        address _deployer
+        string memory _caller
     ) {
         addresses = new Addresses(addressesPath);
         caller = _caller;
-        deployer = _deployer;
     }
 
     /// @notice override this to set the proposal name
@@ -59,14 +54,14 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev do not override
     function run() external {
         vm.startBroadcast();
-        _deploy(addresses, deployer);
-        _afterDeploy(addresses, deployer);
+        _deploy();
+        _afterDeploy();
         vm.stopBroadcast();
 
         _outerBuild();
-        _run(addresses, deployer);
-        _teardown(addresses, deployer);
-        _validate(addresses, deployer);
+        _run();
+        _teardown();
+        _validate();
 
         if (DEBUG) {
             _printRecordedAddresses();
@@ -78,7 +73,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function _outerBuild() public {
         _startBuild();
 
-        _build(addresses);
+        _build();
 
         _endBuild();
     }
@@ -180,19 +175,19 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------------------------------------------------
 
     /// @dev Deploy contracts and add them to list of addresses
-    function _deploy(Addresses, address) internal virtual {}
+    function _deploy() internal virtual {}
 
     /// @dev After deploying, call initializers and link contracts together
-    function _afterDeploy(Addresses, address) internal virtual {}
+    function _afterDeploy() internal virtual {}
 
     /// @dev After finishing deploy and deploy cleanup, build the proposal
-    function _build(Addresses) internal virtual {}
+    function _build() internal virtual {}
 
     /// @dev Actually run the proposal (e.g. queue actions in the Timelock,
     /// or execute a serie of Multisig calls...).
     /// See proposals for helper contracts.
     /// address param is the address of the proposal executor
-    function _run(Addresses, address) internal virtual {
+    function _run() internal virtual {
         /// Check if there are actions to run
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
@@ -205,13 +200,13 @@ abstract contract Proposal is Test, Script, IProposal {
     /// of changes that must happen before your proposal execution), and here
     /// you could revert these changes, to make sure the integration tests
     /// run on a state that is as close to mainnet as possible.
-    function _teardown(Addresses, address) internal virtual {}
+    function _teardown() internal virtual {}
 
     /// @dev For small post-proposal checks, e.g. read state variables of the
     /// contracts you deployed, to make sure your deploy() and afterDeploy()
     /// steps have deployed contracts in a correct configuration, or read
     /// states that are expected to have change during your run() step.
-    function _validate(Addresses, address) internal virtual {}
+    function _validate() internal virtual {}
 
     /// @dev Print proposal calldata
     function _printCalldata() internal virtual {

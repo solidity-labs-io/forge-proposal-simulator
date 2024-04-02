@@ -16,8 +16,7 @@ contract MULTISIG_01 is MultisigProposal {
     constructor()
         Proposal(
             ADDRESSES_PATH,
-            "DEV_MULTISIG",
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+            "DEV_MULTISIG"
         )
     {}
 
@@ -32,8 +31,8 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    /// @param addresses The addresses contract.
-    function _deploy(Addresses addresses, address) internal override {
+    
+    function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
             addresses.addAddress("VAULT", address(timelockVault), true);
@@ -49,11 +48,8 @@ contract MULTISIG_01 is MultisigProposal {
     /// 1. Transfers vault ownership to dev multisig.
     /// 2. Transfer token ownership to dev multisig.
     /// 3. Transfers all tokens to dev multisig.
-    /// @param addresses The addresses contract.
-    function _afterDeploy(
-        Addresses addresses,
-        address 
-    ) internal override {
+    
+    function _afterDeploy() internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
@@ -65,8 +61,8 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    /// @param addresses The addresses contract.
-    function _build(Addresses addresses) internal override {
+    
+    function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -76,10 +72,10 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Executes the proposal actions.
-    /// @param addresses The addresses contract.
-    function _run(Addresses addresses, address) internal override {
+    
+    function _run() internal override {
         /// Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
@@ -88,8 +84,8 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Validates the post-execution state.
-    /// @param addresses The addresses contract.
-    function _validate(Addresses addresses, address) internal override {
+    
+    function _validate() internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

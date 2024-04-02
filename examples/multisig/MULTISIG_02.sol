@@ -13,8 +13,7 @@ contract MULTISIG_02 is MultisigProposal {
     constructor()
         Proposal(
             ADDRESSES_PATH,
-            "DEV_MULTISIG",
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+            "DEV_MULTISIG"
         )
     {}
 
@@ -29,7 +28,7 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");
@@ -42,9 +41,9 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// @notice Executes the proposal actions.
-    function _run(Addresses addresses, address) internal override {
+    function _run() internal override {
         /// Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
@@ -52,7 +51,7 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// Validates the post-execution state
-    function _validate(Addresses addresses, address) internal override {
+    function _validate() internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

@@ -16,8 +16,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     constructor()
         Proposal(
             ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK",
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+            "PROTOCOL_TIMELOCK"
         )
     {}
 
@@ -27,8 +26,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    /// @param addresses The addresses contract.
-    function _deploy(Addresses addresses, address) internal override {
+    function _deploy() internal override {
         if (!addresses.isAddressSet("TOKEN_2")) {
             MockToken token = new MockToken();
             addresses.addAddress("TOKEN_2", address(token), true);
@@ -36,7 +34,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     /// Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(Addresses addresses) internal override {
+    function _build() internal override {
         /// STATICALL -- not recorded for the run stage
         address token = addresses.getAddress("TOKEN_2");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -46,9 +44,9 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     // Executes the proposal actions.
-    function _run(Addresses addresses, address) internal override {
+    function _run() internal override {
         // Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
@@ -61,7 +59,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     // Validates the post-execution state.
-    function _validate(Addresses addresses, address) internal override {
+    function _validate() internal override {
         MockToken token = MockToken(addresses.getAddress("TOKEN_2"));
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
 

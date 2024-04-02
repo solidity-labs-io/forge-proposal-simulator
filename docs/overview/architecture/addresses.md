@@ -60,7 +60,7 @@ import "forge-std/Script.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 contract DeployAddresses is Script {
-    Addresses addresses;
+    ;
 
     function run() public virtual {
         string memory addressesPath = "./addresses/Addresses.json";
@@ -203,7 +203,7 @@ import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
 import {MyContract} from "@path/to/MyContract.sol";
 
 contract PROPOSAL_01 is MultisigProposal {
-    function _deploy(Addresses addresses, address) internal override {
+    function _deploy() internal override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract
             MyContract myContract = new MyContract();
