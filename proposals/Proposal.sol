@@ -58,7 +58,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice main function
     /// @dev do not override
     function run() external {
-        vm.startBroadcast(deployer);
+        vm.startBroadcast();
         _deploy(addresses, deployer);
         _afterDeploy(addresses, deployer);
         vm.stopBroadcast();

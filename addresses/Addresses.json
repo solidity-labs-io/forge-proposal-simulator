@@ -52,5 +52,17 @@
         "name": "BRAVO_PROPOSER",
         "chainId": 31337,
         "isContract": false
+    },
+  {
+    "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
+    "name": "DEV_MULTISIG",
+    "chainId": 11155111,
+    "isContract": true
+  },
+    {
+    "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+    "name": "DEPLOYER",
+    "chainId": 11155111,
+    "isContract": false  
     }
 ]

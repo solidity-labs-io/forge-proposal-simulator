@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 
+import { console } from "@forge-std/console.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {Addresses} from "@addresses/Addresses.sol";
@@ -51,7 +52,7 @@ contract MULTISIG_01 is MultisigProposal {
     /// @param addresses The addresses contract.
     function _afterDeploy(
         Addresses addresses,
-        address deployer
+        address 
     ) internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -59,7 +60,8 @@ contract MULTISIG_01 is MultisigProposal {
 
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
-        token.transfer(devMultisig, token.balanceOf(address(deployer)));
+        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        token.transfer(devMultisig, token.balanceOf(addresses.getAddress("DEPLOYER")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
