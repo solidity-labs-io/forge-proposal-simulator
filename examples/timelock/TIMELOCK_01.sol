@@ -49,7 +49,7 @@ contract TIMELOCK_01 is TimelockProposal {
     // Transfers all tokens to timelock.
     function _afterDeploy(
         Addresses addresses,
-        address deployer
+        address 
     ) internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -57,7 +57,8 @@ contract TIMELOCK_01 is TimelockProposal {
 
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-        token.transfer(timelock, token.balanceOf(address(deployer)));
+        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
     }
 
     // Sets up actions for the proposal, in this case, setting the MockToken to active.
