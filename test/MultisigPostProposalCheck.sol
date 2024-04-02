@@ -39,6 +39,5 @@ contract MultisigPostProposalCheck is Test {
         }
 
         proposal.run();
-
     }
 }

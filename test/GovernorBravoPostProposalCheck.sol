@@ -85,7 +85,6 @@ contract GovernorBravoPostProposalCheck is Test {
                 address(timelock),
                 true
             );
-
         }
 
         proposal.run();

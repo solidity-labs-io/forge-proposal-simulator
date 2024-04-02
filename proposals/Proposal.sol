@@ -55,11 +55,16 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev do not override
     function run() external {
         address deployer = addresses.getAddress("DEPLOYER");
-        require(
-            msg.sender == deployer,
-            "Only the deployer can run the proposal"
-        );
-        vm.startBroadcast();
+
+        // Do not check on tests as the sender will be the test file
+        if(block.chainid != 31337) {
+            require(
+                    msg.sender == deployer,
+                    "Only the deployer can run the proposal"
+            );
+        }
+
+        vm.startBroadcast(deployer);
         _deploy();
         _afterDeploy();
         vm.stopBroadcast();

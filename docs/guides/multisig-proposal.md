@@ -2,7 +2,7 @@
 
 After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to a multisig wallet, along with the whitelisting of the token and minting of tokens to the multisig.
 
-Proposal files are located in the `proposals` folder. Create a new file called `MULTISIG_01.sol` and add the following code:
+In your project `proposals` folder, create a new file called `MULTISIG_01.sol` and add the following code:
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -126,31 +126,25 @@ With the first proposal contract prepared, it's time to proceed with execution. 
 
 ## Running the Proposal with `forge script`
 
-### Get the Gnosis Safe Multisig Address
+### Deploying a Gnosis Safe Multisig on Sepolia Testnet
 
-In order to complete this tutorial, it's necessary to have a Gnosis Safe
-Multisig contract deployed on any testnet. We will use Sepolia for this
-tutorial. 
+To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the Sepolia testnet. Let's dive in:
 
-If you want to deploy a new Gnosis Safe contract, you can go to
-https://app.safe.global/, select the desired network, and follow the steps to
-create a new Safe Account.
+1. First things first, head over to [Gnosis Safe](https://app.safe.global/). Once there, pick your preferred testnet (we're using Sepolia for this tutorial). Follow the on-screen instructions to spin up a new Safe Account.
 
-Once the Safe Account is created, you can find the address in the Safe Account
-details. Copy the address and save it for later use.
+2. After setting up your Safe, you'll find the address in the details section of your Safe Account. Make sure to copy this address and keep it handy for later steps.
 
-### Set up the deployer address
+### Setting Up Your Deployer Address
 
-The deployer is the address that will be used to broadcast the proposal contracts deployments. 
-Make sure to have enough faucet funds in the deployer address to cover the deployment costs.
+The deployer address is the the one you'll use to broadcast the transactions deploying proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
 
-We leverage Foundry `cast` to keep private key management secure. 
-We don't save private key in the environment variable.
+We prioritize security when it comes to private key management. To avoid storing
+the private key as an environment variable, we use Foundry's cast tool.
 
-If you don't have a wallet stored in `~/.foundry/keystores/`, you can create one by running the following command:
+If you're missing a wallet in ~/.foundry/keystores/, create one by executing:
 
 ```sh
-cast wallet import ${wallet_name }--interactive
+cast wallet import ${wallet_name} --interactive
 ```
 
 ### Set up the Addresses JSON
@@ -182,9 +176,11 @@ Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Sa
 forge script examples/multisig/MULTISIG_01.sol --account ${wallet_name} --broadcast --fork-url sepolia --slow --sender ${wallet_address} -vvvv
 ```
 
-Before running the proposal, make sure that ${wallet_name} and ${wallet_address}
-corresponds to the wallet saved in `~/.foundry/keystores/` and that
-${wallet_address} is the deployer address set in the `Addresses.json` file, otherwise the script will fail.
+Before you execute the proposal script, double-check that the ${wallet_name} and
+${wallet_address} accurately match the wallet details saved in
+`~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly
+listed as the deployer address in the Addresses.json file. If these don't align,
+the script execution will fail.
 
 The script will output the following:
 
