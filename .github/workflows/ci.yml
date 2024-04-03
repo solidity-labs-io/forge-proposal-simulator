@@ -36,7 +36,6 @@ jobs:
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
 
     proposal-simulator-test:
-        needs: ["lint"]
         runs-on: "ubuntu-latest"
         steps:
             - name: "Check out the repo"
@@ -70,7 +69,6 @@ jobs:
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
 
     type-check-test:
-        needs: ["lint"]
         runs-on: "ubuntu-latest"
         steps:
             - name: "Check out the repo"
