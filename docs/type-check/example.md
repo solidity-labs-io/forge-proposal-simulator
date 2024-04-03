@@ -2,7 +2,13 @@
 
 After adding FPS into project dependencies and setting up through [Setup guide](./introduction.md#setting-up), its time to go through a example contract to know how type checking works.
 
-Create a new file `ExampleTypeCheck.sol` in `src` and add the following code:
+## Example Contracts
+
+The [folder](../../src/type-check) includes contracts used in the guide mentioned
+below for demonstration purposes. Examples include [ExampleTypeCheck.sol](../../src/type-check/ExampleTypeCheck.sol)
+and [ExampleTypeCheck_02.sol](../../src/type-check/ExampleTypeCheck_02.sol).
+
+Add file `ExampleTypeCheck.sol` in `src` of root repository:
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0
@@ -44,7 +50,7 @@ contract ExampleTypeCheck {
 }
 ```
 
-The contract constructor args looks very complex we already have constructor args ready for you.
+The contract constructor args looks complex for this example, we already have constructor args ready for you.
 
 In the file `TypeCheckAddresses.json` that you have already made in setup, add another object in json file for the above contract:
 
@@ -67,11 +73,11 @@ Now add the below object in `Addresses.json`:
     },
 ```
 
-The above contract is already deployed on sepolia testnet and we will ensure the correct contract is deployed by verifying bytecode with the contract we put in `src/ExampleTypeCheck.sol`.
+The above contract is already deployed on sepolia testnet and we will ensure the correct contract is deployed by verifying bytecode of sepolia contract with the local bytecode of `ExampleTypeCheck` contract.
 
 Assuming you have already installed npm packages and added environment variables in [Setup guide](./introduction.md#setting-up).
 
-Now, make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` and `artifact` folder inside of `foundry.toml`.
+Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` and `artifact` folder inside of `foundry.toml`.
 
 ```toml
 [profile.default]
