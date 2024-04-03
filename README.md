@@ -76,10 +76,26 @@ TYPE_CHECK_ADDRESSES_PATH     # Path to typeCheckAddresses.json file
 ARTIFACT_PATH                 # Path of artifact folder
 ```
 
+Example:
+
+```
+TYPE_CHECK_ADDRESSES_PATH=addresses/TypeCheckAddresses.json
+ADDRESSES_PATH=addresses/Addresses.json
+ARTIFACT_PATH=out/
+```
+
+-   Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` and `artifact` folder inside of `foundry.toml`.
+
+```toml
+[profile.default]
+...
+fs_permissions = [{ access = "read", path = "./"}]
+```
+
 -   Run the following command on root repo to type check all contracts added in `TypeCheckAddresses.json`.
 
 ```bash
-forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url sepolia
+forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url <deployed_contracts_chain_rpc_url>
 ```
 
 ## Contribute
