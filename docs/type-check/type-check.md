@@ -5,7 +5,9 @@
 The `TypeCheckAddresses.json file` is a JSON file used for verifying the bytecode of already deployed contracts on any chain. This file contains a list of objects where each object stores `name`, `constructorArgs`, and `artifactPath` for all the contracts that we want to type check. `name` should be the same as the `name` in `Addresses.json` as it links both JSONs together. The `constructorArgs` should be in comma-separated array format. For `Address`, `bytes`, and `string`, double-quotes should be used. Tuples, on the other hand, are passed like arrays `[]`. Additionally, each `"` in JSON is escaped using `\` since it is a special character in the JSON file.
 
 ## Structure
+
 ExampleTypeCheck.sol
+
 ```solidity
 pragma solidity =0.8.19;
 
@@ -45,6 +47,7 @@ contract ExampleTypeCheck {
 ```
 
 ExampleTypeCheck_02.sol
+
 ```solidity
 pragma solidity =0.8.19;
 
@@ -56,6 +59,7 @@ contract ExampleTypeCheck_02 {
     struct StructB {
         StructA[] varB1;
     }
+
     constructor(
         uint256[][] memory,
         StructA[] memory,
@@ -65,8 +69,8 @@ contract ExampleTypeCheck_02 {
 }
 ```
 
-
 TypeCheckAddresses.json for above two contract.
+
 ```json
 [
     {

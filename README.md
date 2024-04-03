@@ -88,7 +88,7 @@ ARTIFACT_PATH=out/
 
 ```toml
 [profile.default]
-...
+
 fs_permissions = [{ access = "read", path = "./"}]
 ```
 
