@@ -28,21 +28,21 @@ if [ -s "$STAGED_SOL_FILES" ]; then
 fi
 
 ## Run Prettier and check for errors on staged files
-#if [ -s "$STAGED_FILES" ]; then
-#    # Note: Using `--write` with Prettier to automatically fix formatting
-#    PRETTIER_OUTPUT=$(cat "$STAGED_FILES" | xargs npx prettier --ignore-path .prettierignore --write)
-#    PRETTIER_EXIT_CODE=$?
-#
-#    if [ $PRETTIER_EXIT_CODE -ne 0 ]; then
-#        echo "Prettier formatting errors detected:"
-#        echo "$PRETTIER_OUTPUT"
-#        rm "$STAGED_SOL_FILES" "$STAGED_FILES"
-#        exit $PRETTIER_EXIT_CODE
-#    else
-#        # Re-add the files to include any formatting changes by Prettier
-#        cat "$STAGED_FILES" | xargs git add
-#    fi
-#fi
+if [ -s "$STAGED_FILES" ]; then
+    # Note: Using `--write` with Prettier to automatically fix formatting
+    PRETTIER_OUTPUT=$(cat "$STAGED_FILES" | xargs npx prettier --ignore-path .prettierignore --write)
+    PRETTIER_EXIT_CODE=$?
+
+    if [ $PRETTIER_EXIT_CODE -ne 0 ]; then
+        echo "Prettier formatting errors detected:"
+        echo "$PRETTIER_OUTPUT"
+        rm "$STAGED_SOL_FILES" "$STAGED_FILES"
+        exit $PRETTIER_EXIT_CODE
+    else
+        # Re-add the files to include any formatting changes by Prettier
+        cat "$STAGED_FILES" | xargs git add
+    fi
+fi
 
 # Clean up
 rm "$STAGED_SOL_FILES" "$STAGED_FILES"
