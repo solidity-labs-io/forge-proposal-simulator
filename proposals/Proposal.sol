@@ -81,7 +81,7 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
-    function _outerBuild() public {
+    function _outerBuild() private {
         _startBuild();
 
         _build();

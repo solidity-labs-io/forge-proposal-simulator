@@ -16,80 +16,45 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 
-import {TestSuite} from "@test/TestSuite.t.sol";
 import {Constants} from "@utils/Constants.sol";
 import {Addresses} from "@addresses/Addresses.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
-import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
-import {MULTISIG_02} from "@examples/multisig/MULTISIG_02.sol";
-import {MULTISIG_03} from "@examples/multisig/MULTISIG_03.sol";
-
-/// @notice this is a helper contract to execute proposals before running integration tests.
+/// @notice this is a helper contract to execute a proposal before running integration tests.
 /// @dev should be inherited by integration test contracts.
 contract MultisigPostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    TestSuite public suite;
+    Proposal public proposal;
     Addresses public addresses;
 
     function setUp() public virtual {
-        /// Create proposals contracts
-        MULTISIG_01 multisigProposal = new MULTISIG_01();
-        MULTISIG_02 multisigProposal2 = new MULTISIG_02();
-        MULTISIG_03 multisigProposal3 = new MULTISIG_03();
+        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        addresses = proposal.addresses();
 
-        /// Populate addresses array
-        address[] memory proposalsAddresses = new address[](3);
-        proposalsAddresses[0] = address(multisigProposal);
-        proposalsAddresses[1] = address(multisigProposal2);
-        proposalsAddresses[2] = address(multisigProposal3);
+        /// @dev Verify if the multisig address is a contract; if it is not
+        /// (e.g. running on a empty blockchain node), set the multisig
+        /// code to Safe Multisig code
+        /// Note: This approach is a workaround for this example where
+        /// a deployed multisig contract isn't available. In real-world applications,
+        /// you'd typically have a multisig contract in place. Use this code
+        /// only as a reference
+        bool isContract = addresses.isAddressContract("DEV_MULTISIG");
+        address multisig;
+        if (!isContract) {
+            multisig = addresses.getAddress("DEV_MULTISIG");
+            uint256 multisigSize;
+            assembly {
+                multisigSize := extcodesize(multisig)
+            }
+            if (multisigSize == 0) {
+                vm.etch(multisig, Constants.SAFE_BYTECODE);
+            }
+        } else {
+            multisig = addresses.getAddress("DEV_MULTISIG");
+        }
 
-        /// Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
-
-        suite.setDebug(true);
-        /// Execute proposals
-        suite.testProposals();
-
-        /// Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
+        proposal.run();
     }
 }
-```
-
-Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail, displaying the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
-
-For those who wish to complete this tutorial on a local blockchain without the
-necessity of deploying a Gnosis Safe Account, it is possible to modify the
-`setUp` function as follows:
-
-```solidity
-bytes public constant SAFE_BYTECODE =
-        hex"608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033";
-
-    function setUp() public virtual {
-        /// Create proposals contracts
-        MULTISIG_01 multisigProposal = new MULTISIG_01();
-
-        /// Populate addresses array
-        address[] memory proposalsAddresses = new address[](1);
-        proposalsAddresses[0] = address(multisigProposal);
-
-        /// Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
-
-        /// Get addresses object
-        addresses = suite.addresses();
-
-        /// Set safe bytecode to multisig address
-        vm.etch(addresses.getAddress("DEV_MULTISIG"), SAFE_BYTECODE);
-
-        suite.setDebug(true);
-        /// Execute proposals
-        suite.testProposals();
-
-        /// Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
-    }
 ```
 
 ## Creating Integration Test Contracts
@@ -99,74 +64,79 @@ Next, the creation of the `MultisigProposalIntegrationTest` contract is required
 ```solidity
 pragma solidity ^0.8.0;
 
-import {Vault} from "path/to/Vault.sol";
-import {MockToken} from "path/to/MockToken.sol";
-import {MultisigPostProposalCheck} from "path/to/MultisigPostProposalCheck.sol";
+import {Vault} from "@examples/Vault.sol";
+import {MockToken} from "@examples/MockToken.sol";
+import {MultisigPostProposalCheck} from "@test/MultisigPostProposalCheck.sol";
+import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 
-/// @dev This test contract inherits MultisigPostProposalCheck, granting it
-/// the ability to interact with state modifications effected by proposals
-/// and to work with newly deployed contracts, if applicable.
-contract MultisigProposalIntegrationTest is MultisigPostProposalCheck {
-    /// Tests if the Vault contract can be paused
+// @dev This test contract inherits MultisigPostProposalCheck, granting it
+// the ability to interact with state modifications effected by proposals
+// and to work with newly deployed contracts, if applicable.
+contract MultisigProposalTest is MultisigPostProposalCheck {
+    function setUp() override public {
+        proposal = new MULTISIG_01();
+        super.setUp();
+    }
+
     function test_vaultIsPausable() public {
-        /// Retrieves the Vault instance using its address from the Addresses contract
+        // Retrieves the Vault instance using its address from the Addresses contract
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        /// Retrieves the address of the multisig wallet
+        // Retrieves the address of the multisig wallet
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        /// Sets the next caller of the function to be the multisig address
+        // Sets the next caller of the function to be the multisig address
         vm.prank(multisig);
 
-        /// Executes pause function on the Vault
+        // Executes pause function on the Vault
         timelockVault.pause();
 
-        /// Asserts that the Vault is successfully paused
+        // Asserts that the Vault is successfully paused
         assertTrue(timelockVault.paused(), "Vault should be paused");
     }
 
-    /// Tests adding a token to the whitelist in the Vault contract
+    // Tests adding a token to the whitelist in the Vault contract
     function test_addTokenToWhitelist() public {
-        /// Retrieves the Vault instance using its address from the Addresses contract
+        // Retrieves the Vault instance using its address from the Addresses contract
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        /// Retrieves the address of the multisig wallet
+        // Retrieves the address of the multisig wallet
         address multisig = addresses.getAddress("DEV_MULTISIG");
-        /// Creates a new instance of MockToken
+        // Creates a new instance of MockToken
         MockToken token = new MockToken();
 
-        /// Sets the next caller of the function to be the multisig address
+        // Sets the next caller of the function to be the multisig address
         vm.prank(multisig);
 
-        /// Whitelists the newly created token in the Vault
+        // Whitelists the newly created token in the Vault
         timelockVault.whitelistToken(address(token), true);
 
-        /// Asserts that the token is successfully whitelisted
+        // Asserts that the token is successfully whitelisted
         assertTrue(
             timelockVault.tokenWhitelist(address(token)),
             "Token should be whitelisted"
         );
     }
 
-    /// Tests deposit functionality in the Vault contract
+    // Tests deposit functionality in the Vault contract
     function test_depositToVaut() public {
-        /// Retrieves the Vault instance using its address from the Addresses contract
+        // Retrieves the Vault instance using its address from the Addresses contract
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        /// Retrieves the address of the multisig wallet
+        // Retrieves the address of the multisig wallet
         address multisig = addresses.getAddress("DEV_MULTISIG");
-        /// Retrieves the address of the token to be deposited
+        // Retrieves the address of the token to be deposited
         address token = addresses.getAddress("TOKEN_1");
 
-        /// Starts a prank session with the multisig address as the caller
+        // Starts a prank session with the multisig address as the caller
         vm.startPrank(multisig);
-        /// Mints 100 tokens to the current contract's address
+        // Mints 100 tokens to the current contract's address
         MockToken(token).mint(address(this), 100);
-        /// Approves the Vault to spend 100 tokens on behalf of this contract
+        // Approves the Vault to spend 100 tokens on behalf of this contract
         MockToken(token).approve(address(timelockVault), 100);
-        /// Deposits 100 tokens into the Vault
+        // Deposits 100 tokens into the Vault
         timelockVault.deposit(address(token), 100);
 
-        /// Retrieves the deposit amount of the token in the Vault for the multisig address
+        // Retrieves the deposit amount of the token in the Vault for the multisig address
         (uint256 amount, ) = timelockVault.deposits(address(token), multisig);
-        /// Asserts that the deposit amount is equal to 100
+        // Asserts that the deposit amount is equal to 100
         assertTrue(amount == 100, "Token should be deposited");
     }
 }
@@ -178,5 +148,5 @@ Executing the integration tests triggers the `setUp()` function before each test
 tests are always executed on a fresh state after the proposals execution.
 
 ```bash
-forge test --mc MultisigProposalIntegrationTest -vvv
+forge test --mc MultisigProposalTest -vvv
 ```

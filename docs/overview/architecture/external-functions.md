@@ -8,4 +8,4 @@ The `Proposal.sol` file contains a set of functions that all governance models i
 Both of these functions should not be overridden as they perform key actions.
 
 -   `function run() external`: Simulates proposal execution against a forked mainnet or locally and can be used in integration tests or scripts.
--   `function getProposalActionSteps() external`: Retrieves the sequence of actions for a proposal.
+-   `function getProposalActions() external`: Retrieves the sequence of actions for a proposal.

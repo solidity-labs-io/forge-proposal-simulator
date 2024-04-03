@@ -1,16 +1,17 @@
 # Governor Bravo Proposal
 
-After adding FPS into project dependencies, the next step involves initiating the creation of the first Proposal contract. This example provides guidance on formulating a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token and minting of tokens to the timelock.
+After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts).The proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token and minting of tokens to the timelock.
 
-In the `proposals` folder, create a new file called `BRAVO_01.sol` and add the following code:
+The following contract is present in the `examples/governor-bravo` folder. We will use this contract as a reference for the tutorial.
+
 
 ```solidity
 pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 /// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
 /// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
@@ -19,13 +20,21 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// @notice Returns the name of the proposal.
     string public override name = "BRAVO_01";
 
+    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor()
+        Proposal(
+            ADDRESSES_PATH,
+            "PROTOCOL_TIMELOCK"
+        )
+    {}
+
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Governor Bravo proposal mock";
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    
     function _deploy() internal override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
@@ -42,23 +51,19 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// 1. Transfers vault ownership to timelock.
     /// 2. Transfer token ownership to timelock.
     /// 3. Transfers all tokens to timelock.
-    
-    
-    function _afterDeploy(
-        ,
-        address deployer
-    ) internal override {
+    function _afterDeploy() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-        token.transfer(timelock, token.balanceOf(address(deployer)));
+
+        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -69,7 +74,6 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Executes the proposal actions.
-    
     function _run() internal override {
         // Call parent _run function to check if there are actions to execute
         super._run();
@@ -82,7 +86,6 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Validates the post-execution state.
-    
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -111,10 +114,66 @@ Let's go through each of the functions that are overridden.
     `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
+Constructor parameters are passed to the `Proposal` contract. The
+`ADDRESSES_PATH` is the path to the `Addresses.json` file, and `DEV_MULTISIG` is
+the timelock that will be used to simulate the proposal actions.
+
 With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
 
-1. **Using `foundry test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
-2. **Using `foundry script`**: This is the chosen method for this scenario.
+1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
+2. **Using `forge script`**: This is the chosen method for this tutorial.
+
+## Running the Proposal with `forge script`
+
+### Setting Up Your Deployer Address
+
+The deployer address is the the one you'll use to broadcast the transactions
+deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
+
+We prioritize security when it comes to private key management. To avoid storing
+the private key as an environment variable, we use Foundry's cast tool.
+
+If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+
+```sh
+cast wallet import ${wallet_name} --interactive
+```
+
+### Deploying a Timelock Controller on Testnet
+
+You'll need a Timelock Controller contract set up on the testnet before running the proposal.
+
+We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process. 
+
+Before running the script, you must add the `TIMELOCK_PROPOSER`and
+`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file. 
+
+```json
+[
+    {
+        "addr": "YOUR_TIMELOCK_PROPOSER_ADDRESS",
+        "name": "TIMELOCK_PROPOSER",
+        "chainId": 31337,
+        "isContract": false
+    },
+    {
+        "addr": "YOUR_TIMELOCK_EXECUTOR_ADDRESS",
+        "name": "TIMELOCK_EXECUTOR",
+        "chainId": 31337,
+        "isContract": false
+    }
+]
+```
+
+After adding the addresses, run the script:
+
+```sh
+forge script script/DeployTimelock.s.sol --account testnet --broadcast --rpc-url
+sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
+```
+
+Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
+`~/.foundry/keystores/`.
 
 Before proceeding with the `foundry script`, it is necessary to set up the
 [Addresses](../overview/architecture/addresses.md) contract. The next step
