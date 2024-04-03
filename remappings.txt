@@ -5,5 +5,6 @@
 @utils/=utils/
 @examples/=examples/
 @script=script/
+@mocks=mocks/
 @openzeppelin=lib/openzeppelin-contracts/contracts
 @comp-governance=lib/compound-governance/contracts

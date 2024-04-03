@@ -2,8 +2,8 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 import {Proposal} from "@proposals/Proposal.sol";
-import {MockERC20Votes} from "@test/mocks/MockERC20Votes.sol";
-import {MockGovernorAlpha} from "@test/mocks/MockGovernorAlpha.sol";
+import {MockERC20Votes} from "@mocks/MockERC20Votes.sol";
+import {MockGovernorAlpha} from "@mocks/MockGovernorAlpha.sol";
 import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
 import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
 import {Timelock} from "@comp-governance/Timelock.sol";
