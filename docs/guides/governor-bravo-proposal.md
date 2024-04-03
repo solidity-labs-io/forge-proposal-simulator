@@ -152,8 +152,7 @@ forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
 Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
 `~/.foundry/keystores/`.
 
-Get the PROTOCOL_GOVERNOR and PROTOCOL_TIMELOCK addresses deployed on the script
-and set to the `Addresses.json` file.
+Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file.
 
 ```json
 [
@@ -168,6 +167,12 @@ and set to the `Addresses.json` file.
         "name": "PROTOCOL_GOVERNOR",
         "chainId": 11155111,
         "isContract": true
+    },
+    {
+        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "PROTOCOL_GOVERNANCE_TOKEN"
     }
 ]
 ```
@@ -201,6 +206,12 @@ to Address.json. The final Address.json file should be something like this:
         "isContract": true
     },
     {
+        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "PROTOCOL_GOVERNANCE_TOKEN"
+    },
+    {
         "addr": "YOUR_BRAVO_PROPOSER_ADDRESS",
         "name": "BRAVO_PROPOSER",
         "chainId": 11155111,
@@ -209,7 +220,19 @@ to Address.json. The final Address.json file should be something like this:
 ]
 ```
 
-forge script examples/governor-bravo/BRAVO_01.sol --rpc-url sepolia -vvvv --slow --sender 0x9679e26bf0c470521de83ad77bb1bf1e7312f739 -vvvv --account testnet -g 200
+### Running the Proposal
+
+```sh
+forge script examples/governor-bravo/BRAVO_01.sol --rpc-url sepolia -vvvv --slow
+--sender ${wallet_address} -vvvv --account
+${wallet_name} -g 200
+```
+
+Before you execute the proposal script, double-check that the ${wallet_name} and
+${wallet_address} accurately match the wallet details saved in
+`~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly
+listed as the deployer address in the Addresses.json file. If these don't align,
+the script execution will fail.
 
 The script will output the following:
 
@@ -249,4 +272,7 @@ payload
 
 ```
 
-As the Timelock executor, you have the ability to run the script to execute the proposal. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
+
+A DAO member can check whether the calldata proposed on the governance matches
+the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
