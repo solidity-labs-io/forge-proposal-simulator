@@ -7,5 +7,5 @@ evm_version = 'paris'
 
 [rpc_endpoints]
 localhost = "http://127.0.0.1:8545"
-sepolia = "https://sepolia.drpc.org	"
+sepolia = "https://sepolia.drpc.org"
 
