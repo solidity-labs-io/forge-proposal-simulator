@@ -188,6 +188,8 @@ previous script and set it as the `eta` variable in the InitializeBravo script.
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
+### Setting Up the Addresses JSON
+
 The last step before running the proposal is to add the BRAVO_PROPOSER address
 to Address.json. The final Address.json file should be something like this:
 
