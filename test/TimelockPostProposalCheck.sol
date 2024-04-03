@@ -14,7 +14,10 @@ contract TimelockPostProposalCheck is Test {
     Addresses public addresses;
 
     function setUp() public virtual {
-        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        require(
+            address(proposal) != address(0),
+            "Test must override setUp and set the proposal contract"
+        );
         addresses = proposal.addresses();
 
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
@@ -49,7 +52,6 @@ contract TimelockPostProposalCheck is Test {
                 address(timelockController),
                 true
             );
-
         }
 
         proposal.run();

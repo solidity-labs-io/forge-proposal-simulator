@@ -9,12 +9,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract MULTISIG_03 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "DEV_MULTISIG"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
 
     /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {

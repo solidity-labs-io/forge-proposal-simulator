@@ -16,7 +16,10 @@ contract GovernorBravoPostProposalCheck is Test {
     Addresses public addresses;
 
     function setUp() public virtual {
-        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        require(
+            address(proposal) != address(0),
+            "Test must override setUp and set the proposal contract"
+        );
         addresses = proposal.addresses();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");

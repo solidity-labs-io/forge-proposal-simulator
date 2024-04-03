@@ -7,7 +7,7 @@ import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalCheck.sol";
 
 contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
-    function setUp() override public {
+    function setUp() public override {
         proposal = new BRAVO_01();
         super.setUp();
     }
@@ -32,8 +32,8 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
         timelockVault.whitelistToken(address(token), true);
 
         assertTrue(
-                   timelockVault.tokenWhitelist(address(token)),
-                   "Token should be whitelisted"
+            timelockVault.tokenWhitelist(address(token)),
+            "Token should be whitelisted"
         );
     }
 
@@ -49,8 +49,8 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
         timelockVault.deposit(address(token), 100);
 
         (uint256 amount, ) = timelockVault.deposits(
-                                                    address(token),
-                                                    address(this)
+            address(token),
+            address(this)
         );
         assertTrue(amount == 100, "Token should be deposited");
     }

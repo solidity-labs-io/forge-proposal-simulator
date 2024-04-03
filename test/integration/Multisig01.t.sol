@@ -9,7 +9,7 @@ import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract MultisigProposalTest is MultisigPostProposalCheck {
-    function setUp() override public {
+    function setUp() public override {
         proposal = new MULTISIG_01();
         super.setUp();
     }

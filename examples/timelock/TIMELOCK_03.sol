@@ -9,12 +9,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract TIMELOCK_03 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {

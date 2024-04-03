@@ -16,9 +16,9 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 
-import {Constants} from "@utils/Constants.sol";
-import {Addresses} from "@addresses/Addresses.sol";
-import {Proposal} from "@proposals/Proposal.sol";
+import { Constants } from "@utils/Constants.sol";
+import { Addresses } from "@addresses/Addresses.sol";
+import { Proposal } from "@proposals/Proposal.sol";
 
 /// @notice this is a helper contract to execute a proposal before running integration tests.
 /// @dev should be inherited by integration test contracts.
@@ -27,7 +27,10 @@ contract MultisigPostProposalCheck is Test {
     Addresses public addresses;
 
     function setUp() public virtual {
-        require(address(proposal) != address(0), "Test must override setUp and set the proposal contract");
+        require(
+            address(proposal) != address(0),
+            "Test must override setUp and set the proposal contract"
+        );
         addresses = proposal.addresses();
 
         /// @dev Verify if the multisig address is a contract; if it is not
@@ -64,16 +67,16 @@ Next, the creation of the `MultisigProposalIntegrationTest` contract is required
 ```solidity
 pragma solidity ^0.8.0;
 
-import {Vault} from "@examples/Vault.sol";
-import {MockToken} from "@examples/MockToken.sol";
-import {MultisigPostProposalCheck} from "@test/MultisigPostProposalCheck.sol";
-import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
+import { Vault } from "@examples/Vault.sol";
+import { MockToken } from "@examples/MockToken.sol";
+import { MultisigPostProposalCheck } from "@test/MultisigPostProposalCheck.sol";
+import { MULTISIG_01 } from "@examples/multisig/MULTISIG_01.sol";
 
 // @dev This test contract inherits MultisigPostProposalCheck, granting it
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract MultisigProposalTest is MultisigPostProposalCheck {
-    function setUp() override public {
+    function setUp() public override {
         proposal = new MULTISIG_01();
         super.setUp();
     }

@@ -7,11 +7,11 @@ The following contract is present in the `examples/multisig` folder. We will use
 ```solidity
 pragma solidity ^0.8.0;
 
-import {Vault} from "@examples/Vault.sol";
-import {MockToken} from "@examples/MockToken.sol";
-import {Addresses} from "@addresses/Addresses.sol";
-import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {Proposal} from "@proposals/Proposal.sol";
+import { Vault } from "@examples/Vault.sol";
+import { MockToken } from "@examples/MockToken.sol";
+import { Addresses } from "@addresses/Addresses.sol";
+import { MultisigProposal } from "@proposals/MultisigProposal.sol";
+import { Proposal } from "@proposals/Proposal.sol";
 
 // MULTISIG_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the multisig address
@@ -19,12 +19,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract MULTISIG_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "DEV_MULTISIG"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
 
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -61,7 +56,10 @@ contract MULTISIG_01 is MultisigProposal {
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(devMultisig, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            devMultisig,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -109,7 +107,7 @@ Let's go through each of the functions that are overridden.
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build()`: Set the necessary actions for your proposal. In this example,
-    ERC20 token is whitelisted on the Vault contract. 
+    ERC20 token is whitelisted on the Vault contract.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
@@ -128,7 +126,7 @@ With the proposal contract prepared, it can now be executed. There are two optio
 
 ### Deploying a Gnosis Safe Multisig on Testnet
 
-To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the testnet. 
+To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the testnet.
 
 1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet
    (we're using Sepolia for this tutorial). Follow the on-screen instructions to
@@ -189,35 +187,35 @@ The script will output the following:
 
 ```sh
 == Logs ==
-  
+
 
 --------- Addresses added after running proposal ---------
   {
-          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7', 
+          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'VAULT'
 },
   {
-          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931', 
+          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'TOKEN_1'
 }
-  
+
 
 ---------------- Proposal Description ----------------
   Deploy Vault contract
-  
+
 
 ------------------ Proposal Actions ------------------
   1). calling 0x61a7a6f1553cbb39c87959623bb23833838406d7 with 0 eth and 0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001 data.
   target: 0x61A7A6F1553cbB39c87959623bb23833838406D7
 payload
   0x0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001
-  
 
-  
+
+
 
 ------------------ Proposal Calldata ------------------
   0x252dba4200000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000

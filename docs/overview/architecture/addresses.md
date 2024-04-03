@@ -171,21 +171,16 @@ Use the `addresses` object to add, update, retrieve, and remove addresses.
 ```solidity
 pragma solidity ^0.8.0;
 
-import {MultisigProposal} from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
+import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
 
-import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
-import {MyContract} from "@path/to/MyContract.sol";
+import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
+import { MyContract } from "@path/to/MyContract.sol";
 
 contract PROPOSAL_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "DEV_MULTISIG"
-        )
-    {}
-    
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
+
     function _deploy() internal override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract

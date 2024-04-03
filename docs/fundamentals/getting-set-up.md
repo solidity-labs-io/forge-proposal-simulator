@@ -33,9 +33,9 @@ fs_permissions = [{ access = "read", path = "./addresses/Addresses.json"}]
 
 Create a proposal. Choose a model that fits your needs:
 
-- [Multisig Proposal](../guides/multisig-proposal.md)
-- [Timelock Proposal](../guides/timelock-proposal.md)
-- [Bravo Proposal](../guides/governor-bravo-proposal.md)
+-   [Multisig Proposal](../guides/multisig-proposal.md)
+-   [Timelock Proposal](../guides/timelock-proposal.md)
+-   [Bravo Proposal](../guides/governor-bravo-proposal.md)
 
 ## Step 5: Implement Scripts and Tests
 

@@ -37,7 +37,7 @@ abstract contract MultisigProposal is Proposal {
 
         /// generate calldata
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
-        }
+    }
 
     function _simulateActions(address multisig) internal {
         require(

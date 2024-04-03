@@ -9,7 +9,7 @@ import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract TimelockProposalTest is TimelockPostProposalCheck {
-    function setUp() override public {
+    function setUp() public override {
         proposal = new TIMELOCK_01();
         super.setUp();
     }

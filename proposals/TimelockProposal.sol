@@ -27,7 +27,8 @@ abstract contract TimelockProposal is Proposal {
         ) = getProposalActions();
 
         address addressCaller = addresses.getAddress(caller);
-        uint256 delay = TimelockController(payable(addressCaller)).getMinDelay();
+        uint256 delay = TimelockController(payable(addressCaller))
+            .getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -108,11 +109,9 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller)).functionCall(
-                scheduleCalldata
-            );
+            bytes memory returndata = address(payable(addressCaller))
+                .functionCall(scheduleCalldata);
 
-            
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");
                 console.logBytes(returndata);
@@ -129,9 +128,8 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller)).functionCall(
-                executeCalldata
-            );
+            bytes memory returndata = address(payable(addressCaller))
+                .functionCall(executeCalldata);
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");

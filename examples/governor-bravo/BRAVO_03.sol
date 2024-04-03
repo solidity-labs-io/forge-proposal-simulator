@@ -12,12 +12,7 @@ contract BRAVO_03 is GovernorBravoProposal {
 
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {

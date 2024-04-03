@@ -11,12 +11,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract TIMELOCK_01 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -52,7 +47,10 @@ contract TIMELOCK_01 is TimelockProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     // @notice Set up actions for the proposal, in this case, setting the MockToken to active.

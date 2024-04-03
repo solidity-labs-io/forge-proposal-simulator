@@ -37,10 +37,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    constructor(
-        string memory addressesPath,
-        string memory _caller
-    ) {
+    constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         caller = _caller;
     }
@@ -57,10 +54,10 @@ abstract contract Proposal is Test, Script, IProposal {
         address deployer = addresses.getAddress("DEPLOYER");
 
         // Do not check on tests as the sender will be the test file
-        if(block.chainid != 31337) {
+        if (block.chainid != 31337) {
             require(
-                    msg.sender == deployer,
-                    "Only the deployer can run the proposal"
+                msg.sender == deployer,
+                "Only the deployer can run the proposal"
             );
         }
 
@@ -222,7 +219,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev Print proposal calldata
     function _printCalldata() internal virtual {
         console.log(
-                    "\n\n------------------ Proposal Calldata ------------------"
+            "\n\n------------------ Proposal Calldata ------------------"
         );
         console.logBytes(getCalldata());
     }
@@ -236,7 +233,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev Print proposal actions
     function _printActions() private view {
         console.log(
-                    "\n\n---------------- Proposal Description ----------------"
+            "\n\n---------------- Proposal Description ----------------"
         );
         console.log(description());
         console.log(
@@ -253,36 +250,41 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev Print recorded addresses
     function _printRecordedAddresses() private view {
         (
-         string[] memory recordedNames,
-         ,
-         address[] memory recordedAddresses
+            string[] memory recordedNames,
+            ,
+            address[] memory recordedAddresses
         ) = addresses.getRecordedAddresses();
 
         if (recordedNames.length > 0) {
             console.log(
-                 "\n\n--------- Addresses added after running proposal ---------");
+                "\n\n--------- Addresses added after running proposal ---------"
+            );
             for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log("{\n          'addr': '%s', ", recordedAddresses[j]);
+                console.log(
+                    "{\n          'addr': '%s', ",
+                    recordedAddresses[j]
+                );
                 console.log("        'chainId': %d,", block.chainid);
                 console.log("        'isContract': %s", true, ",");
                 console.log(
-                            "        'name': '%s'\n}%s",
-                            recordedNames[j],
-                            j < recordedNames.length - 1 ? "," : ""
+                    "        'name': '%s'\n}%s",
+                    recordedNames[j],
+                    j < recordedNames.length - 1 ? "," : ""
                 );
             }
         }
 
         (
-         string[] memory changedNames,
-         ,
-         ,
-         address[] memory changedAddresses 
+            string[] memory changedNames,
+            ,
+            ,
+            address[] memory changedAddresses
         ) = addresses.getChangedAddresses();
 
         if (changedNames.length > 0) {
             console.log(
-                        "\n\n-------- Addresses changed after running proposal --------");
+                "\n\n-------- Addresses changed after running proposal --------"
+            );
 
             for (uint256 j = 0; j < changedNames.length; j++) {
                 console.log("{\n          'addr': '%s', ", changedAddresses[j]);
@@ -290,9 +292,9 @@ abstract contract Proposal is Test, Script, IProposal {
                 console.log("        'chainId': %d,", block.chainid);
                 console.log("        'isContract': %s", true, ",");
                 console.log(
-                            "        'name': '%s'\n}%s",
-                            changedNames[j],
-                            j < changedNames.length - 1 ? "," : ""
+                    "        'name': '%s'\n}%s",
+                    changedNames[j],
+                    j < changedNames.length - 1 ? "," : ""
                 );
             }
         }
@@ -332,7 +334,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
                 accountAccesses[i].accessor != address(addresses) &&
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == addresses.getAddress(caller )/// caller is correct, not a subcall
+                accountAccesses[i].accessor == addresses.getAddress(caller) /// caller is correct, not a subcall
             ) {
                 _pushAction(
                     accountAccesses[i].value,

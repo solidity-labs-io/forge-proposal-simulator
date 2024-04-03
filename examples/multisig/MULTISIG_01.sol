@@ -11,12 +11,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract MULTISIG_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "DEV_MULTISIG"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
 
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -53,7 +48,10 @@ contract MULTISIG_01 is MultisigProposal {
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(devMultisig, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            devMultisig,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.

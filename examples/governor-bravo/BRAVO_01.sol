@@ -14,12 +14,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
@@ -52,7 +47,10 @@ contract BRAVO_01 is GovernorBravoProposal {
         token.transferOwnership(timelock);
 
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.

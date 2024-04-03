@@ -7,10 +7,10 @@ The following contract is present in the `examples/timelock` folder. We will use
 ```solidity
 pragma solidity ^0.8.0;
 
-import {Vault} from "@examples/Vault.sol";
-import {MockToken} from "@examples/MockToken.sol";
-import {TimelockProposal} from "@proposals/TimelockProposal.sol";
-import {Proposal} from "@proposals/Proposal.sol";
+import { Vault } from "@examples/Vault.sol";
+import { MockToken } from "@examples/MockToken.sol";
+import { TimelockProposal } from "@proposals/TimelockProposal.sol";
+import { Proposal } from "@proposals/Proposal.sol";
 
 // TIMELOCK_01 proposal deploys a Vault contract and an ERC20 token contract
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
@@ -18,12 +18,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract TIMELOCK_01 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -59,7 +54,10 @@ contract TIMELOCK_01 is TimelockProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     // @notice Set up actions for the proposal, in this case, setting the MockToken to active.
@@ -141,10 +139,10 @@ cast wallet import ${wallet_name} --interactive
 
 You'll need a Timelock Controller contract set up on the testnet before running the proposal.
 
-We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process. 
+We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process.
 
 Before running the script, you must add the `TIMELOCK_PROPOSER`and
-`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file. 
+`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file.
 
 ```json
 [
@@ -225,35 +223,35 @@ The script will output the following:
 
 --------- Addresses added after running proposal ---------
   {
-          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7', 
+          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'VAULT'
 },
   {
-          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931', 
+          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'TOKEN_1'
 }
-  
+
 
 ---------------- Proposal Description ----------------
   Timelock proposal mock
-  
+
 
 ------------------ Proposal Actions ------------------
   1). calling 0x61a7a6f1553cbb39c87959623bb23833838406d7 with 0 eth and 0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001 data.
   target: 0x61A7A6F1553cbB39c87959623bb23833838406D7
 payload
   0x0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001
-  
 
-  
+
+
 
 ------------------ Schedule Calldata ------------------
   0x8f2a0bb000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000003c000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
-  
+
 
 ------------------ Execute Calldata ------------------
   0xe38335e500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000

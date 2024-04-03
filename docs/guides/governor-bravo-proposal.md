@@ -4,14 +4,13 @@ After adding FPS into project dependencies, the next step is the creation of the
 
 The following contract is present in the `examples/governor-bravo` folder. We will use this contract as a reference for the tutorial.
 
-
 ```solidity
 pragma solidity ^0.8.0;
 
-import {Vault} from "@examples/Vault.sol";
-import {MockToken} from "@examples/MockToken.sol";
-import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {Proposal} from "@proposals/Proposal.sol";
+import { Vault } from "@examples/Vault.sol";
+import { MockToken } from "@examples/MockToken.sol";
+import { GovernorBravoProposal } from "@proposals/GovernorBravoProposal.sol";
+import { Proposal } from "@proposals/Proposal.sol";
 
 /// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
 /// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
@@ -22,12 +21,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor()
-        Proposal(
-            ADDRESSES_PATH,
-            "PROTOCOL_TIMELOCK"
-        )
-    {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
@@ -60,7 +54,10 @@ contract BRAVO_01 is GovernorBravoProposal {
         token.transferOwnership(timelock);
 
         // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEPLOYER")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER"))
+        );
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -143,10 +140,10 @@ cast wallet import ${wallet_name} --interactive
 
 You'll need a Timelock Controller contract set up on the testnet before running the proposal.
 
-We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process. 
+We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process.
 
 Before running the script, you must add the `TIMELOCK_PROPOSER`and
-`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file. 
+`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file.
 
 ```json
 [
@@ -209,9 +206,9 @@ With the JSON file prepared for use with `Addresses.sol`, the next step is to cr
 ```solidity
 pragma solidity ^0.8.0;
 
-import {ScriptSuite} from "@script/ScriptSuite.s.sol";
-import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
-import {Constants} from "@utils/Constants.sol";
+import { ScriptSuite } from "@script/ScriptSuite.s.sol";
+import { BRAVO_01 } from "@examples/governor-bravo/BRAVO_01.sol";
+import { Constants } from "@utils/Constants.sol";
 
 // @notice GovernorBravoScript is a script that runs BRAVO_01 proposal.
 // BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
