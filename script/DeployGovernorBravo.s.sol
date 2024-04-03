@@ -21,45 +21,49 @@ contract DeployGovernorBravo is Script {
         Timelock timelock = new Timelock(msg.sender, 1);
 
         // Deploy the governance token
-        MockERC20Votes govToken = new MockERC20Votes(
-                                                     "Governance Token",
-                                                     "GOV"
-        );
+        MockERC20Votes govToken = new MockERC20Votes("Governance Token", "GOV");
+
+        govToken.mint(msg.sender, 1e21);
 
         // Deploy the GovernorBravoDelegate implementation
         GovernorBravoDelegate implementation = new GovernorBravoDelegate();
 
         // Deploy and configure the GovernorBravoDelegator
-        GovernorBravoDelegator governor = 
-                           new GovernorBravoDelegator(
-                                                      address(timelock), // timelock
-                                                      address(govToken), // governance token
-                                                      msg.sender, // admin
-                                                      address(implementation), // implementation
-                                                      10_000, // voting period
-                                                      10_000, // voting delay
-                                                      1e21 // proposal threshold
-                           );
+        GovernorBravoDelegator governor = new GovernorBravoDelegator(
+            address(timelock), // timelock
+            address(govToken), // governance token
+            msg.sender, // admin
+            address(implementation), // implementation
+            10_000, // voting period
+            10_000, // voting delay
+            1e21 // proposal threshold
+        );
 
-        // Deploy mock GovernorAlpha
-        // address govAlpha = address(new MockGovernorAlpha());
-
-        timelock.queueTransaction(address(timelock), 0, "", abi.encodeWithSignature("setPendingAdmin(address)", address(governor)), block.timestamp + 60);
-        
-        // Initialize GovernorBravo
-        // GovernorBravoDelegate(address(governor))._initiate(govAlpha);
+        timelock.queueTransaction(
+            address(timelock),
+            0,
+            "",
+            abi.encodeWithSignature(
+                "setPendingAdmin(address)",
+                address(governor)
+            ),
+            block.timestamp + 120
+        );
 
         vm.stopBroadcast();
 
         // Update PROTOCOL_GOVERNOR address
-        addresses.addAddress("PROTOCOL_GOVERNOR", address(governor), true);
+        addresses.changeAddress("PROTOCOL_GOVERNOR", address(governor), true);
 
         // Update PROTOCOL_TIMELOCK address
+        addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelock), true);
+
         addresses.changeAddress(
-                                "PROTOCOL_TIMELOCK",
-                                address(timelock),
-                                true
+            "PROTOCOL_GOVERNANCE_TOKEN",
+            address(govToken),
+            true
         );
 
+        addresses.printRecordedAddresses();
     }
 }

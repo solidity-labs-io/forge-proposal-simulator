@@ -288,7 +288,6 @@ abstract contract Proposal is Test, Script, IProposal {
 
             for (uint256 j = 0; j < changedNames.length; j++) {
                 console.log("{\n          'addr': '%s', ", changedAddresses[j]);
-                console.log();
                 console.log("        'chainId': %d,", block.chainid);
                 console.log("        'isContract': %s", true, ",");
                 console.log(

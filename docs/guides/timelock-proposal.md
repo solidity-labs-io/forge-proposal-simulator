@@ -1,6 +1,6 @@
 # Timelock Proposal
 
-## Overview 
+## Overview
 
 After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to the timelock controller, along with the whitelisting of the token and minting of tokens to the timelock.
 
