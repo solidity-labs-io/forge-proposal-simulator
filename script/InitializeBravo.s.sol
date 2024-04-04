@@ -35,7 +35,7 @@ contract DeployGovernorBravo is Script {
                 "setPendingAdmin(address)",
                 address(governor)
             ),
-            process.env.ETA
+            vm.envUint("ETA")
         );
 
         // Initialize GovernorBravo
