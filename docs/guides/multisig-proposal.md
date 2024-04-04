@@ -21,14 +21,16 @@ import { Proposal } from "@proposals/Proposal.sol";
 contract MULTISIG_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
+    /// ADDRESSES_PATH is the path to the Addresses.json file
+    /// DEV_MULTISIG is the wallet address that will be used to simulate the proposal actions
     constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
 
-    // Returns the name of the proposal.
+    /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_01";
     }
 
-    // Provides a brief description of the proposal.
+    /// Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Deploy Vault contract";
     }
@@ -109,7 +111,8 @@ Let's go through each of the functions that are overridden.
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build()`: Set the necessary actions for your proposal. In this example,
-    ERC20 token is whitelisted on the Vault contract.
+    ERC20 token is whitelisted on the Vault contract. The actions should be
+    written in solidity code and in the order they should be executed.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.

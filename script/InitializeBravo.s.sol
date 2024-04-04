@@ -22,8 +22,6 @@ contract DeployGovernorBravo is Script {
             addresses.getAddress("PROTOCOL_TIMELOCK")
         );
 
-        uint256 eta = 1712166492;
-
         vm.startBroadcast();
 
         // Deploy mock GovernorAlpha
@@ -37,7 +35,7 @@ contract DeployGovernorBravo is Script {
                 "setPendingAdmin(address)",
                 address(governor)
             ),
-            eta
+            process.env.ETA
         );
 
         // Initialize GovernorBravo

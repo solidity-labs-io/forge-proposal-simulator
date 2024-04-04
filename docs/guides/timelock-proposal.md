@@ -20,6 +20,8 @@ import { Proposal } from "@proposals/Proposal.sol";
 contract TIMELOCK_01 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
+    /// ADDRESSES_PATH is the path to the Addresses.json file
+    /// PROTOCOL_TIMELOCK is the wallet address that will be used to simulate the proposal actions
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Returns the name of the proposal.
@@ -106,7 +108,9 @@ Let's go through each of the functions that are overridden.
 -   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. Use the `buildModifier` to ensure that the proposal is only executed by the timelock, which is owned by the governor. If the modifier is not used, actions will not be added to the proposal array and the calldata will be generated incorrectly.
+-   `_build()`: Set the necessary actions for your proposal. In this example,
+    ERC20 token is whitelisted on the Vault contract. The actions should be
+    written in solidity code and in the order they should be executed.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.

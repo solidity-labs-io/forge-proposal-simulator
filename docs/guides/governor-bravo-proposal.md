@@ -23,6 +23,8 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
+    /// ADDRESSES_PATH is the path to the Addresses.json file
+    /// PROTOCOL_TIMELOCK is the wallet address that will be used to simulate the proposal actions
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
     /// @notice Provides a brief description of the proposal.
@@ -107,7 +109,8 @@ Let's go through each of the functions that are overridden.
 -   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. Use the `buildModifier` to ensure that the proposal is only executed by the timelock, which is owned by the governor. If the modifier is not used, actions will not be added to the proposal array and the calldata will be generated incorrectly.
+-   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be
+    written in solidity code and in the order they should be executed.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
@@ -140,7 +143,7 @@ cast wallet import ${wallet_name} --interactive
 
 ### Deploying a Governor Bravo on Testnet
 
-You'll need a Bravo Govenror contract set up on the testnet before running the proposal.
+You'll need a Bravo Governor contract set up on the testnet before running the proposal.
 
 We have a script in `script/` folder called `DeployGovernorBravo.s.sol` to facilitate this process.
 
@@ -177,12 +180,12 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ]
 ```
 
-After adding the addresses, it's necessary to run the second script to accept ownership of
+After adding the addresses, run the second script to accept ownership of
 the timelock and initialize the governor.
 
 The script is called `InitializeBravo.s.sol` and is located in the `script/` folder.
 Before running the script, get the eta from the queue transaction on the
-previous script and set it as the `eta` variable in the InitializeBravo script.
+previous script and set as a environment variable.
 
 ```sh
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
