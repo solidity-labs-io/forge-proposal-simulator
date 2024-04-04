@@ -11,3 +11,8 @@ node_modules/
 .env
 
 lcov.info
+
+# typescript
+typescript/node_modules/
+
+typescript/package-lock.json

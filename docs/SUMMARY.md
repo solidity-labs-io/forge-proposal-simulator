@@ -25,3 +25,9 @@
 ## Testing
 
 -   [Integration Tests](testing/integration-tests.md)
+
+## Type checking
+
+-   [Introduction](type-check/introduction.md)
+-   [Type Check Example](type-check/example.md)
+-   [TypeCheckAddresses.json](type-check/type-check.md)
