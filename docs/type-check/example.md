@@ -1,6 +1,6 @@
 # Example Type check
 
-After adding FPS into project dependencies and setting up through [Setup guide](./introduction.md#setting-up), its time to go through a example contract to know how type checking works.
+After adding FPS into project dependencies and setting up through [Setup guide](./introduction.md#setting-up), its time to go through an example contract to understand how type checking works.
 
 ## Example Contracts
 
@@ -50,7 +50,7 @@ contract ExampleTypeCheck {
 }
 ```
 
-The contract constructor args looks complex for this example, we already have constructor args ready for you.
+The contract constructor arguments looks complex for this example, luckily, we already have the constructor arguments ready for you.
 
 In the file `TypeCheckAddresses.json` that you have already made in setup, add another object in json file for the above contract:
 
@@ -85,13 +85,13 @@ Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` an
 fs_permissions = [{ access = "read", path = "./"}]
 ```
 
-Run the following command on root repo to type check all contracts added in `TypeCheckAddresses.json`.
+Run the following command on the root repo to type check all contracts added in `TypeCheckAddresses.json`.
 
 ```bash
 forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url "https://ethereum-sepolia-rpc.publicnode.com"
 ```
 
-The script will run successfully that is deployed contract is correct. You will get below output:
+The script should run successfully that the deployed contract is correct. The command should create the following output, as shown below:
 
 ```txt
 Script ran successfully.
