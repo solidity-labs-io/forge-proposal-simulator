@@ -98,6 +98,29 @@ fs_permissions = [{ access = "read", path = "./"}]
 forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url <deployed_contracts_chain_rpc_url>
 ```
 
+### Type checking on Example contracts FPS
+
+#### Step 1: Set enviornment variables
+
+```
+TYPE_CHECK_ADDRESSES_PATH="addresses/TypeCheckAddresses.json"
+ADDRESSES_PATH="addresses/Addresses.json"
+ARTIFACT_PATH="out/"
+LIB_PATH=""
+```
+
+#### Step 2: Run script to test type checking
+
+```bash
+forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url  sepolia
+```
+
+You can also run type checking through inline environment variables if not already set in .env
+
+```bash
+TYPE_CHECK_ADDRESSES_PATH="addresses/TypeCheckAddresses.json" ADDRESSES_PATH="addresses/Addresses.json" ARTIFACT_PATH="out/" LIB_PATH="" forge script script/TypeCheck.s.sol:TypeCheck --ffi --fork-url  sepolia
+```
+
 ## Contribute
 
 There are many ways you can participate and help build the next version of FPS. Check out the [contribution guide](CONTRIBUTING.md)!
