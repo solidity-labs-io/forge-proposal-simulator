@@ -95,7 +95,7 @@ jobs:
                   node-version: "lts/*"
 
             - name: "Install the Node.js dependencies"
-              run: "cd typescript/ && npm install && cd ../"
+              run: "cd typescript/ && npm install && cd ../ && npm install ts-node"
 
             - name: "Build the contracts and print their size"
               run: "forge build --sizes"
