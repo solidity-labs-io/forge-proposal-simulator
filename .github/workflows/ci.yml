@@ -97,6 +97,9 @@ jobs:
             - name: "Install the Node.js dependencies"
               run: "cd typescript/ && npm install && cd ../"
 
+            - name: "Build the contracts and print their size"
+              run: "forge build --sizes"
+
             - name: "Run typecheck tests"
               run: "forge test --mc TypeCheck --ffi --fork-url sepolia"
 
