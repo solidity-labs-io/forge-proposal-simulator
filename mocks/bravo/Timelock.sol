@@ -60,6 +60,8 @@ contract Timelock {
 
     fallback() external payable {}
 
+    receive() external payable {}
+
     function setDelay(uint256 delay_) public {
         require(
             msg.sender == address(this),
