@@ -42,25 +42,6 @@ jobs:
              echo "## Lint result" >> $GITHUB_STEP_SUMMARY
              echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
            fi
-    
-    build:
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Check out the repo"
-              uses: "actions/checkout@v3"
-              with:
-                  submodules: "recursive"
-
-            - name: "Install Foundry"
-              uses: "foundry-rs/foundry-toolchain@v1"
-
-            - name: "Build the contracts and print their size"
-              run: "forge build --sizes"
-
-            - name: "Add build summary"
-              run: |
-                  echo "## Build result" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
     proposal-simulator-test:
         runs-on: "ubuntu-latest"
         steps:
