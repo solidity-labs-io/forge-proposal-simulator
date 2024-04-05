@@ -467,7 +467,7 @@ contract GovernorBravoDelegate is
             return ProposalState.Active;
         } else if (
             proposal.forVotes <= proposal.againstVotes ||
-            proposal.forVotes < quorumVotes
+            proposal.forVotes < QUORUM_VOTES
         ) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {
