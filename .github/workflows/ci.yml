@@ -95,7 +95,7 @@ jobs:
                   node-version: "lts/*"
 
             - name: "Install the Node.js dependencies"
-              run: "cd typescript/ && npm install && cd ../"
+              run: "cd typescript/ && npm install && cd ../ && npm install ts-node"
 
             - name: "Run typecheck tests"
               run: "forge test --mc TypeCheck --ffi --fork-url sepolia"
