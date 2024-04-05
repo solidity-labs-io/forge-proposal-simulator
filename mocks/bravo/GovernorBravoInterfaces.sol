@@ -91,10 +91,10 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     CompInterface public comp;
 
     /// @notice The official record of all proposals ever proposed
-    mapping (uint => Proposal) public proposals;
+    mapping (uint proposalId => Proposal proposal) public proposals;
 
     /// @notice The latest proposal for each proposer
-    mapping (address => uint) public latestProposalIds;
+    mapping (address proposer => uint proposalId) public latestProposalIds;
 
 
     struct Proposal {
@@ -171,7 +171,7 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
 
 contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
     /// @notice Stores the expiration of account whitelist status as a timestamp
-    mapping (address => uint) public whitelistAccountExpirations;
+    mapping (address account => uint expiration) public whitelistAccountExpirations;
 
     /// @notice Address which manages whitelisted proposals and whitelist accounts
     address public whitelistGuardian;

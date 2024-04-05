@@ -17,6 +17,7 @@
     	"immutable-vars-naming": "off",
     	"avoid-low-level-calls": "off",
     	"contract-name-camelcase": "off",
-        "no-unused-import": "error"
+        "no-unused-import": "error",
+        "explicit-types": "off"
     }
 }

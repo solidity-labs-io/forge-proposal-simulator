@@ -42,7 +42,7 @@ contract Timelock {
     address public pendingAdmin;
     uint256 public delay;
 
-    mapping(bytes32 => bool) public queuedTransactions;
+    mapping(bytes32 transaction => bool queued) public queuedTransactions;
 
     constructor(address admin_, uint256 delay_) public {
         require(

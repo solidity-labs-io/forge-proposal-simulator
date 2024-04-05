@@ -9,7 +9,7 @@ contract GovernorBravoDelegate is
     GovernorBravoEvents
 {
     /// @notice The name of this contract
-    string public constant name = "Compound Governor Bravo";
+    string public constant NAME = "Compound Governor Bravo";
 
     /// @notice The minimum settable proposal threshold
     uint public constant MIN_PROPOSAL_THRESHOLD = 1000e18; // 1,000 Comp
@@ -30,10 +30,10 @@ contract GovernorBravoDelegate is
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 400000e18; // 400,000 = 4% of Comp
+    uint public constant QUORUM_VOTES = 400000e18; // 400,000 = 4% of Comp
 
     /// @notice The maximum number of actions that can be included in a proposal
-    uint public constant proposalMaxOperations = 10; // 10 actions
+    uint public constant PROPOSAL_MAX_OPERATIONS = 10; // 10 actions
 
     /// @notice The EIP-712 typehash for the contract's domain
     bytes32 public constant DOMAIN_TYPEHASH =
@@ -163,7 +163,7 @@ contract GovernorBravoDelegate is
             bytes32 domainSeparator = keccak256(
                 abi.encode(
                     DOMAIN_TYPEHASH,
-                    keccak256(bytes(name)),
+                    keccak256(bytes(NAME)),
                     getChainIdInternal(),
                     address(this)
                 )
@@ -243,11 +243,11 @@ contract GovernorBravoDelegate is
             "GovernorBravo::proposeInternal: must provide actions"
         );
         require(
-            targets.length <= proposalMaxOperations,
+            targets.length <= PROPOSAL_MAX_OPERATIONS,
             "GovernorBravo::proposeInternal: too many actions"
         );
 
-        uint latestProposalId = latestProposalIds[proposer];
+        uint256 latestProposalId = latestProposalIds[proposer];
         if (latestProposalId != 0) {
             ProposalState proposersLatestProposalState = state(
                 latestProposalId
@@ -510,7 +510,7 @@ contract GovernorBravoDelegate is
         bytes32 domainSeparator = keccak256(
             abi.encode(
                 DOMAIN_TYPEHASH,
-                keccak256(bytes(name)),
+                keccak256(bytes(NAME)),
                 getChainIdInternal(),
                 address(this)
             )
@@ -577,7 +577,7 @@ contract GovernorBravoDelegate is
             bytes32 domainSeparator = keccak256(
                 abi.encode(
                     DOMAIN_TYPEHASH,
-                    keccak256(bytes(name)),
+                    keccak256(bytes(NAME)),
                     getChainIdInternal(),
                     address(this)
                 )
