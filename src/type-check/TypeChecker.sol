@@ -26,7 +26,6 @@ contract TypeChecker is Test {
     constructor(
         string memory addressesPath,
         string memory typeCheckAddressesPath,
-        string memory artifactDirectory,
         string memory libPath
     ) {
         addresses = new Addresses(addressesPath);
@@ -43,7 +42,7 @@ contract TypeChecker is Test {
         );
 
         for (uint256 i = 0; i < savedTypeCheckAddresses.length; i++) {
-            string[] memory commands = new string[](6);
+            string[] memory commands = new string[](5);
 
             /// note to future self, ffi absolutely flips out if you try to set env vars
             commands[0] = "npx";
@@ -53,7 +52,6 @@ contract TypeChecker is Test {
             );
             commands[3] = savedTypeCheckAddresses[i].constructorArgs;
             commands[4] = savedTypeCheckAddresses[i].artifactPath;
-            commands[5] = artifactDirectory;
 
             console.log("\nContract:", savedTypeCheckAddresses[i].name);
 
