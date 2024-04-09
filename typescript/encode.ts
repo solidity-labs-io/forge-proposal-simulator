@@ -62,9 +62,6 @@ function generateTypeArray(abi: any[]): string[] {
 function encodeData(abi: any[], constructorInputs: any[]): string {
     const types = generateTypeArray(abi);
 
-  console.log(types);
-  console.log(constructorInputs);
-
     return ethers.utils.defaultAbiCoder.encode(types, constructorInputs);
 }
 
