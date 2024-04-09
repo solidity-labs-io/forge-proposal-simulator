@@ -191,6 +191,16 @@ abstract contract Proposal is Test, Script, IProposal {
         /// Check if there are actions to run
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
+
+        for (uint256 i = 0; i < actionsLength; i++) {
+            for (uint256 j = i + 1; j < actionsLength; j++) {
+                // Check if either the target or the arguments are the same for any two actions
+                bool isDuplicateTarget = actions[i].target == actions[j].target;
+                bool isDuplicateArguments = keccak256(abi.encodePacked(actions[i].arguments)) == keccak256(abi.encodePacked(actions[j].arguments));
+
+                require(!(isDuplicateTarget && isDuplicateArguments), "Duplicate actions found");
+            }
+        }
     }
 
     /// @dev After a proposal executed, if you mocked some behavior in the
