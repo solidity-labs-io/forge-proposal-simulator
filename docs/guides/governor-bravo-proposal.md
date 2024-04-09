@@ -191,6 +191,13 @@ Before running the script, get the eta from the queue transaction on the
 previous script and set as a environment variable.
 
 ```sh
+export ETA=123456
+```
+
+Run the script:
+
+
+```sh
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
