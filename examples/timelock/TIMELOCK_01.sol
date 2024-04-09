@@ -9,9 +9,12 @@ import {Proposal} from "@proposals/Proposal.sol";
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
+
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        vm.createSelectFork(vm.envOr("ETH_RPC_URL", string("sepolia")));
+    }
 
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
