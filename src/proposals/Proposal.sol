@@ -196,7 +196,7 @@ abstract contract Proposal is Test, Script, IProposal {
             for (uint256 j = i + 1; j < actionsLength; j++) {
                 // Check if either the target or the arguments are the same for any two actions
                 bool isDuplicateTarget = actions[i].target == actions[j].target;
-                bool isDuplicateArguments = keccak256(abi.encodePacked(actions[i].arguments)) == keccak256(abi.encodePacked(actions[j].arguments));
+                bool isDuplicateArguments = actions[i].arguments == actions[j].arguments;
 
                 require(!(isDuplicateTarget && isDuplicateArguments), "Duplicate actions found");
             }
