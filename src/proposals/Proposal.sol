@@ -27,92 +27,19 @@ abstract contract Proposal is Test, Script, IProposal {
     /// they all follow the same structure
     Action[] public actions;
 
-    /// @notice debug flag to print proposal actions and steps
-    bool internal DEBUG;
+    /// @notice debug flag to print proposal actions, calldata, new addresses and changed addresses
+    /// @dev default is true
+    bool internal DEBUG = false;
 
-    /// @notice to be used by the build function easily create a governance proposal
-    modifier buildModifier(address caller, Addresses addresses) {
-        _startBuild(caller);
-        _;
-        _endBuild(caller, addresses);
-    }
+    /// @notice Addresses contract
+    Addresses public addresses;
 
-    /// @notice to be used by the build function to create a governance proposal
-    /// kick off the process of creating a governance proposal by:
-    ///  1). taking a snapshot of the current state of the contract
-    ///  2). starting prank as the caller
-    ///  3). starting a recording of all calls created during the proposal
-    function _startBuild(address caller) private {
-        _startSnapshot = vm.snapshot();
-        vm.startPrank(caller);
-        vm.startStateDiffRecording();
-    }
+    /// @notice the actions caller name in the Addresses JSON
+    string public caller;
 
-    /// @notice to be used at the end of the build function to snapshot
-    /// the actions performed by the proposal and revert these changes
-    /// then, stop the prank and record the actions that were taken by the proposal.
-    function _endBuild(address caller, Addresses addresses) private {
-        vm.stopPrank();
-        VmSafe.AccountAccess[] memory accountAccesses = vm
-            .stopAndReturnStateDiff();
-
-        /// roll back all state changes made during the governance proposal
-        require(
-            vm.revertTo(_startSnapshot),
-            "failed to revert back to snapshot, unsafe state to run proposal"
-        );
-
-        for (uint256 i = 0; i < accountAccesses.length; i++) {
-            /// only care about calls from the original caller,
-            /// static calls are ignored,
-            /// calls to and from Addresses and the vm contract are ignored
-            if (
-                accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
-                accountAccesses[i].accessor != address(addresses) &&
-                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
-            ) {
-                _pushAction(
-                    accountAccesses[i].value,
-                    accountAccesses[i].account,
-                    accountAccesses[i].data,
-                    string(
-                        abi.encodePacked(
-                            "calling ",
-                            accountAccesses[i].account.toHexString(),
-                            " with ",
-                            accountAccesses[i].value.toString(),
-                            " eth and ",
-                            _bytesToString(accountAccesses[i].data),
-                            " data."
-                        )
-                    )
-                );
-            }
-        }
-    }
-
-    /// @notice convert bytes to a string
-    /// @param data the bytes to convert to a human readable string
-    function _bytesToString(
-        bytes memory data
-    ) private pure returns (string memory) {
-        /// Initialize an array of characters twice the length of data,
-        /// since each byte will be represented by two hexadecimal characters
-        bytes memory buffer = new bytes(data.length * 2);
-
-        /// Characters for conversion
-        bytes memory characters = "0123456789abcdef";
-
-        for (uint256 i = 0; i < data.length; i++) {
-            /// For each byte, find the corresponding hexadecimal characters
-            buffer[i * 2] = characters[uint256(uint8(data[i] >> 4))];
-            buffer[i * 2 + 1] = characters[uint256(uint8(data[i] & 0x0f))];
-        }
-
-        /// Convert the bytes array to a string and return
-        return string(buffer);
+    constructor(string memory addressesPath, string memory _caller) {
+        addresses = new Addresses(addressesPath);
+        caller = _caller;
     }
 
     /// @notice override this to set the proposal name
@@ -123,53 +50,32 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice main function
     /// @dev do not override
-    function run(Addresses addresses, address deployer) external {
+    function run() external {
+        address deployer = addresses.getAddress("DEPLOYER");
+
         vm.startBroadcast(deployer);
-        _deploy(addresses, deployer);
-        _afterDeploy(addresses, deployer);
+        _deploy();
+        _afterDeploy();
         vm.stopBroadcast();
 
-        _build(addresses);
-        _run(addresses, deployer);
-        _teardown(addresses, deployer);
-        _validate(addresses, deployer);
+        _outerBuild();
+        _run();
+        _teardown();
+        _validate();
+
+        if (DEBUG) {
+            _printRecordedAddresses();
+            _printActions();
+            _printCalldata();
+        }
     }
 
-    /// @notice main function with more granularity control
-    /// @dev do not override
-    function run(
-        Addresses addresses,
-        address deployer,
-        bool doDeploy,
-        bool doBuild,
-        bool doAfterDeploy,
-        bool doRun,
-        bool doTeardown,
-        bool doValidate
-    ) external {
-        vm.startBroadcast(deployer);
+    function _outerBuild() private {
+        _startBuild();
 
-        if (doDeploy) {
-            _deploy(addresses, deployer);
-        }
-        if (doAfterDeploy) {
-            _afterDeploy(addresses, deployer);
-        }
+        _build();
 
-        vm.stopBroadcast();
-
-        if (doBuild) {
-            _build(addresses);
-        }
-        if (doRun) {
-            _run(addresses, deployer);
-        }
-        if (doTeardown) {
-            _teardown(addresses, deployer);
-        }
-        if (doValidate) {
-            _validate(addresses, deployer);
-        }
+        _endBuild();
     }
 
     /// @dev set the debug flag
@@ -180,7 +86,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice Print proposal calldata
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice Print out proposal actions
+    /// @notice get proposal actions
     /// @dev do not override
     function getProposalActions()
         public
@@ -199,13 +105,6 @@ abstract contract Proposal is Test, Script, IProposal {
         values = new uint256[](actionsLength);
         arguments = new bytes[](actionsLength);
 
-        if (DEBUG) {
-            console.log("\n\nProposal Description:\n\n%s", description());
-            console.log(
-                "\n\n------------------ Proposal Actions ------------------"
-            );
-        }
-
         for (uint256 i; i < actionsLength; i++) {
             require(
                 actions[i].target != address(0),
@@ -220,13 +119,6 @@ abstract contract Proposal is Test, Script, IProposal {
             targets[i] = actions[i].target;
             arguments[i] = actions[i].arguments;
             values[i] = actions[i].value;
-
-            if (DEBUG) {
-                console.log("%d). %s", i + 1, actions[i].description);
-                console.log("target: %s\npayload", actions[i].target);
-                console.logBytes(actions[i].arguments);
-                console.log("\n");
-            }
         }
     }
 
@@ -283,22 +175,33 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------------------------------------------------
 
     /// @dev Deploy contracts and add them to list of addresses
-    function _deploy(Addresses, address) internal virtual {}
+    function _deploy() internal virtual {}
 
     /// @dev After deploying, call initializers and link contracts together
-    function _afterDeploy(Addresses, address) internal virtual {}
+    function _afterDeploy() internal virtual {}
 
     /// @dev After finishing deploy and deploy cleanup, build the proposal
-    function _build(Addresses) internal virtual {}
+    function _build() internal virtual {}
 
     /// @dev Actually run the proposal (e.g. queue actions in the Timelock,
     /// or execute a serie of Multisig calls...).
     /// See proposals for helper contracts.
     /// address param is the address of the proposal executor
-    function _run(Addresses, address) internal virtual {
+    function _run() internal virtual {
         /// Check if there are actions to run
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
+
+        for (uint256 i = 0; i < actionsLength; i++) {
+            for (uint256 j = i + 1; j < actionsLength; j++) {
+                // Check if either the target or the arguments are the same for any two actions
+                bool isDuplicateTarget = actions[i].target == actions[j].target;
+                bool isDuplicateArguments = keccak256(actions[i].arguments)
+                    == keccak256(actions[j].arguments);
+
+                require(!(isDuplicateTarget && isDuplicateArguments), "Duplicate actions found");
+            }
+        }
     }
 
     /// @dev After a proposal executed, if you mocked some behavior in the
@@ -308,19 +211,172 @@ abstract contract Proposal is Test, Script, IProposal {
     /// of changes that must happen before your proposal execution), and here
     /// you could revert these changes, to make sure the integration tests
     /// run on a state that is as close to mainnet as possible.
-    function _teardown(Addresses, address) internal virtual {}
+    function _teardown() internal virtual {}
 
     /// @dev For small post-proposal checks, e.g. read state variables of the
     /// contracts you deployed, to make sure your deploy() and afterDeploy()
     /// steps have deployed contracts in a correct configuration, or read
     /// states that are expected to have change during your run() step.
-    /// Note that there is a set of tests that run post-proposal in
-    /// contracts/test/integration/post-proposal-checks, as well as
-    /// tests that read state before proposals & after, in
-    /// contracts/test/integration/proposal-checks, so this validate()
-    /// step should only be used for small checks.
-    /// If you want to add extensive validation of a new component
-    /// deployed by your proposal, you might want to add a post-proposal
-    /// test file instead.
-    function _validate(Addresses, address) internal virtual {}
+    function _validate() internal virtual {}
+
+    /// @dev Print proposal calldata
+    function _printCalldata() internal virtual {
+        console.log(
+            "\n\n------------------ Proposal Calldata ------------------"
+        );
+        console.logBytes(getCalldata());
+    }
+
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+    /// -------------------------- Private functions -------------------------
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+
+    /// @dev Print proposal actions
+    function _printActions() private view {
+        console.log(
+            "\n\n---------------- Proposal Description ----------------"
+        );
+        console.log(description());
+        console.log(
+            "\n\n------------------ Proposal Actions ------------------"
+        );
+        for (uint256 i; i < actions.length; i++) {
+            console.log("%d). %s", i + 1, actions[i].description);
+            console.log("target: %s\npayload", actions[i].target);
+            console.logBytes(actions[i].arguments);
+            console.log("\n");
+        }
+    }
+
+    /// @dev Print recorded addresses
+    function _printRecordedAddresses() private view {
+        (
+            string[] memory recordedNames,
+            ,
+            address[] memory recordedAddresses
+        ) = addresses.getRecordedAddresses();
+
+        if (recordedNames.length > 0) {
+            console.log(
+                "\n\n--------- Addresses added after running proposal ---------"
+            );
+            for (uint256 j = 0; j < recordedNames.length; j++) {
+                console.log(
+                    "{\n          'addr': '%s', ",
+                    recordedAddresses[j]
+                );
+                console.log("        'chainId': %d,", block.chainid);
+                console.log("        'isContract': %s", true, ",");
+                console.log(
+                    "        'name': '%s'\n}%s",
+                    recordedNames[j],
+                    j < recordedNames.length - 1 ? "," : ""
+                );
+            }
+        }
+
+        (
+            string[] memory changedNames,
+            ,
+            ,
+            address[] memory changedAddresses
+        ) = addresses.getChangedAddresses();
+
+        if (changedNames.length > 0) {
+            console.log(
+                "\n\n-------- Addresses changed after running proposal --------"
+            );
+
+            for (uint256 j = 0; j < changedNames.length; j++) {
+                console.log("{\n          'addr': '%s', ", changedAddresses[j]);
+                console.log("        'chainId': %d,", block.chainid);
+                console.log("        'isContract': %s", true, ",");
+                console.log(
+                    "        'name': '%s'\n}%s",
+                    changedNames[j],
+                    j < changedNames.length - 1 ? "," : ""
+                );
+            }
+        }
+    }
+
+    /// @notice to be used by the build function to create a governance proposal
+    /// kick off the process of creating a governance proposal by:
+    ///  1). taking a snapshot of the current state of the contract
+    ///  2). starting prank as the caller
+    ///  3). starting a $recording of all calls created during the proposal
+    function _startBuild() private {
+        _startSnapshot = vm.snapshot();
+        vm.startPrank(addresses.getAddress(caller));
+        vm.startStateDiffRecording();
+    }
+
+    /// @notice to be used at the end of the build function to snapshot
+    /// the actions performed by the proposal and revert these changes
+    /// then, stop the prank and record the actions that were taken by the proposal.
+    function _endBuild() private {
+        vm.stopPrank();
+        VmSafe.AccountAccess[] memory accountAccesses = vm
+            .stopAndReturnStateDiff();
+
+        /// roll back all state changes made during the governance proposal
+        require(
+            vm.revertTo(_startSnapshot),
+            "failed to revert back to snapshot, unsafe state to run proposal"
+        );
+
+        for (uint256 i = 0; i < accountAccesses.length; i++) {
+            /// only care about calls from the original caller,
+            /// static calls are ignored,
+            /// calls to and from Addresses and the vm contract are ignored
+            if (
+                accountAccesses[i].account != address(addresses) &&
+                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
+                accountAccesses[i].accessor != address(addresses) &&
+                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
+                accountAccesses[i].accessor == addresses.getAddress(caller) /// caller is correct, not a subcall
+            ) {
+                _pushAction(
+                    accountAccesses[i].value,
+                    accountAccesses[i].account,
+                    accountAccesses[i].data,
+                    string(
+                        abi.encodePacked(
+                            "calling ",
+                            accountAccesses[i].account.toHexString(),
+                            " with ",
+                            accountAccesses[i].value.toString(),
+                            " eth and ",
+                            _bytesToString(accountAccesses[i].data),
+                            " data."
+                        )
+                    )
+                );
+            }
+        }
+    }
+
+    /// @notice convert bytes to a string
+    /// @param data the bytes to convert to a human readable string
+    function _bytesToString(
+        bytes memory data
+    ) private pure returns (string memory) {
+        /// Initialize an array of characters twice the length of data,
+        /// since each byte will be represented by two hexadecimal characters
+        bytes memory buffer = new bytes(data.length * 2);
+
+        /// Characters for conversion
+        bytes memory characters = "0123456789abcdef";
+
+        for (uint256 i = 0; i < data.length; i++) {
+            /// For each byte, find the corresponding hexadecimal characters
+            buffer[i * 2] = characters[uint256(uint8(data[i] >> 4))];
+            buffer[i * 2 + 1] = characters[uint256(uint8(data[i] & 0x0f))];
+        }
+
+        /// Convert the bytes array to a string and return
+        return string(buffer);
+    }
 }

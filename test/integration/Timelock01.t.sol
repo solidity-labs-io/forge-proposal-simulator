@@ -3,12 +3,17 @@ pragma solidity ^0.8.0;
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {TimelockPostProposalCheck} from "@test/TimelockPostProposalCheck.sol";
-import "@forge-std/Test.sol";
+import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
 
 // @dev This test contract extends TimelockPostProposalCheck, granting it
 // the ability to interact with state modifications effected by proposals
 // and to work with newly deployed contracts, if applicable.
 contract TimelockProposalTest is TimelockPostProposalCheck {
+    function setUp() public override {
+        proposal = new TIMELOCK_01();
+        super.setUp();
+    }
+
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");

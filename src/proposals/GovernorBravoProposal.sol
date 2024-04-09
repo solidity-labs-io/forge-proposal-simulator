@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@forge-std/console.sol";
+
 import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
 import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
 import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
-
-import "@forge-std/console.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "./Proposal.sol";
@@ -38,7 +38,6 @@ abstract contract GovernorBravoProposal is Proposal {
         );
 
         if (DEBUG) {
-            console.log("Calldata for proposal:");
             console.logBytes(data);
         }
     }
@@ -76,18 +75,6 @@ abstract contract GovernorBravoProposal is Proposal {
             proposeCalldata
         );
         uint256 proposalId = abi.decode(data, (uint256));
-
-        if (DEBUG) {
-            console.log(
-                "schedule batch calldata with ",
-                actions.length,
-                (actions.length > 1 ? "actions" : "action")
-            );
-
-            if (data.length > 0) {
-                console.log("proposalId: %s", proposalId);
-            }
-        }
 
         // Check proposal is in Pending state
         require(governor.state(proposalId) == Bravo.ProposalState.Pending);
