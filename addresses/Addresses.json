@@ -24,18 +24,6 @@
         "isContract": false
     },
     {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "TIMELOCK_PROPOSER",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "TIMELOCK_EXECUTOR",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
         "addr": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "name": "PROTOCOL_GOVERNOR",
         "chainId": 31337,
@@ -47,13 +35,7 @@
         "chainId": 31337,
         "isContract": false
     },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "BRAVO_PROPOSER",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
+        {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
         "chainId": 11155111,
         "name": "ExampleTypeCheck",

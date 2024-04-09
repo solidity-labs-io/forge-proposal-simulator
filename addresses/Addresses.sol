@@ -10,6 +10,7 @@ import {Strings} from "@openzeppelin/utils/Strings.sol";
 /// for a given network.
 contract Addresses is IAddresses, Test {
     using Strings for uint256;
+    using Strings for address;
 
     struct Address {
         address addr;
@@ -19,6 +20,10 @@ contract Addresses is IAddresses, Test {
     /// @notice mapping from contract name to network chain id to address
     mapping(string name => mapping(uint256 chainId => Address))
         public _addresses;
+
+    /// each address on each network should only have 1 name
+    /// @notice mapping from address to chain id to whether it exists
+    mapping(address addr => mapping(uint256 chainId => bool exist)) public addressToChainId;
 
     /// @notice json structure to read addresses into storage from file
     struct SavedAddresses {
@@ -296,13 +301,28 @@ contract Addresses is IAddresses, Test {
             currentAddress.addr == address(0),
             string(
                 abi.encodePacked(
-                    "Address: ",
+                    "Address with name: ",
                     name,
                     " already set on chain: ",
                     chainId.toString()
                 )
             )
         );
+
+        bool exist = addressToChainId[addr][chainId];
+
+        require(
+            !exist,
+            string(
+                   abi.encodePacked(
+                                    "Address: ",
+                                    addressToString(addr),
+                                    " already set on chain: ",
+                                    chainId.toString()
+                   )                )
+        );
+
+        addressToChainId[addr][chainId] = true;
 
         _checkAddress(addr, isContract, name, chainId);
 
@@ -376,4 +396,15 @@ contract Addresses is IAddresses, Test {
             }
         }
     }
+    function addressToString(address _addr) internal pure returns (string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+        bytes20 value = bytes20(_addr);
+        bytes memory str = new bytes(40); // An Ethereum address has 20 bytes, hence 40 characters in hex
+        for (uint256 i = 0; i < 20; i++) {
+            str[i*2] = alphabet[uint8(value[i] >> 4)];
+            str[1+i*2] = alphabet[uint8(value[i] & 0x0f)];
+        }
+        return string(abi.encodePacked("0x", str));
+    }
+
 }
