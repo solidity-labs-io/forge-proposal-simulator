@@ -59,10 +59,10 @@ contract MULTISIG_01 is MultisigProposal {
 
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(
             devMultisig,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
+            token.balanceOf(addresses.getAddress("DEV"))
         );
     }
 
@@ -166,8 +166,8 @@ Set up Addresses.json file and add the Gnosis Safe address and deployer address 
         "isContract": true
     },
     {
-        "addr": "YOUR_DEPLOYER_EOA",
-        "name": "DEPLOYER",
+        "addr": "YOUR_DEV_EOA",
+        "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     }

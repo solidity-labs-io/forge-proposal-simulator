@@ -57,14 +57,14 @@ contract TIMELOCK_01 is TimelockProposal {
 
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
+        // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(
             timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
+            token.balanceOf(addresses.getAddress("DEV"))
         );
     }
 
-    // @notice Set up actions for the proposal, in this case, setting the MockToken to active.
+    /// @notice Set up actions for the proposal, in this case, setting the MockToken to active.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -74,18 +74,19 @@ contract TIMELOCK_01 is TimelockProposal {
         Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // @notice Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-        address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        address dev = addresses.getAddress("DEV");
 
-        _simulateActions(proposer, executor);
+
+        /// Dev is the proposer and executor 
+        _simulateActions(dev, dev);
     }
 
-    // @notice Validates the post-execution state.
+    /// @notice Validates the post-execution state.
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -147,20 +148,13 @@ You'll need a Timelock Controller contract set up on the testnet before running 
 
 We have a script in `script/` folder called `DeployTimelock.s.sol` to facilitate this process.
 
-Before running the script, you must add the `TIMELOCK_PROPOSER`and
-`TIMELOCK_EXECUTOR` addresses to the `Addresses.json` file.
+Before running the script, you must add the `DEV` address to the `Addresses.json` file.
 
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_PROPOSER_ADDRESS",
-        "name": "TIMELOCK_PROPOSER",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "YOUR_TIMELOCK_EXECUTOR_ADDRESS",
-        "name": "TIMELOCK_EXECUTOR",
+        "addr": "YOUR_DEV_ADDRESS",
+        "name": "DEV",
         "chainId": 31337,
         "isContract": false
     }
@@ -190,20 +184,8 @@ Add the Timelock Controller address and deployer address to it. The file should 
         "isContract": true
     },
     {
-        "addr": "YOUR_TIMELOCK_PROPOSER_ADDRESS",
-        "name": "TIMELOCK_PROPOSER",
-        "chainId": 11155111,
-        "isContract": false
-    },
-    {
-        "addr": "YOUR_TIMELOCK_EXECUTOR_ADDRESS",
-        "name": "TIMELOCK_EXECUTOR",
-        "chainId": 11155111,
-        "isContract": false
-    },
-    {
-        "addr": "YOUR_DEPLOYER_EOA",
-        "name": "DEPLOYER",
+        "addr": "YOUR_DEV_ADDRESS",
+        "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     }
