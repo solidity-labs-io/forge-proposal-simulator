@@ -7,7 +7,6 @@ contract TypeCheck is Test {
     string public constant ADDRESSES_PATH = "addresses/Addresses.json";
     string public constant TYPE_CHECK_ADDRESSES_PATH =
         "addresses/TypeCheckAddresses.json";
-    string public constant ARTIFACT_DIRECTORY = "out/";
     string public constant TYPE_CHECK_ADDRESSES_PATH_INCORRECT =
         "addresses/TypeCheckAddressesIncorrect.json";
     string public constant ADDRESSES_PATH_INCORRECT =
@@ -19,7 +18,6 @@ contract TypeCheck is Test {
         typechecker = new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH,
-            ARTIFACT_DIRECTORY,
             LIB_PATH
         );
     }
@@ -32,7 +30,6 @@ contract TypeCheck is Test {
         typechecker = new TypeChecker(
             ADDRESSES_PATH,
             TYPE_CHECK_ADDRESSES_PATH_INCORRECT,
-            ARTIFACT_DIRECTORY,
             LIB_PATH
         );
     }
@@ -43,7 +40,6 @@ contract TypeCheck is Test {
         typechecker = new TypeChecker(
             ADDRESSES_PATH_INCORRECT,
             TYPE_CHECK_ADDRESSES_PATH,
-            ARTIFACT_DIRECTORY,
             LIB_PATH
         );
     }

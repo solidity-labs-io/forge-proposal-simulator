@@ -58,9 +58,11 @@ In the file `TypeCheckAddresses.json` that you have already made in setup, add a
 {
     "name": "ExampleTypeCheck",
     "constructorArgs": "[[\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", \"0x95222290dd7278aa3ddd389cc1e1d165cc4bafe5000000000000000000000000\", [\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2, [\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2]]], [\"Arg1\", \"Arg2\"], [2, 3], [[\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2, [\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2]], [\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2, [\"0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5\", 2]]]]",
-    "artifactPath": "ExampleTypeCheck.sol:ExampleTypeCheck"
+    "artifactPath": "out/ExampleTypeCheck.sol/ExampleTypeCheck.json"
 }
 ```
+
+Note: Default artifact folder is `out`. If it is different in your prooject in `foundry.toml`, change the above artifact path accordingly.
 
 Now add the below object in `Addresses.json`:
 
