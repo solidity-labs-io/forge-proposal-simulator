@@ -29,7 +29,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice debug flag to print proposal actions, calldata, new addresses and changed addresses
     /// @dev default is true
-    bool internal DEBUG = true;
+    bool internal DEBUG = false;
 
     /// @notice Addresses contract
     Addresses public addresses;

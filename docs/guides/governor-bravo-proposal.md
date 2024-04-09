@@ -2,7 +2,10 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `MockToken`. These contracts are located in the [guides section](./introduction.md#example-contracts).The proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token and minting of tokens to the timelock.
+After adding FPS into project dependencies, the next step is the creation of the
+first Proposal contract. This example provides guidance on writing a proposal
+for deploying new instances of `Vault.sol` and `MockToken`. These contracts are
+located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token and minting of tokens to the timelock.
 
 The following contract is present in the `examples/governor-bravo` folder. We will use this contract as a reference for the tutorial.
 
@@ -110,14 +113,14 @@ Let's go through each of the functions that are overridden.
     deployment of Vault and an ERC20 token. Once the contracts are deployed,
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
 Constructor parameters are passed to the `Proposal` contract. The
-`ADDRESSES_PATH` is the path to the `Addresses.json` file, and `DEV_MULTISIG` is
+`ADDRESSES_PATH` is the path to the `Addresses.json` file, and `PROTOCOL_TIMELOCK` is
 the timelock that will be used to simulate the proposal actions.
 
 With the first proposal contract prepared, it's time to proceed with execution. There are two options available:

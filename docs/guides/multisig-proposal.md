@@ -112,7 +112,7 @@ Let's go through each of the functions that are overridden.
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function.
 -   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
