@@ -5,15 +5,15 @@ STAGED_SOL_FILES=$(mktemp)
 # Temporary file to hold list of all staged files for prettier
 STAGED_FILES=$(mktemp)
 
-# List staged .sol files
-git diff --cached --name-only -- '*.sol' > "$STAGED_SOL_FILES"
-# List all staged files
-git diff --cached --name-only > "$STAGED_FILES"
+# List staged .sol files ignoring deleted files
+git diff --cached --name-status -- '*.sol' | grep -v '^D' | cut -f2- > "$STAGED_SOL_FILES"
+# List all staged files ignoring deleted files
+git diff --cached --name-status | grep -v '^D' | cut -f2- > "$STAGED_FILES"
 
 # Run Solhint on staged .sol files, if any
 if [ -s "$STAGED_SOL_FILES" ]; then
     # If there are staged .sol files, run Solhint on them
-    SOLHINT_OUTPUT=$(cat "$STAGED_SOL_FILES" | xargs npx solhint --config ./.solhintrc --ignore-path .solhintignore)
+    SOLHINT_OUTPUT=$(cat "$STAGED_SOL_FILES" | xargs npx solhint --config ./.solhintrc)
     SOLHINT_EXIT_CODE=$?
 
     if [ $SOLHINT_EXIT_CODE -ne 0 ]; then

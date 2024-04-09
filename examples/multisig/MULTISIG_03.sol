@@ -2,11 +2,15 @@ pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
-import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 /// Mock proposal that withdraw tokens from Vault
 contract MULTISIG_03 is MultisigProposal {
+    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
+
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
+
     /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_03";
@@ -18,13 +22,7 @@ contract MULTISIG_03 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build(
-        Addresses addresses
-    )
-        internal
-        override
-        buildModifier(addresses.getAddress("DEV_MULTISIG"), addresses)
-    {
+    function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");
@@ -39,9 +37,9 @@ contract MULTISIG_03 is MultisigProposal {
     }
 
     // Executes the proposal actions.
-    function _run(Addresses addresses, address) internal override {
+    function _run() internal override {
         // Call parent _run function to check if there are actions to execute
-        super._run(addresses, address(0));
+        super._run();
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
@@ -52,7 +50,7 @@ contract MULTISIG_03 is MultisigProposal {
     }
 
     // Validates the post-execution state.
-    function _validate(Addresses addresses, address) internal override {
+    function _validate() internal override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

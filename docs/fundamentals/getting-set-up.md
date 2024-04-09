@@ -26,7 +26,7 @@ Once you have the file, you should allow read access on `foundry.toml`.
 ```toml
 [profile.default]
 ...
-fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
+fs_permissions = [{ access = "read", path = "./addresses/Addresses.json"}]
 ```
 
 ## Step 4: Create a Proposal
@@ -35,9 +35,10 @@ Create a proposal. Choose a model that fits your needs:
 
 -   [Multisig Proposal](../guides/multisig-proposal.md)
 -   [Timelock Proposal](../guides/timelock-proposal.md)
+-   [Bravo Proposal](../guides/governor-bravo-proposal.md)
 
-## Step 5: Implement Scripts and Tests
+## Step 5: Run proposal and Tests
 
-Create scripts and/or tests. For guidance and best practices, refer to the [Guides](../guides/README.md) and [Integration Tests](../testing/integration-tests.md) sections.
+For guidance and best practices on how to create and simulate a proposal, refer to the [Guides](../guides/introduction.md) and [Integration Tests](../testing/integration-tests.md) sections.
 
 Additionally, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) can be consulted for practical examples and further insights.

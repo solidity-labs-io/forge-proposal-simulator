@@ -2,13 +2,16 @@ pragma solidity ^0.8.0;
 
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
-import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalCheck.sol";
-import "@forge-std/Test.sol";
+import {BRAVO_01} from "@examples/governor-bravo/BRAVO_01.sol";
 
-// @dev This test contract extends GovernorBravoPostProposalCheck, granting it
-// the ability to interact with state modifications effected by proposals
-// and to work with newly deployed contracts, if applicable.
-contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
+import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalCheck.sol";
+
+contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
+    function setUp() public override {
+        proposal = new BRAVO_01();
+        super.setUp();
+    }
+
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -26,7 +29,6 @@ contract GovernorBravoProposalTest is GovernorBravoPostProposalCheck {
         MockToken token = new MockToken();
 
         vm.prank(timelock);
-
         timelockVault.whitelistToken(address(token), true);
 
         assertTrue(

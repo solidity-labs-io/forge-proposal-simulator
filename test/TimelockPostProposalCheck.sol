@@ -1,36 +1,24 @@
 pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
-import {TestSuite} from "@test/TestSuite.t.sol";
-import {TIMELOCK_01} from "@examples/timelock/TIMELOCK_01.sol";
-import {TIMELOCK_02} from "@examples/timelock/TIMELOCK_02.sol";
-import {TIMELOCK_03} from "@examples/timelock/TIMELOCK_03.sol";
+
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+
+import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
-// @notice this is a helper contract to execute proposals before running integration tests.
+// @notice this is a helper contract to execute a proposal before running integration tests.
 // @dev should be inherited by integration test contracts.
 contract TimelockPostProposalCheck is Test {
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-    TestSuite public suite;
+    Proposal public proposal;
     Addresses public addresses;
 
-    function setUp() public {
-        TIMELOCK_01 timelockProposal = new TIMELOCK_01();
-        TIMELOCK_02 timelockProposal2 = new TIMELOCK_02();
-        TIMELOCK_03 timelockProposal3 = new TIMELOCK_03();
-
-        // Populate addresses array
-        address[] memory proposalsAddresses = new address[](3);
-        proposalsAddresses[0] = address(timelockProposal);
-        proposalsAddresses[1] = address(timelockProposal2);
-        proposalsAddresses[2] = address(timelockProposal3);
-
-        // Deploy TestSuite contract
-        suite = new TestSuite(ADDRESSES_PATH, proposalsAddresses);
-
-        // Set addresses object
-        addresses = suite.addresses();
+    function setUp() public virtual {
+        require(
+            address(proposal) != address(0),
+            "Test must override setUp and set the proposal contract"
+        );
+        addresses = proposal.addresses();
 
         // Verify if the timelock address is a contract; if is not (e.g. running on a empty blockchain node), deploy a new TimelockController and update the address.
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -66,11 +54,6 @@ contract TimelockPostProposalCheck is Test {
             );
         }
 
-        suite.setDebug(true);
-        // Execute proposals
-        suite.testProposals();
-
-        // Proposals execution may change addresses, so we need to update the addresses object.
-        addresses = suite.addresses();
+        proposal.run();
     }
 }

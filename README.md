@@ -73,7 +73,6 @@ cd ../../../
 ```
 ADDRESSES_PATH                # Path to addresses.json file
 TYPE_CHECK_ADDRESSES_PATH     # Path to typeCheckAddresses.json file
-ARTIFACT_PATH                 # Path of artifact folder
 ```
 
 Example:
@@ -105,7 +104,6 @@ forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi
 ```
 TYPE_CHECK_ADDRESSES_PATH="addresses/TypeCheckAddresses.json"
 ADDRESSES_PATH="addresses/Addresses.json"
-ARTIFACT_PATH="out/"
 LIB_PATH=""
 ```
 

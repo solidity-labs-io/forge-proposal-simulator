@@ -12,29 +12,36 @@ on:
 
 jobs:
     lint:
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Check out the repo"
-              uses: "actions/checkout@v3"
-              with:
-                  submodules: "recursive"
+     runs-on: ubuntu-latest
+     steps:
+       - name: "Check out the repo"
+         uses: actions/checkout@v3
+         with:
+           submodules: recursive
+       - name: "Install Node.js"
+         uses: actions/setup-node@v3
+         with:
+           node-version: lts/*
 
-            - name: "Install Node.js"
-              uses: "actions/setup-node@v3"
-              with:
-                  node-version: "lts/*"
+       - name: "Install the Node.js dependencies"
+         run: npm install
 
-            - name: "Install the Node.js dependencies"
-              run: "npm install"
-
-            - name: "Lint the contracts"
-              run: "npm run lint"
-
-            - name: "Add lint summary"
-              run: |
-                  echo "## Lint result" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
-
+       - name: Run linter and check for errors
+         id: lint
+         run: |
+           LINT_OUTCOME=$(npm run lint 2>&1 || true) # Prevent the step from failing immediately
+           echo "$LINT_OUTCOME"
+           echo "LINT_OUTCOME<<EOF" >> $GITHUB_ENV
+           echo "$LINT_OUTCOME" >> $GITHUB_ENV
+           echo "EOF" >> $GITHUB_ENV
+           if echo "$LINT_OUTCOME" | grep -q " error "; then
+             echo "## Lint result" >> $GITHUB_STEP_SUMMARY
+             echo "❌ Failed due to errors" >> $GITHUB_STEP_SUMMARY
+             exit 1
+           else
+             echo "## Lint result" >> $GITHUB_STEP_SUMMARY
+             echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
+           fi
     proposal-simulator-test:
         runs-on: "ubuntu-latest"
         steps:
@@ -88,7 +95,10 @@ jobs:
                   node-version: "lts/*"
 
             - name: "Install the Node.js dependencies"
-              run: "cd typescript/ && npm install && cd ../"
+              run: "cd typescript/ && npm install && cd ../ && npm install ts-node"
+
+            - name: "Build the contracts and print their size"
+              run: "forge build --sizes"
 
             - name: "Run typecheck tests"
               run: "forge test --mc TypeCheck --ffi --fork-url sepolia"

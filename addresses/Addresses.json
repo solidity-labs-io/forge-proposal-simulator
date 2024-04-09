@@ -54,6 +54,60 @@
         "isContract": false
     },
     {
+        "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
+        "name": "DEV_MULTISIG",
+        "chainId": 11155111,
+        "isContract": true
+    },
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "DEPLOYER",
+        "chainId": 11155111,
+        "isContract": false
+    },
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "DEPLOYER",
+        "chainId": 31337,
+        "isContract": false
+    },
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "TIMELOCK_PROPOSER",
+        "chainId": 11155111,
+        "isContract": false
+    },
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "TIMELOCK_EXECUTOR",
+        "chainId": 11155111,
+        "isContract": false
+    },
+    {
+        "addr": "0xbd65ceDEb7B0182e04E9Ad610d8D540D2A8DaFF0",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "PROTOCOL_GOVERNOR"
+    },
+    {
+        "addr": "0x5a2d4627167c1903DA33c546f1eF66A7B935f7D5",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "PROTOCOL_TIMELOCK"
+    },
+    {
+        "addr": "0x7365B9d8E5210d66710620D82BbDA9b8dBa38259",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "PROTOCOL_GOVERNANCE_TOKEN"
+    },
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "BRAVO_PROPOSER",
+        "chainId": 11155111,
+        "isContract": false
+    },
+  {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
         "chainId": 11155111,
         "name": "ExampleTypeCheck",
