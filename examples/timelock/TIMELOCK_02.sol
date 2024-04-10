@@ -34,18 +34,18 @@ contract TIMELOCK_02 is TimelockProposal {
         Vault(timelockVault).deposit(token, balance);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-        address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        address dev = addresses.getAddress("DEV");
 
-        _simulateActions(proposer, executor);
+        /// Dev is proposer and executor
+        _simulateActions(dev, dev);
     }
 
-    // Validates the post-execution state
+    /// @notice Validates the post-execution state
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

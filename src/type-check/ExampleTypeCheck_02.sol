@@ -10,6 +10,7 @@ contract ExampleTypeCheck_02 {
     struct StructB {
         StructA[] varB1;
     }
+
     constructor(
         uint256[][] memory,
         StructA[] memory,

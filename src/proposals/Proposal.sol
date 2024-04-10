@@ -51,7 +51,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice main function
     /// @dev do not override
     function run() external {
-        address deployer = addresses.getAddress("DEPLOYER");
+        address deployer = addresses.getAddress("DEV");
 
         vm.startBroadcast(deployer);
         _deploy();
@@ -196,10 +196,13 @@ abstract contract Proposal is Test, Script, IProposal {
             for (uint256 j = i + 1; j < actionsLength; j++) {
                 // Check if either the target or the arguments are the same for any two actions
                 bool isDuplicateTarget = actions[i].target == actions[j].target;
-                bool isDuplicateArguments = keccak256(actions[i].arguments)
-                    == keccak256(actions[j].arguments);
+                bool isDuplicateArguments = keccak256(actions[i].arguments) ==
+                    keccak256(actions[j].arguments);
 
-                require(!(isDuplicateTarget && isDuplicateArguments), "Duplicate actions found");
+                require(
+                    !(isDuplicateTarget && isDuplicateArguments),
+                    "Duplicate actions found"
+                );
             }
         }
     }

@@ -60,11 +60,8 @@ contract BRAVO_01 is GovernorBravoProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
 
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
-        );
+        // Make sure that DEV is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -84,7 +81,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("BRAVO_PROPOSER");
+        address proposer = addresses.getAddress("DEV");
 
         _simulateActions(governor, govToken, proposer);
     }
@@ -196,14 +193,13 @@ export ETA=123456
 
 Run the script:
 
-
 ```sh
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
 ### Setting Up the Addresses JSON
 
-The last step before running the proposal is to add the BRAVO_PROPOSER address
+The last step before running the proposal is to add the DEV address
 to Address.json. The final Address.json file should be something like this:
 
 ```json
@@ -227,8 +223,8 @@ to Address.json. The final Address.json file should be something like this:
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_BRAVO_PROPOSER_ADDRESS",
-        "name": "BRAVO_PROPOSER",
+        "addr": "YOUR_DEV_ADDRESS",
+        "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     }
@@ -255,31 +251,31 @@ The script will output the following:
 == Logs ==
 --------- Addresses added after running proposal ---------
   {
-          'addr': '0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af', 
+          'addr': '0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'VAULT'
 },
   {
-          'addr': '0x6CF2d43DCDd27FaC5ef82600270F595c8a134b15', 
+          'addr': '0x6CF2d43DCDd27FaC5ef82600270F595c8a134b15',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'TOKEN_1'
 }
-  
+
 
 ---------------- Proposal Description ----------------
   Governor Bravo proposal mock
-  
+
 
 ------------------ Proposal Actions ------------------
   1). calling 0x0957d5577ea1561e111af0cb7c6949cbd6caf4af with 0 eth and 0ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b150000000000000000000000000000000000000000000000000000000000000001 data.
   target: 0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af
 payload
   0x0ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b150000000000000000000000000000000000000000000000000000000000000001
-  
 
-  
+
+
 
 ------------------ Proposal Calldata ------------------
   0xda95691a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000024000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000957d5577ea1561e111af0cb7c6949cbd6caf4af000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b15000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c476f7665726e6f7220427261766f2070726f706f73616c206d6f636b00000000

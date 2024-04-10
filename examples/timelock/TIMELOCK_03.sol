@@ -11,17 +11,17 @@ contract TIMELOCK_03 is TimelockProposal {
 
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
 
-    // Returns the name of the proposal.
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_PROPOSAL_MOCK";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
     }
 
-    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -36,21 +36,21 @@ contract TIMELOCK_03 is TimelockProposal {
         Vault(timelockVault).withdraw(token, payable(timelock), balance);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-        address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        address dev = addresses.getAddress("DEV");
 
-        // Simulate time passing, vault time lock is 1 week
+        /// Simulate time passing, vault time lock is 1 week
         vm.warp(block.timestamp + 1 weeks + 1);
 
-        _simulateActions(proposer, executor);
+        /// Dev is proposer and executor
+        _simulateActions(dev, dev);
     }
 
-    // Validates the post-execution state.
+    /// @notice Validates the post-execution state.
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
