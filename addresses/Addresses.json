@@ -90,7 +90,7 @@
         "name": "PROTOCOL_GOVERNOR"
     },
     {
-        "addr": "0x5a2d4627167c1903DA33c546f1eF66A7B935f7D5",
+        "addr": "0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_TIMELOCK"
@@ -107,7 +107,7 @@
         "chainId": 11155111,
         "isContract": false
     },
-  {
+    {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
         "chainId": 11155111,
         "name": "ExampleTypeCheck",

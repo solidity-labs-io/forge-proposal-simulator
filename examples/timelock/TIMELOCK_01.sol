@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 
+import {console} from "@forge-std/console.sol";
 import {Vault} from "@examples/Vault.sol";
 import {MockToken} from "@examples/MockToken.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
@@ -9,11 +10,11 @@ import {Proposal} from "@proposals/Proposal.sol";
 // Then the proposal transfers ownership of both Vault and ERC20 to the timelock address
 // Finally the proposal whitelist the ERC20 token in the Vault contract
 contract TIMELOCK_01 is TimelockProposal {
-
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
-        vm.createSelectFork(vm.envOr("ETH_RPC_URL", string("sepolia")));
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        uint256 forkId = vm.createFork(urlOrAlias);
     }
 
     /// @notice Returns the name of the proposal.

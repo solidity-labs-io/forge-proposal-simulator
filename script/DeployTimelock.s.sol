@@ -31,11 +31,13 @@ contract DeployTimelock is Script {
         );
         vm.stopBroadcast();
 
-        // Add PROTOCOL_TIMELOCK address
-        addresses.addAddress(
+        // Change PROTOCOL_TIMELOCK address
+        addresses.changeAddress(
             "PROTOCOL_TIMELOCK",
             address(timelockController),
             true
         );
+
+        addresses.printRecordedAddresses();
     }
 }

@@ -39,7 +39,9 @@ abstract contract Proposal is Test, Script, IProposal {
 
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
+        vm.makePersistent(address(addresses));
         caller = _caller;
+        DEBUG = vm.envOr("DEBUG", false);
     }
 
     /// @notice override this to set the proposal name
@@ -51,6 +53,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice main function
     /// @dev do not override
     function run() external {
+        vm.selectFork(0);
         address deployer = addresses.getAddress("DEPLOYER");
 
         vm.startBroadcast(deployer);
@@ -76,11 +79,6 @@ abstract contract Proposal is Test, Script, IProposal {
         _build();
 
         _endBuild();
-    }
-
-    /// @dev set the debug flag
-    function setDebug(bool debug) public {
-        DEBUG = debug;
     }
 
     /// @notice Print proposal calldata
@@ -196,10 +194,13 @@ abstract contract Proposal is Test, Script, IProposal {
             for (uint256 j = i + 1; j < actionsLength; j++) {
                 // Check if either the target or the arguments are the same for any two actions
                 bool isDuplicateTarget = actions[i].target == actions[j].target;
-                bool isDuplicateArguments = keccak256(actions[i].arguments)
-                    == keccak256(actions[j].arguments);
+                bool isDuplicateArguments = keccak256(actions[i].arguments) ==
+                    keccak256(actions[j].arguments);
 
-                require(!(isDuplicateTarget && isDuplicateArguments), "Duplicate actions found");
+                require(
+                    !(isDuplicateTarget && isDuplicateArguments),
+                    "Duplicate actions found"
+                );
             }
         }
     }

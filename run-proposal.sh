@@ -12,7 +12,7 @@ cd ..
 if [[ ! -z "$STAGED_FILES" ]]; then
     for file in $STAGED_FILES; do
         echo "Executing 'forge script' for staged file: $file"
-        forge script "$file"
+        forge script "$file" 
     done
 else
     echo "No staged changes detected in /examples."

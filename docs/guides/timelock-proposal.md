@@ -170,7 +170,7 @@ Before running the script, you must add the `TIMELOCK_PROPOSER`and
 After adding the addresses, run the script:
 
 ```sh
-forge script script/DeployTimelock.s.sol --account testnet --broadcast --rpc-url
+forge script script/DeployTimelock.s.sol --broadcast --rpc-url
 sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
 ```
 
