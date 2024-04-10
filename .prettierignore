@@ -18,6 +18,7 @@ package-lock.json
 *.toml
 LICENSE
 .solhintrc
+.solhintignore
 .prettierrc
 .prettierignore
 *.svg

@@ -24,7 +24,8 @@ contract Addresses is IAddresses, Test {
 
     /// each address on each network should only have 1 name
     /// @notice mapping from address to chain id to whether it exists
-    mapping(address addr => mapping(uint256 chainId => bool exist)) public addressToChainId;
+    mapping(address addr => mapping(uint256 chainId => bool exist))
+        public addressToChainId;
 
     /// @notice json structure to read addresses into storage from file
     struct SavedAddresses {
@@ -364,12 +365,13 @@ contract Addresses is IAddresses, Test {
         require(
             !exist,
             string(
-                   abi.encodePacked(
-                                    "Address: ",
-                                    addressToString(addr),
-                                    " already set on chain: ",
-                                    chainId.toString()
-                   )                )
+                abi.encodePacked(
+                    "Address: ",
+                    addressToString(addr),
+                    " already set on chain: ",
+                    chainId.toString()
+                )
+            )
         );
 
         addressToChainId[addr][chainId] = true;
@@ -446,15 +448,17 @@ contract Addresses is IAddresses, Test {
             }
         }
     }
-    function addressToString(address _addr) internal pure returns (string memory) {
+
+    function addressToString(
+        address _addr
+    ) internal pure returns (string memory) {
         bytes memory alphabet = "0123456789abcdef";
         bytes20 value = bytes20(_addr);
         bytes memory str = new bytes(40); // An Ethereum address has 20 bytes, hence 40 characters in hex
         for (uint256 i = 0; i < 20; i++) {
-            str[i*2] = alphabet[uint8(value[i] >> 4)];
-            str[1+i*2] = alphabet[uint8(value[i] & 0x0f)];
+            str[i * 2] = alphabet[uint8(value[i] >> 4)];
+            str[1 + i * 2] = alphabet[uint8(value[i] & 0x0f)];
         }
         return string(abi.encodePacked("0x", str));
     }
-
 }

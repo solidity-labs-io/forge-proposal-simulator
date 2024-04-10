@@ -212,12 +212,16 @@ contract TestAddresses is Test {
     }
 
     function test_revertAddAddressAlreadySet() public {
-        vm.expectRevert("Address with name: DEV_MULTISIG already set on chain: 31337");
+        vm.expectRevert(
+            "Address with name: DEV_MULTISIG already set on chain: 31337"
+        );
         addresses.addAddress("DEV_MULTISIG", vm.addr(1), false);
     }
 
     function test_revertAddAddressChainAlreadySet() public {
-        vm.expectRevert("Address with name: DEV_MULTISIG already set on chain: 31337");
+        vm.expectRevert(
+            "Address with name: DEV_MULTISIG already set on chain: 31337"
+        );
         addresses.addAddress("DEV_MULTISIG", vm.addr(1), 31337, false);
     }
 
@@ -231,7 +235,9 @@ contract TestAddresses is Test {
     function test_revertDuplicateAddressInJson() public {
         string memory addressesPath = "./addresses/AddressesDuplicated.json";
 
-        vm.expectRevert("Address with name: DEV_MULTISIG already set on chain: 31337");
+        vm.expectRevert(
+            "Address with name: DEV_MULTISIG already set on chain: 31337"
+        );
         new Addresses(addressesPath);
     }
 
@@ -312,15 +318,19 @@ contract TestAddresses is Test {
         addressIsPresentOnChain();
         address test = vm.addr(1);
 
-        vm.expectRevert("Address: 0x7e5f4552091a69125d5dfcb7b8c2659029395bdf already set on chain: 123");
+        vm.expectRevert(
+            "Address: 0x7e5f4552091a69125d5dfcb7b8c2659029395bdf already set on chain: 123"
+        );
         addresses.addAddress("TEST_2", test, 123, false);
     }
 
     function test_revertDuplicateAddressInJsonWithDifferentName() public {
-        string memory addressesPath = "./addresses/AddressesDuplicatedDifferentName.json";
+        string
+            memory addressesPath = "./addresses/AddressesDuplicatedDifferentName.json";
 
-        vm.expectRevert("Address: 0x3dd46846eed8d147841ae162c8425c08bd8e1b41 already set on chain: 31337");
+        vm.expectRevert(
+            "Address: 0x3dd46846eed8d147841ae162c8425c08bd8e1b41 already set on chain: 31337"
+        );
         new Addresses(addressesPath);
     }
-
 }

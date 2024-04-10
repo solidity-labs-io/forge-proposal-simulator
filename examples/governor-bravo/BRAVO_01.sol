@@ -47,10 +47,7 @@ contract BRAVO_01 is GovernorBravoProposal {
         token.transferOwnership(timelock);
 
         // Make sure that DEV is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEV"))
-        );
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.

@@ -17,7 +17,7 @@
         "chainId": 31337,
         "isContract": false
     },
-        {
+    {
         "addr": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "name": "PROTOCOL_GOVERNOR",
         "chainId": 31337,
@@ -29,7 +29,7 @@
         "chainId": 31337,
         "isContract": false
     },
-    
+
     {
         "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
         "name": "DEV_MULTISIG",
@@ -47,7 +47,8 @@
         "name": "DEV",
         "chainId": 31337,
         "isContract": false
-    },    {
+    },
+    {
         "addr": "0xbd65ceDEb7B0182e04E9Ad610d8D540D2A8DaFF0",
         "chainId": 11155111,
         "isContract": true,
@@ -65,16 +66,16 @@
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
-  {
-    "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
-    "chainId": 11155111,
-    "name": "ExampleTypeCheck",
-    "isContract": true
-  },
-  {
-    "addr": "0x9D7A602541230B2bA04D9aA542fad73B8aaBA4ED",
-    "chainId": 11155111,
-    "name": "ExampleTypeCheck_02",
-    "isContract": true
-  }
+    {
+        "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
+        "chainId": 11155111,
+        "name": "ExampleTypeCheck",
+        "isContract": true
+    },
+    {
+        "addr": "0x9D7A602541230B2bA04D9aA542fad73B8aaBA4ED",
+        "chainId": 11155111,
+        "name": "ExampleTypeCheck_02",
+        "isContract": true
+    }
 ]

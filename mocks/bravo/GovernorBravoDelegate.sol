@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.0;
 
-import { GovernorBravoDelegateStorageV2, GovernorBravoEvents, TimelockInterface, CompInterface, GovernorAlphaInterface } from "./GovernorBravoInterfaces.sol";
+import {GovernorBravoDelegateStorageV2, GovernorBravoEvents, TimelockInterface, CompInterface, GovernorAlphaInterface} from "./GovernorBravoInterfaces.sol";
 
 /// @custom:security-contact security@compound.finance
 contract GovernorBravoDelegate is
@@ -157,7 +157,10 @@ contract GovernorBravoDelegate is
         bytes32 r,
         bytes32 s
     ) public returns (uint) {
-        require(proposalId == proposalCount + 1, "GovernorBravo::proposeBySig: invalid proposal id");
+        require(
+            proposalId == proposalCount + 1,
+            "GovernorBravo::proposeBySig: invalid proposal id"
+        );
         address signatory;
         {
             bytes32 domainSeparator = keccak256(

@@ -4,7 +4,6 @@ import "@forge-std/Script.sol";
 
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
 
-import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 contract DeployTimelock is Script {
@@ -13,7 +12,6 @@ contract DeployTimelock is Script {
 
         // Get proposer and executor addresses
         address dev = addresses.getAddress("DEV");
-
 
         // Create arrays of addresses to pass to the TimelockController constructor
         address[] memory proposers = new address[](1);

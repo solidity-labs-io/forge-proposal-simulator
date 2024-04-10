@@ -43,7 +43,7 @@ contract TIMELOCK_02 is TimelockProposal {
 
         /// Dev is proposer and executor
         _simulateActions(dev, dev);
-      }
+    }
 
     /// @notice Validates the post-execution state
     function _validate() internal override {
