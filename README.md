@@ -99,7 +99,7 @@ forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi
 
 ### Type checking on Example contracts FPS
 
-#### Step 1: Set enviornment variables
+#### Step 1: Set environment variables
 
 ```
 TYPE_CHECK_ADDRESSES_PATH="addresses/TypeCheckAddresses.json"
