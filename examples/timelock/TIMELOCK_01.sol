@@ -14,7 +14,7 @@ contract TIMELOCK_01 is TimelockProposal {
 
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
-        uint256 forkId = vm.createFork(urlOrAlias);
+        vm.createFork(urlOrAlias);
     }
 
     /// @notice Returns the name of the proposal.
