@@ -130,7 +130,8 @@ jobs:
          - name: Set DEBUG flag
            run: echo "DEBUG=true" >> $GITHUB_ENV
    
-         - name: Run Forge on Changed Files
+         - name: Run Proposal's
+           id: run_proposal 
            run: echo "::set-output name=result::$(./run-proposal.sh)"
 
          - name: Comment PR with Proposal output
