@@ -57,7 +57,8 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev do not override
     function run() external {
         vm.selectFork(forkIds[0]);
-        address deployer = addresses.getAddress("DEPLOYER");
+
+        address deployer = addresses.getAddress("DEV");
 
         vm.startBroadcast(deployer);
         _deploy();

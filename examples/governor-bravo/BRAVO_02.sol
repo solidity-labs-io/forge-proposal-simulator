@@ -42,7 +42,7 @@ contract BRAVO_02 is GovernorBravoProposal {
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("BRAVO_PROPOSER");
+        address proposer = addresses.getAddress("DEV");
 
         _simulateActions(governor, govToken, proposer);
     }

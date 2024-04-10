@@ -39,9 +39,9 @@ contract TIMELOCK_01 is TimelockProposal {
         }
     }
 
-    // @notice Transfers vault ownership to timelock.
-    //         Transfer token ownership to timelock.
-    //         Transfers all tokens to timelock.
+    /// @notice Transfers vault ownership to timelock.
+    ///         Transfer token ownership to timelock.
+    ///         Transfers all tokens to timelock.
     function _afterDeploy() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -49,14 +49,11 @@ contract TIMELOCK_01 is TimelockProposal {
 
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
-        );
+        /// Make sure that DEV is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
     }
 
-    // @notice Set up actions for the proposal, in this case, setting the MockToken to active.
+    /// @notice Set up actions for the proposal, in this case, setting the MockToken to active.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
@@ -66,15 +63,15 @@ contract TIMELOCK_01 is TimelockProposal {
         Vault(timelockVault).whitelistToken(token, true);
     }
 
-    // @notice Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-        address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        address dev = addresses.getAddress("DEV");
 
-        _simulateActions(proposer, executor);
+        /// Dev is proposer and executor
+        _simulateActions(dev, dev);
     }
 
     // @notice Validates the post-execution state.

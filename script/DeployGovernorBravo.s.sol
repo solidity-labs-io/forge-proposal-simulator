@@ -4,10 +4,8 @@ import "@forge-std/Script.sol";
 
 import {GovernorBravoDelegator} from "@comp-governance/GovernorBravoDelegator.sol";
 
-import {Proposal} from "@proposals/Proposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
-import {MockGovernorAlpha} from "@mocks/MockGovernorAlpha.sol";
 import {MockERC20Votes} from "@mocks/MockERC20Votes.sol";
 import {Timelock} from "@mocks/bravo/Timelock.sol";
 import {GovernorBravoDelegate} from "@mocks/bravo/GovernorBravoDelegate.sol";

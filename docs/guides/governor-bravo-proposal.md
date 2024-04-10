@@ -60,11 +60,8 @@ contract BRAVO_01 is GovernorBravoProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
 
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
-        );
+        // Make sure that DEV is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -84,7 +81,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("BRAVO_PROPOSER");
+        address proposer = addresses.getAddress("DEV");
 
         _simulateActions(governor, govToken, proposer);
     }
@@ -202,7 +199,7 @@ forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --
 
 ### Setting Up the Addresses JSON
 
-The last step before running the proposal is to add the BRAVO_PROPOSER address
+The last step before running the proposal is to add the DEV address
 to Address.json. The final Address.json file should be something like this:
 
 ```json
@@ -226,8 +223,8 @@ to Address.json. The final Address.json file should be something like this:
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_BRAVO_PROPOSER_ADDRESS",
-        "name": "BRAVO_PROPOSER",
+        "addr": "YOUR_DEV_ADDRESS",
+        "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     }

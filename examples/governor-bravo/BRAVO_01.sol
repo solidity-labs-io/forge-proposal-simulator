@@ -49,11 +49,8 @@ contract BRAVO_01 is GovernorBravoProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
 
-        // Make sure that DEPLOYER is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER"))
-        );
+        // Make sure that DEV is the address you specify in the --sender flag
+        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -68,12 +65,12 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("BRAVO_PROPOSER");
+        address proposer = addresses.getAddress("DEV");
 
         _simulateActions(governor, govToken, proposer);
     }

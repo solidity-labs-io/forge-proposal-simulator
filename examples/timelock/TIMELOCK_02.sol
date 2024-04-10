@@ -42,10 +42,10 @@ contract TIMELOCK_02 is TimelockProposal {
         /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
-        address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
+        address dev = addresses.getAddress("DEV");
 
-        _simulateActions(proposer, executor);
+        /// Dev is proposer and executor
+        _simulateActions(dev, dev);
     }
 
     /// @notice Validates the post-execution state

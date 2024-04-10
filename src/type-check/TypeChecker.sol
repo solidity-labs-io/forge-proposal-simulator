@@ -10,9 +10,9 @@ contract TypeChecker is Test {
 
     Addresses public addresses;
 
-    bytes constant IPFS = hex"69706673";
+    bytes public constant IPFS = hex"69706673";
 
-    bytes constant SOLC = hex"736f6c63";
+    bytes public constant SOLC = hex"736f6c63";
 
     struct SavedTypeCheckAddresses {
         /// Artifact path

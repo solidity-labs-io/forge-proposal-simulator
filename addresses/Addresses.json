@@ -18,24 +18,6 @@
         "isContract": false
     },
     {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "DAO_MULTISIG",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "TIMELOCK_PROPOSER",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "TIMELOCK_EXECUTOR",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
         "addr": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "name": "PROTOCOL_GOVERNOR",
         "chainId": 31337,
@@ -47,12 +29,7 @@
         "chainId": 31337,
         "isContract": false
     },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "BRAVO_PROPOSER",
-        "chainId": 31337,
-        "isContract": false
-    },
+
     {
         "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
         "name": "DEV_MULTISIG",
@@ -61,26 +38,14 @@
     },
     {
         "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "DEPLOYER",
+        "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     },
     {
         "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "DEPLOYER",
+        "name": "DEV",
         "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "TIMELOCK_PROPOSER",
-        "chainId": 11155111,
-        "isContract": false
-    },
-    {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "TIMELOCK_EXECUTOR",
-        "chainId": 11155111,
         "isContract": false
     },
     {
@@ -100,12 +65,6 @@
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
-    },
-    {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "BRAVO_PROPOSER",
-        "chainId": 11155111,
-        "isContract": false
     },
     {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
