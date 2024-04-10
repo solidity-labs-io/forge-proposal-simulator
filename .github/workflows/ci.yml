@@ -107,3 +107,25 @@ jobs:
               run: |
                   echo "## Type check tests result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+    run-proposal:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v3
+           with:
+               submodules: "recursive"
+
+         - name: "Install Foundry"
+           uses: "foundry-rs/foundry-toolchain@v1"
+     
+         - name: Get Changed Files
+           id: files
+           uses: jitterbit/get-changed-files@v1
+           with:
+             format: 'space-delimited'
+   
+         - name: Set PR_CHANGED_FILES
+           run: echo "PR_CHANGED_FILES=${{ steps.files.outputs.all }}" >> $GITHUB_ENV
+   
+         - name: Run Forge on Changed Files
+           run: ./run-proposal.sh
