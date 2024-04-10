@@ -37,6 +37,9 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
+    ///@notice fork ids
+    uint256[] public forkIds;
+
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
@@ -53,7 +56,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice main function
     /// @dev do not override
     function run() external {
-        vm.selectFork(0);
+        vm.selectFork(forkIds[0]);
         address deployer = addresses.getAddress("DEPLOYER");
 
         vm.startBroadcast(deployer);

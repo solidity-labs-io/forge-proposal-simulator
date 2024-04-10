@@ -11,7 +11,10 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract MULTISIG_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        forkIds.push(vm.createFork(urlOrAlias));
+    }
 
     // Returns the name of the proposal.
     function name() public pure override returns (string memory) {

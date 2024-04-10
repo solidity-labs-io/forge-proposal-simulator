@@ -131,4 +131,18 @@ jobs:
            run: echo "DEBUG=true" >> $GITHUB_ENV
    
          - name: Run Forge on Changed Files
-           run: ./run-proposal.sh
+           run: echo "::set-output name=result::$(./run-proposal.sh)"
+
+         - name: Comment PR with Proposal output
+           uses: actions/github-script@v6
+           if: success() && steps.run_proposal.outputs.result != ''
+           with:
+             github-token: ${{secrets.GITHUB_TOKEN}}
+             script: |
+               const output = `${{ steps.run_proposal.outputs.result }}`;
+               const prNumber = context.payload.pull_request.number;
+               github.rest.issues.createComment({
+                  ...context.repo,
+                  issue_number: prNumber,
+                  body: `### Proposal Output:\n\`\`\`\n${output}\n\`\`\``
+          });

@@ -9,19 +9,22 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract TIMELOCK_03 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        forkIds.push(vm.createFork(urlOrAlias));
+    }
 
-    // Returns the name of the proposal.
+    /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "TIMELOCK_PROPOSAL_MOCK";
     }
 
-    // Provides a brief description of the proposal.
+    /// Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Withdraw tokens from Vault";
     }
 
-    // Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
+    /// Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
@@ -36,21 +39,21 @@ contract TIMELOCK_03 is TimelockProposal {
         Vault(timelockVault).withdraw(token, payable(timelock), balance);
     }
 
-    // Executes the proposal actions.
+    /// @notice Executes the proposal actions.
     function _run() internal override {
-        // Call parent _run function to check if there are actions to execute
+        /// Call parent _run function to check if there are actions to execute
         super._run();
 
         address proposer = addresses.getAddress("TIMELOCK_PROPOSER");
         address executor = addresses.getAddress("TIMELOCK_EXECUTOR");
 
-        // Simulate time passing, vault time lock is 1 week
+        /// Simulate time passing, vault time lock is 1 week
         vm.warp(block.timestamp + 1 weeks + 1);
 
         _simulateActions(proposer, executor);
     }
 
-    // Validates the post-execution state.
+    /// @notice Validates the post-execution state.
     function _validate() internal override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

@@ -14,7 +14,10 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        forkIds.push(vm.createFork(urlOrAlias));
+    }
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
