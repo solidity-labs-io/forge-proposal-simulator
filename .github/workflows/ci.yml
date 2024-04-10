@@ -145,4 +145,4 @@ jobs:
                   ...context.repo,
                   issue_number: prNumber,
                   body: `### Proposal Output:\n\`\`\`\n${output}\n\`\`\``
-          });
+                  });
