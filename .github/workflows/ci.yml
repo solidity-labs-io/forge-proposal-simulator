@@ -134,7 +134,7 @@ jobs:
    
          - name: Run Proposal's
            id: run_proposal 
-           run: echo "::set-output name=result::$(./run-proposal.sh)"
+           run: echo "result=$(./run-proposal.sh)" >> $GITHUB_OUTPUT
 
          - name: Comment PR with Proposal output
            uses: actions/github-script@v6

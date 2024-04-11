@@ -11,8 +11,13 @@ if [[ ! -z "$CHANGED_FILES" ]]; then
     for file in "${files_array[@]}"; do
         # Execute only if the file is within the /examples directory
         if [[ $file == examples/* ]]; then
-            echo "Executing 'forge script' for changed file: $file"
-            forge script "$file" || echo "Failed to execute script on $file"
+            echo "Executing 'forge script' for Proposal: $file"
+            # Running forge script and capturing output
+            output=$(forge script "$file" 2>&1)
+            echo "$output"
+            if [[ $? -ne 0 ]]; then
+                echo "Failed to execute script on $file"
+            fi
         fi
     done
 else
