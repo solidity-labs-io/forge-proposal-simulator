@@ -142,11 +142,11 @@ jobs:
            uses: actions/github-script@v6
            with:
                github-token: ${{ secrets.GITHUB_TOKEN }}
-           script: |
-               const output = `${{ steps.run_proposals.outputs.result }}`;
-               const prNumber = context.payload.pull_request.number;
-               github.rest.issues.createComment({
-                  ...context.repo,
-                  issue_number: prNumber,
-                  body: `### Proposal Output:\n\`\`\`\n${output}\n\`\`\``
-               });
+               script: |
+                   const output = `${{ steps.run_proposals.outputs.result }}`;
+                   const prNumber = context.payload.pull_request.number;
+                   github.rest.issues.createComment({
+                      ...context.repo,
+                      issue_number: prNumber,
+                      body: `### Proposal Output:\n\`\`\`\n${output}\n\`\`\``
+                   });
