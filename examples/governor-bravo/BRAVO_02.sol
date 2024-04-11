@@ -14,7 +14,7 @@ contract BRAVO_02 is GovernorBravoProposal {
 
     constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK_BRAVO") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
-        forkIds.push(vm.createFork(urlOrAlias));
+        primaryForkId = vm.createFork(urlOrAlias);
     }
 
     /// @notice Provides a brief description of the proposal.

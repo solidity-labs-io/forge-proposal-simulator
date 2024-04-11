@@ -13,7 +13,7 @@ contract MULTISIG_01 is MultisigProposal {
 
     constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
-        forkIds.push(vm.createFork(urlOrAlias));
+        primaryForkId = vm.createFork(urlOrAlias);
     }
 
     // Returns the name of the proposal.

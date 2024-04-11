@@ -37,8 +37,8 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    ///@notice fork ids
-    uint256[] public forkIds;
+    ///@notice primary fork id
+    uint256 public primaryForkId;
 
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
@@ -56,7 +56,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice main function
     /// @dev do not override
     function run() external {
-        vm.selectFork(forkIds[0]);
+        vm.selectFork(primaryForkId);
 
         address deployer = addresses.getAddress("DEV");
 
