@@ -132,20 +132,21 @@ jobs:
          - name: Set DEBUG flag
            run: echo "DEBUG=true" >> $GITHUB_ENV
    
-         - name: Run Proposal's
-           id: run_proposal 
-           run: echo "result=$(./run-proposal.sh)" >> $GITHUB_OUTPUT
+         - name: Run Proposals
+           id: run_proposals
+           run: |
+               echo "result=$(./run-proposal.sh | sed 's/"/\\"/g')" >> $GITHUB_OUTPUT
 
-         - name: Comment PR with Proposal output
+         - name: Comment PR with Proposal Output
+           if: success() && steps.run_proposals.outputs.result != ''
            uses: actions/github-script@v6
-           if: success() && steps.run_proposal.outputs.result != ''
            with:
-             github-token: ${{secrets.GITHUB_TOKEN}}
-             script: |
-               const output = `${{ steps.run_proposal.outputs.result }}`;
+               github-token: ${{ secrets.GITHUB_TOKEN }}
+           script: |
+               const output = `${{ steps.run_proposals.outputs.result }}`;
                const prNumber = context.payload.pull_request.number;
                github.rest.issues.createComment({
                   ...context.repo,
                   issue_number: prNumber,
                   body: `### Proposal Output:\n\`\`\`\n${output}\n\`\`\``
-                  });
+               });

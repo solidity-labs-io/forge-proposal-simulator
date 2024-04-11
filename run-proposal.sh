@@ -13,7 +13,7 @@ if [[ ! -z "$CHANGED_FILES" ]]; then
         if [[ $file == examples/* ]]; then
             echo "Executing 'forge script' for Proposal: $file"
             # Running forge script and capturing output
-            output=$(forge script "$file" 2>&1)
+            output=$(forge script "$file" 2>&1 | sed 's/"/\\"/g')
             echo "$output"
             if [[ $? -ne 0 ]]; then
                 echo "Failed to execute script on $file"
