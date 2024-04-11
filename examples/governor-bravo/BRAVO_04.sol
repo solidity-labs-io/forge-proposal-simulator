@@ -12,7 +12,7 @@ contract BRAVO_04 is GovernorBravoProposal {
 
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK_BRAVO") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
         forkIds.push(vm.createFork(urlOrAlias));
     }

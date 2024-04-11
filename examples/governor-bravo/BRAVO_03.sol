@@ -12,7 +12,7 @@ contract BRAVO_03 is GovernorBravoProposal {
 
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK_BRAVO") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
         forkIds.push(vm.createFork(urlOrAlias));
     }
@@ -25,7 +25,7 @@ contract BRAVO_03 is GovernorBravoProposal {
     /// @notice Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
     function _build() internal override {
         /// STATICCALL -- not recorded for the run stage
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = MockToken(token).balanceOf(address(timelockVault));
@@ -54,7 +54,7 @@ contract BRAVO_03 is GovernorBravoProposal {
 
     /// @notice Validates the post-execution state.
     function _validate() internal override {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 

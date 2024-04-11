@@ -14,7 +14,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK_BRAVO") {
         string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
         forkIds.push(vm.createFork(urlOrAlias));
     }
@@ -42,7 +42,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// 2. Transfer token ownership to timelock.
     /// 3. Transfers all tokens to timelock.
     function _afterDeploy() internal override {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 
@@ -77,7 +77,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// @notice Validates the post-execution state.
     function _validate() internal override {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
 

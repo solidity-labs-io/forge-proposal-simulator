@@ -5,4 +5,8 @@ contract MockGovernorAlpha {
     function proposalCount() public pure returns (uint256) {
         return 1;
     }
+
+    function quorumVotes() public pure returns (uint) {
+        return 1e21;
+    }
 }
