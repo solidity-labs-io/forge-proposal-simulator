@@ -1,6 +1,7 @@
 [profile.default]
 libs = ['lib']
 test = 'test'
+auto_detect_solc = true
 
 # Require read access for 'addresses' and 'out' folder on root repo for bytecode verification
 fs_permissions = [{ access = "read", path = "./"}]

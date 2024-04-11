@@ -45,7 +45,7 @@ contract DeployGovernorBravo is Script {
                 "setPendingAdmin(address)",
                 address(governor)
             ),
-            block.timestamp + 120
+            block.timestamp + 180
         );
 
         vm.stopBroadcast();
