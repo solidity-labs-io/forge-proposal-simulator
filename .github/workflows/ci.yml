@@ -109,7 +109,7 @@ jobs:
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
     run-proposal:
        permissions:
-        issues: write 
+          pull-requests: write 
        runs-on: ubuntu-latest
        steps:
          - name: Checkout code
