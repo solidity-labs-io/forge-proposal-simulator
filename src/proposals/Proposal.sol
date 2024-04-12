@@ -240,13 +240,9 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @dev Print proposal actions
     function _printActions() private view {
-        console.log(
-            "\n\n---------------- Proposal Description ----------------"
-        );
+        console.log("\n---------------- Proposal Description ----------------");
         console.log(description());
-        console.log(
-            "\n\n------------------ Proposal Actions ------------------"
-        );
+        console.log("\n------------------ Proposal Actions ------------------");
         for (uint256 i; i < actions.length; i++) {
             console.log("%d). %s", i + 1, actions[i].description);
             console.log("target: %s\npayload", actions[i].target);
@@ -265,7 +261,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (recordedNames.length > 0) {
             console.log(
-                "\n\n--------- Addresses added after running proposal ---------"
+                "\n-------- Addresses added after running proposal --------"
             );
             for (uint256 j = 0; j < recordedNames.length; j++) {
                 console.log(
@@ -291,7 +287,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         if (changedNames.length > 0) {
             console.log(
-                "\n\n-------- Addresses changed after running proposal --------"
+                "\n------- Addresses changed after running proposal --------"
             );
 
             for (uint256 j = 0; j < changedNames.length; j++) {

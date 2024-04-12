@@ -15,7 +15,7 @@ if [[ ! -z "$CHANGED_FILES" ]]; then
             
             # Extracting the relevant part of the output
             selected_output=$(echo "$clean_output" | awk '
-            /--------- Addresses added after running proposal ---------/, /## Setting up 1 EVM./ {
+            /-------- Addresses added after running proposal --------/, /## Setting up 1 EVM./ {
                 if (/## Setting up 1 EVM./) exit;  # Exit before printing the line with "Setting up 1 EVM."
                 print;
             }
