@@ -146,7 +146,7 @@ jobs:
                   script: |
                       const output = JSON.parse(`${{ steps.run_proposals.outputs.result }}`);
                       const prNumber = context.payload.pull_request.number;
-                      const commentBody = output.map(entry => `### Proposal Output for ${entry.file}:\n\`\`\`\n${entry.output || entry.error}\n\`\`\``).join("\n");
+                      const commentBody = output.map(entry => `### Proposal Output for ${entry.file}:\n\`\`\`\n${entry.output}\n\`\`\``).join("\n");
                       github.rest.issues.createComment({
                         ...context.repo,
                         issue_number: prNumber,
