@@ -136,15 +136,17 @@ jobs:
               id: run_proposals
               run: |
                   output=$(./run-proposal.sh)
-                  echo "result=$output" >> $GITHUB_ENV
+                  echo "result=${output}" >> $GITHUB_ENV
 
-            - name: Comment PR with Proposal Output
+            - name: Decode and Comment PR with Proposal Output
               if: env.result
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
-                      const output = JSON.parse(process.env.result);
+                      const base64Data = process.env.result;
+                      const decodedOutput = Buffer.from(base64Data, 'base64').toString('utf-8');
+                      const output = JSON.parse(decodedOutput);
                       const prNumber = context.payload.pull_request.number;
                       github.rest.issues.createComment({
                         ...context.repo,

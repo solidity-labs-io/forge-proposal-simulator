@@ -2,6 +2,7 @@
 
 CHANGED_FILES=$PR_CHANGED_FILES
 
+# Check for changed files
 if [[ ! -z "$CHANGED_FILES" ]]; then
     # Splitting the file paths into an array
     IFS=' ' read -r -a files_array <<< "$CHANGED_FILES"
@@ -16,8 +17,8 @@ if [[ ! -z "$CHANGED_FILES" ]]; then
             clean_output=$(echo "$output" | sed 's/\x1b\[[0-9;]*m//g')
             # Convert to JSON using jq, ensuring correct JSON output
             json_output=$(jq -n --arg file "$file" --arg output "$clean_output" '{file: $file, output: $output}')
-            # Directly print the JSON output for GitHub Actions to capture
-            echo "$json_output"
+            # Encode the JSON output in base64 to safely pass to GitHub Actions
+            echo $(echo "$json_output" | base64)
             break  # Exit the loop after processing the first file
         fi
     done
