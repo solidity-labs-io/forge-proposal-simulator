@@ -36,10 +36,6 @@ abstract contract GovernorBravoProposal is Proposal {
             calldatas,
             description()
         );
-
-        if (DEBUG) {
-            console.logBytes(data);
-        }
     }
 
     /// @notice Simulate governance proposal

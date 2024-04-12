@@ -15,7 +15,7 @@ contract DeployGovernorBravo is Script {
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
 
         address payable timelock = payable(
-            addresses.getAddress("PROTOCOL_TIMELOCK")
+            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
         );
 
         vm.startBroadcast();
@@ -38,5 +38,9 @@ contract DeployGovernorBravo is Script {
         GovernorBravoDelegate(governor)._initiate(govAlpha);
 
         vm.stopBroadcast();
+
+        addresses.changeAddress("PROTOCOL_GOVERNOR_ALPHA", govAlpha, true);
+
+        addresses.printRecordedAddresses();
     }
 }

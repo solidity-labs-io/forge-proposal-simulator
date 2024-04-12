@@ -17,6 +17,7 @@
     	"avoid-low-level-calls": "off",
     	"contract-name-camelcase": "off",
         "no-unused-import": "error",
-        "explicit-types": "off"
+        "explicit-types": "off",
+        "const-name-snakecase": "off"
     }
 }

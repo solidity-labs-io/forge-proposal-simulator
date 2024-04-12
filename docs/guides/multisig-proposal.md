@@ -23,7 +23,10 @@ contract MULTISIG_01 is MultisigProposal {
 
     /// ADDRESSES_PATH is the path to the Addresses.json file
     /// DEV_MULTISIG is the wallet address that will be used to simulate the proposal actions
-    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
+    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        primaryForkId = vm.createFork(urlOrAlias);
+    }
 
     /// Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -120,7 +123,9 @@ Let's go through each of the functions that are overridden.
 
 Constructor parameters are passed to the `Proposal` contract. The
 `ADDRESSES_PATH` is the path to the `Addresses.json` file, and `DEV_MULTISIG` is
-the Multisig that will be used to simulate the proposal actions.
+the Multisig that will be used to simulate the proposal actions. The
+`primaryForkId` is the RPC URL or alias of the blockchain that will be used to
+simulate the proposal actions and broadcast if any contract deployment is required.
 
 With the proposal contract prepared, it can now be executed. There are two options available:
 
@@ -179,7 +184,7 @@ Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Sa
 ### Running the Proposal
 
 ```sh
-forge script examples/multisig/MULTISIG_01.sol --account ${wallet_name} --broadcast --fork-url sepolia --slow --sender ${wallet_address} -vvvv
+forge script examples/multisig/MULTISIG_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
 Before you execute the proposal script, double-check that the ${wallet_name} and

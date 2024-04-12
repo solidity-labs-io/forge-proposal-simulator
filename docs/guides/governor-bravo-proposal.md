@@ -28,7 +28,10 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// ADDRESSES_PATH is the path to the Addresses.json file
     /// PROTOCOL_TIMELOCK is the wallet address that will be used to simulate the proposal actions
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        primaryForkId = vm.createFork(urlOrAlias);
+    }
 
     /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
@@ -118,7 +121,9 @@ Let's go through each of the functions that are overridden.
 
 Constructor parameters are passed to the `Proposal` contract. The
 `ADDRESSES_PATH` is the path to the `Addresses.json` file, and `PROTOCOL_TIMELOCK` is
-the timelock that will be used to simulate the proposal actions.
+the timelock that will be used to simulate the proposal actions. The
+`primaryForkId` is the RPC URL or alias of the blockchain that will be used to
+simulate the proposal actions and broadcast if any contract deployment is required.
 
 With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
 
@@ -197,6 +202,9 @@ Run the script:
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
+Copy the _PROTOCOL_GOVERNOR_ALPHA_ address from the script output and add it to
+the `Addresses.json` file.
+
 ### Setting Up the Addresses JSON
 
 The last step before running the proposal is to add the DEV address
@@ -223,6 +231,12 @@ to Address.json. The final Address.json file should be something like this:
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
+        "addr": "YOUR_GOVERNOR_ALPHA_ADDRESS",
+        "name": "PROTOCOL_GOVERNOR_ALPHA",
+        "chainId": 11155111,
+        "isContract": true
+    },
+    {
         "addr": "YOUR_DEV_ADDRESS",
         "name": "DEV",
         "chainId": 11155111,
@@ -234,7 +248,7 @@ to Address.json. The final Address.json file should be something like this:
 ### Running the Proposal
 
 ```sh
-forge script examples/governor-bravo/BRAVO_01.sol --rpc-url sepolia -vvvv --slow
+forge script examples/governor-bravo/BRAVO_01.sol -vvvv --slow
 --sender ${wallet_address} -vvvv --account
 ${wallet_name} -g 200
 ```

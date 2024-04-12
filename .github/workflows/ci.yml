@@ -12,36 +12,36 @@ on:
 
 jobs:
     lint:
-     runs-on: ubuntu-latest
-     steps:
-       - name: "Check out the repo"
-         uses: actions/checkout@v3
-         with:
-           submodules: recursive
-       - name: "Install Node.js"
-         uses: actions/setup-node@v3
-         with:
-           node-version: lts/*
+        runs-on: ubuntu-latest
+        steps:
+            - name: "Check out the repo"
+              uses: actions/checkout@v3
+              with:
+                  submodules: recursive
+            - name: "Install Node.js"
+              uses: actions/setup-node@v3
+              with:
+                  node-version: lts/*
 
-       - name: "Install the Node.js dependencies"
-         run: npm install
+            - name: "Install the Node.js dependencies"
+              run: npm install
 
-       - name: Run linter and check for errors
-         id: lint
-         run: |
-           LINT_OUTCOME=$(npm run lint 2>&1 || true) # Prevent the step from failing immediately
-           echo "$LINT_OUTCOME"
-           echo "LINT_OUTCOME<<EOF" >> $GITHUB_ENV
-           echo "$LINT_OUTCOME" >> $GITHUB_ENV
-           echo "EOF" >> $GITHUB_ENV
-           if echo "$LINT_OUTCOME" | grep -q " error "; then
-             echo "## Lint result" >> $GITHUB_STEP_SUMMARY
-             echo "❌ Failed due to errors" >> $GITHUB_STEP_SUMMARY
-             exit 1
-           else
-             echo "## Lint result" >> $GITHUB_STEP_SUMMARY
-             echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
-           fi
+            - name: Run linter and check for errors
+              id: lint
+              run: |
+                  LINT_OUTCOME=$(npm run lint 2>&1 || true) # Prevent the step from failing immediately
+                  echo "$LINT_OUTCOME"
+                  echo "LINT_OUTCOME<<EOF" >> $GITHUB_ENV
+                  echo "$LINT_OUTCOME" >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
+                  if echo "$LINT_OUTCOME" | grep -q " error "; then
+                    echo "## Lint result" >> $GITHUB_STEP_SUMMARY
+                    echo "❌ Failed due to errors" >> $GITHUB_STEP_SUMMARY
+                    exit 1
+                  else
+                    echo "## Lint result" >> $GITHUB_STEP_SUMMARY
+                    echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
+                  fi
     proposal-simulator-test:
         runs-on: "ubuntu-latest"
         steps:
@@ -63,7 +63,7 @@ jobs:
                   echo "FOUNDRY_FUZZ_SEED=$(
                     echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
                   )" >> $GITHUB_ENV
-            
+
             - name: "Build the contracts and print their size"
               run: "forge build --sizes"
 
@@ -88,7 +88,7 @@ jobs:
 
             - name: "Show the Foundry config"
               run: "forge config"
-            
+
             - name: "Install Node.js"
               uses: "actions/setup-node@v3"
               with:
@@ -107,3 +107,56 @@ jobs:
               run: |
                   echo "## Type check tests result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+    run-proposal:
+        permissions:
+            pull-requests: write
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+              with:
+                  submodules: "recursive"
+
+            - name: "Install Foundry"
+              uses: "foundry-rs/foundry-toolchain@v1"
+
+            - name: Get Changed Files
+              id: files
+              uses: jitterbit/get-changed-files@v1
+              with:
+                  format: "space-delimited"
+
+            - name: Set PR_CHANGED_FILES
+              run: echo "PR_CHANGED_FILES=${{ steps.files.outputs.all }}" >> $GITHUB_ENV
+
+            - name: Set DEBUG flag
+              run: echo "DEBUG=true" >> $GITHUB_ENV
+
+            - name: Set PROPOSALS_FOLDER
+              run: echo "PROPOSALS_FOLDER=examples" >> $GITHUB_ENV
+
+            - name: Run Proposals
+              id: run_proposals
+              run: |
+                  output=$(./run-proposal.sh)
+                  echo "result=${output}" >> $GITHUB_ENV
+
+            - name: Decode and Comment PR with Proposal Output
+              if: env.result
+              run: |
+                  echo "${{ env.result }}" | base64 -d > decoded_output.json
+              shell: bash
+
+            - name: Use Decoded Output
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const fs = require('fs');
+                      const output = JSON.parse(fs.readFileSync('decoded_output.json', 'utf8'));
+                      const prNumber = context.payload.pull_request.number;
+                      github.rest.issues.createComment({
+                        ...context.repo,
+                        issue_number: prNumber,
+                        body: `### Proposal output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
+                      });

@@ -45,7 +45,7 @@ contract DeployGovernorBravo is Script {
                 "setPendingAdmin(address)",
                 address(governor)
             ),
-            block.timestamp + 120
+            block.timestamp + 180
         );
 
         vm.stopBroadcast();
@@ -53,8 +53,12 @@ contract DeployGovernorBravo is Script {
         // Update PROTOCOL_GOVERNOR address
         addresses.changeAddress("PROTOCOL_GOVERNOR", address(governor), true);
 
-        // Update PROTOCOL_TIMELOCK address
-        addresses.changeAddress("PROTOCOL_TIMELOCK", address(timelock), true);
+        // Update PROTOCOL_TIMELOCK_BRAVO address
+        addresses.changeAddress(
+            "PROTOCOL_TIMELOCK_BRAVO",
+            address(timelock),
+            true
+        );
 
         addresses.changeAddress(
             "PROTOCOL_GOVERNANCE_TOKEN",

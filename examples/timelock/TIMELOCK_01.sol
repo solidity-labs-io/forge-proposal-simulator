@@ -11,7 +11,10 @@ import {Proposal} from "@proposals/Proposal.sol";
 contract TIMELOCK_01 is TimelockProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        primaryForkId = vm.createFork(urlOrAlias);
+    }
 
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {

@@ -30,7 +30,7 @@ contract GovernorBravoDelegate is
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant QUORUM_VOTES = 400000e18; // 400,000 = 4% of Comp
+    uint public constant quorumVotes = 400000e18; // 400,000 = 4% of Comp
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant PROPOSAL_MAX_OPERATIONS = 10; // 10 actions
@@ -470,7 +470,7 @@ contract GovernorBravoDelegate is
             return ProposalState.Active;
         } else if (
             proposal.forVotes <= proposal.againstVotes ||
-            proposal.forVotes < QUORUM_VOTES
+            proposal.forVotes < quorumVotes
         ) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {

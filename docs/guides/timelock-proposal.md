@@ -22,7 +22,10 @@ contract TIMELOCK_01 is TimelockProposal {
 
     /// ADDRESSES_PATH is the path to the Addresses.json file
     /// PROTOCOL_TIMELOCK is the wallet address that will be used to simulate the proposal actions
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {}
+    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
+        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
+        primaryForkId = vm.createFork(urlOrAlias);
+    }
 
     /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
@@ -115,7 +118,9 @@ Let's go through each of the functions that are overridden.
 
 Constructor parameters are passed to the `Proposal` contract. The
 `ADDRESSES_PATH` is the path to the `Addresses.json` file, and `PROTOCOL_TIMELOCK` is
-the timelock that will be used to simulate the proposal actions.
+the timelock that will be used to simulate the proposal actions. The
+`primaryForkId` is the RPC URL or alias of the blockchain that will be used to
+simulate the proposal actions and broadcast if any contract deployment is required.
 
 With the proposal contract prepared, it can now be executed. There are two options available:
 
@@ -160,7 +165,7 @@ Before running the script, you must add the `DEV` address to the `Addresses.json
 After adding the addresses, run the script:
 
 ```sh
-forge script script/DeployTimelock.s.sol --account testnet --broadcast --rpc-url
+forge script script/DeployTimelock.s.sol --broadcast --rpc-url
 sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
 ```
 
@@ -191,7 +196,7 @@ Add the Timelock Controller address and deployer address to it. The file should 
 ### Running the Proposal
 
 ```sh
-forge script examples/timelock/TIMELOCK_01.sol --account ${wallet_name} --broadcast --fork-url sepolia --slow --sender ${wallet_address} -vvvv
+forge script examples/timelock/TIMELOCK_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
 Before you execute the proposal script, double-check that the ${wallet_name} and

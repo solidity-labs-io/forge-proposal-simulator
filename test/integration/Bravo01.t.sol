@@ -14,7 +14,7 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
 
     function test_vaultIsPausable() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
         vm.prank(timelock);
 
@@ -25,7 +25,7 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
 
     function test_addTokenToWhitelist() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         MockToken token = new MockToken();
 
         vm.prank(timelock);
@@ -39,7 +39,7 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
 
     function test_depositToVaut() public {
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         address token = addresses.getAddress("TOKEN_1");
 
         vm.prank(timelock);

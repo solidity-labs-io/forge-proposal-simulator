@@ -31,3 +31,7 @@
 -   [Introduction](type-check/introduction.md)
 -   [Type Check Example](type-check/example.md)
 -   [TypeCheckAddresses.json](type-check/type-check.md)
+
+## Github Actions
+
+-   [Printing Calldata on Pull Requests](actions/print-calldata.md)
