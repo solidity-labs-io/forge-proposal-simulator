@@ -5,7 +5,6 @@ coverage
 lib
 node_modules
 out
-.github
 .husky
 
 # files
