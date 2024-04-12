@@ -3,12 +3,13 @@
 
 # PR_CHANGED_FILES is a list of files changed in the PR, set by the CI
 CHANGED_FILES=$PR_CHANGED_FILES
+FOLDER=$PROPOSALS_FOLDER
 
 if [[ ! -z "$CHANGED_FILES" ]]; then
     IFS=' ' read -r -a files_array <<< "$CHANGED_FILES"
 
     for file in "${files_array[@]}"; do
-        if [[ $file == examples/* ]]; then
+        if [[ $file == "$FOLDER"/* ]]; then
             output=$(forge script "$file" 2>&1)
             # Removal of ANSI Escape Codes
             clean_output=$(echo "$output" | sed 's/\x1b\[[0-9;]*m//g')
