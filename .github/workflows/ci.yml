@@ -140,13 +140,17 @@ jobs:
 
             - name: Decode and Comment PR with Proposal Output
               if: env.result
+              run: |
+                  echo "${{ env.result }}" | base64 -d > decoded_output.json
+              shell: bash
+
+            - name: Use Decoded Output
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
-                      const base64Data = process.env.result;
-                      const decodedOutput = Buffer.from(base64Data, 'base64').toString('utf-8');
-                      const output = JSON.parse(decodedOutput);
+                      const fs = require('fs');
+                      const output = JSON.parse(fs.readFileSync('decoded_output.json', 'utf8'));
                       const prNumber = context.payload.pull_request.number;
                       github.rest.issues.createComment({
                         ...context.repo,
