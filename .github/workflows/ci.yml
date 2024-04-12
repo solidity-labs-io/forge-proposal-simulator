@@ -142,12 +142,12 @@ jobs:
               if: env.result
               uses: actions/github-script@v6
               with:
-              github-token: ${{ secrets.GITHUB_TOKEN }}
-              script: |
-                  const output = JSON.parse(process.env.result);
-                  const prNumber = context.payload.pull_request.number;
-                  github.rest.issues.createComment({
-                    ...context.repo,
-                    issue_number: prNumber,
-                    body: `### Proposal Output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
-                  });
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const output = JSON.parse(process.env.result);
+                      const prNumber = context.payload.pull_request.number;
+                      github.rest.issues.createComment({
+                        ...context.repo,
+                        issue_number: prNumber,
+                        body: `### Proposal Output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
+                      });
