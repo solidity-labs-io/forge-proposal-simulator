@@ -135,20 +135,19 @@ jobs:
             - name: Run Proposals
               id: run_proposals
               run: |
-                  ./run-proposal.sh
-                  echo "result=$(cat output.json)" >> $GITHUB_OUTPUT
+                  output=$(./run-proposal.sh)
+                  echo "result=$output" >> $GITHUB_ENV
 
             - name: Comment PR with Proposal Output
-              if: success() && steps.run_proposals.outputs.result != ''
+              if: env.result
               uses: actions/github-script@v6
               with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const output = JSON.parse(`${{ steps.run_proposals.outputs.result }}`);
-                      const prNumber = context.payload.pull_request.number;
-                      const commentBody = output.map(entry => `### Proposal Output for ${entry.file}:\n\`\`\`\n${entry.output}\n\`\`\``).join("\n");
-                      github.rest.issues.createComment({
-                        ...context.repo,
-                        issue_number: prNumber,
-                        body: commentBody
-                      });
+              github-token: ${{ secrets.GITHUB_TOKEN }}
+              script: |
+                  const output = JSON.parse(process.env.result);
+                  const prNumber = context.payload.pull_request.number;
+                  github.rest.issues.createComment({
+                    ...context.repo,
+                    issue_number: prNumber,
+                    body: `### Proposal Output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
+                  });
