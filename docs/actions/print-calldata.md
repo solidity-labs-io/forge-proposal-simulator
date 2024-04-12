@@ -84,7 +84,7 @@ To create the workflow, follow these steps:
 1. Copy the code above and paste it into a new file named `run-proposal.yml` in the `.github/workflows` folder.
 2. Change the `PROPOSALS_FOLDER` to the folder where the proposals are located.
 3. Add Forge Proposal Simulator path before the `run-proposal.sh` script: `lib/forge-proposal-simulator/run-proposal.sh`.
-4. Check the repository settings and make sure Read and Write Permissions enable
+4. Check the repository settings and make sure Read and Write Permissions
    are enabled on the Worflow Permissions section.
 
 Whenever a Pull Request that involves a Proposal is created, the action will automatically execute and display the output of the proposal in a comment on the PR. This enables the developer to locally run the proposal and validate whether the output corresponds with the one shown on the PR.
