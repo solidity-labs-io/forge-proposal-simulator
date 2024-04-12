@@ -155,5 +155,5 @@ jobs:
                       github.rest.issues.createComment({
                         ...context.repo,
                         issue_number: prNumber,
-                        body: `### Proposal Output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
+                        body: `### Proposal output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
                       });
