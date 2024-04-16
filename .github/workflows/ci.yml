@@ -165,12 +165,14 @@ jobs:
                       }
 
             - name: Decode and Comment PR with Proposal Output
+              id: decode
               if: env.result
               run: |
                   echo "${{ env.result }}" | base64 -d > decoded_output.json
               shell: bash
 
             - name: Use Decoded Output
+              if: env.result && steps.decode.outputs.file_exists == 'true'
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
