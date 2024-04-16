@@ -16,12 +16,12 @@ contract MULTISIG_01 is MultisigProposal {
         primaryForkId = vm.createFork(urlOrAlias);
     }
 
-    // Returns the name of the proposal.
+    /// @notice Returns the name of the proposal.
     function name() public pure override returns (string memory) {
         return "MULTISIG_01";
     }
 
-    // Provides a brief description of the proposal.
+    /// @notice Provides a brief description of the proposal.
     function description() public pure override returns (string memory) {
         return "Deploy Vault contract";
     }
