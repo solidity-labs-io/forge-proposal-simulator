@@ -172,7 +172,7 @@ jobs:
               shell: bash
 
             - name: Use Decoded Output
-              if: env.result && steps.decode.outputs.file_exists == 'true'
+              if: env.result
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
