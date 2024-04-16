@@ -67,7 +67,7 @@
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af",
+        "addr": "0xF65AA9D60d7372407c689CEd07Cdc557b78f1F09",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_TIMELOCK"
