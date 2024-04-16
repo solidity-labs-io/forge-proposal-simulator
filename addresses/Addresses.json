@@ -37,13 +37,13 @@
         "isContract": true
     },
     {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "addr": "0xc4532c07b1fe50a2e48a9ce114741a558cc0bb03",
         "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     },
     {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "addr": "0xc4532c07b1fe50a2e48a9ce114741a558cc0bb03",
         "name": "DEV",
         "chainId": 31337,
         "isContract": false
