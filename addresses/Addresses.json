@@ -37,13 +37,13 @@
         "isContract": true
     },
     {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "addr": "0xc4532c07b1fe50a2e48a9ce114741a558cc0bb03",
         "name": "DEV",
         "chainId": 11155111,
         "isContract": false
     },
     {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "addr": "0xc4532c07b1fe50a2e48a9ce114741a558cc0bb03",
         "name": "DEV",
         "chainId": 31337,
         "isContract": false
@@ -67,7 +67,7 @@
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af",
+        "addr": "0xF65AA9D60d7372407c689CEd07Cdc557b78f1F09",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_TIMELOCK"

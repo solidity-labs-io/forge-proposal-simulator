@@ -141,13 +141,38 @@ jobs:
                   output=$(./run-proposal.sh)
                   echo "result=${output}" >> $GITHUB_ENV
 
+            - name: List and Delete Previous Comments
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const issue_number = context.payload.pull_request.number;
+                      const comments = await github.rest.issues.listComments({
+                        ...context.repo,
+                        issue_number: issue_number
+                      });
+
+                      const actionComments = comments.data.filter(comment => comment.user.login === 'github-actions[bot]');
+
+                      if (actionComments.length === 0) {
+                        return;
+                      }
+                      for (const comment of actionComments) {
+                        await github.rest.issues.deleteComment({
+                          ...context.repo,
+                          comment_id: comment.id,
+                        });
+                      }
+
             - name: Decode and Comment PR with Proposal Output
+              id: decode
               if: env.result
               run: |
                   echo "${{ env.result }}" | base64 -d > decoded_output.json
               shell: bash
 
             - name: Use Decoded Output
+              if: env.result
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
