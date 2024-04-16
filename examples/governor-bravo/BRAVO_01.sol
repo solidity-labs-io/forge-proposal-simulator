@@ -8,6 +8,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 /// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
 /// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
 /// Finally the proposal whitelist the ERC20 token in the Vault contract
+
 contract BRAVO_01 is GovernorBravoProposal {
     /// @notice Returns the name of the proposal.
     string public override name = "BRAVO_01";
