@@ -154,12 +154,16 @@ jobs:
 
                       const actionComments = comments.data.filter(comment => comment.user.login === 'github-actions[bot]');
 
+                      if (actionComments.length === 0) {
+                        return;
+                      }
                       for (const comment of actionComments) {
                         await github.rest.issues.deleteComment({
                           ...context.repo,
                           comment_id: comment.id,
                         });
                       }
+
             - name: Decode and Comment PR with Proposal Output
               if: env.result
               run: |
