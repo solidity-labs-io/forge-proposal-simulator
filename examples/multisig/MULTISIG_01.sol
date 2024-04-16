@@ -50,6 +50,7 @@ contract MULTISIG_01 is MultisigProposal {
 
         timelockVault.transferOwnership(devMultisig);
         token.transferOwnership(devMultisig);
+
         // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(
             devMultisig,
