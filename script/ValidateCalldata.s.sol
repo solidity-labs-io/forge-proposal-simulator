@@ -27,6 +27,7 @@ contract ValidateCalldata is Script {
         string memory proposalPath = vm.prompt("Proposal path");
 
         Proposal proposal = Proposal(deployCode(proposalPath));
+        vm.makePersistent(address(proposal));
 
         proposal.run();
     }
