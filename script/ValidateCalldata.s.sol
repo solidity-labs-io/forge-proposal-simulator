@@ -8,16 +8,14 @@ import {MockGovernorAlpha} from "@mocks/MockGovernorAlpha.sol";
 import {GovernorBravoDelegate} from "@mocks/bravo/GovernorBravoDelegate.sol";
 import {GovernorBravoDelegateStorageV1} from "@comp-governance/GovernorBravoInterfaces.sol";
 
+import {Proposal} from "@proposals/Proposal.sol";
+
 contract ValidateCalldata is Script {
     function run() public virtual {
         Addresses addresses = new Addresses("./addresses/Addresses.json");
 
-        string memory governance = vm.prompt(
-            "Governance address name saved into JSON"
-        );
-
         GovernorBravoDelegate governor = GovernorBravoDelegate(
-            addresses.getAddress(governance)
+            addresses.getAddress("PROTOCOL_GOVERNOR")
         );
 
         uint256 proposalId = vm.parseUint(vm.prompt("Proposal ID"));
@@ -25,5 +23,11 @@ contract ValidateCalldata is Script {
         (uint256 id, , , , , , , , , ) = governor.proposals(proposalId);
 
         console.log("Proposal ID: ", id);
+
+        string memory proposalPath = vm.prompt("Proposal path");
+
+        Proposal proposal = Proposal(deployCode(proposalPath));
+
+        proposal.run();
     }
 }
