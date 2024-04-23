@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "@forge-std/Script.sol";
+import "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
@@ -10,7 +11,7 @@ import {GovernorBravoDelegateStorageV1} from "@comp-governance/GovernorBravoInte
 
 import {Proposal} from "@proposals/Proposal.sol";
 
-contract ValidateCalldata is Script {
+contract ValidateCalldata is Script, Test {
     function run() public virtual {
         Addresses addresses = new Addresses("./addresses/Addresses.json");
 
@@ -18,11 +19,9 @@ contract ValidateCalldata is Script {
             addresses.getAddress("PROTOCOL_GOVERNOR")
         );
 
-        uint256 proposalId = vm.parseUint(vm.prompt("Proposal ID"));
+        uint256 proposalId = vm.parseUint(vm.prompt("Proposal id"));
 
         (uint256 id, , , , , , , , , ) = governor.proposals(proposalId);
-
-        console.log("Proposal ID: ", id);
 
         string memory proposalPath = vm.prompt("Proposal path");
 
@@ -30,5 +29,27 @@ contract ValidateCalldata is Script {
         vm.makePersistent(address(proposal));
 
         proposal.run();
+
+        console.logBytes(proposal.getCalldata());
+
+        (
+            address[] memory targets,
+            uint[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        ) = governor.getActions(id);
+
+        bytes memory data = abi.encodeWithSignature(
+            "propose(address[],uint256[],string[],bytes[],string)",
+            targets,
+            values,
+            signatures,
+            calldatas,
+            proposal.description()
+        );
+
+        console.logBytes(data);
+
+        assertEq(proposal.getCalldata(), data);
     }
 }

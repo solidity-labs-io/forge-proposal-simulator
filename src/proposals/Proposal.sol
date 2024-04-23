@@ -37,7 +37,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    ///@notice primary fork id
+    /// @notice primary fork id
     uint256 public primaryForkId;
 
     constructor(string memory addressesPath, string memory _caller) {
