@@ -28,9 +28,9 @@ contract ValidateCalldata is Script, Test {
         Proposal proposal = Proposal(deployCode(proposalPath));
         vm.makePersistent(address(proposal));
 
-        proposal.run();
+        proposal.run(false, false, true, false, false, false, false);
 
-        console.logBytes(proposal.getCalldata());
+        proposal.getCalldata();
 
         (
             address[] memory targets,
@@ -48,7 +48,13 @@ contract ValidateCalldata is Script, Test {
             proposal.description()
         );
 
-        console.logBytes(data);
+        //console.logBytes(data);
+        for (uint256 i = 0; i < calldatas.length; i++) {
+            console.log("targets on chain: ", targets[i]);
+            console.log("values on chain: ", values[i]);
+            console.log("signatures on chain: ", signatures[i]);
+            console.logBytes(calldatas[i]);
+        }
 
         assertEq(proposal.getCalldata(), data);
     }

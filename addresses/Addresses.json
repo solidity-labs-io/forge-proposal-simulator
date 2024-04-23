@@ -89,5 +89,17 @@
         "chainId": 11155111,
         "name": "ExampleTypeCheck_02",
         "isContract": true
+    },
+    {
+        "addr": "0x1eE74E38235cE36C2196bB6067eEcc956ba0022E",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "VAULT"
+    },
+    {
+        "addr": "0xEe1b0eCC10dd0b1793E905501baE4233d857FDc5",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "TOKEN_1"
     }
 ]

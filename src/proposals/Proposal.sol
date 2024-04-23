@@ -77,6 +77,36 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
+    function run(
+        bool doDeploy,
+        bool doAfterDeploy,
+        bool doBuild,
+        bool doRun,
+        bool doTeardown,
+        bool doValidate,
+        bool doPrint
+    ) external {
+        vm.selectFork(primaryForkId);
+
+        address deployer = addresses.getAddress("DEV");
+
+        vm.startBroadcast(deployer);
+        if (doDeploy) _deploy();
+        if (doAfterDeploy) _afterDeploy();
+        vm.stopBroadcast();
+
+        _outerBuild();
+        if (doRun) _run();
+        if (doTeardown) _teardown();
+        if (doValidate) _validate();
+
+        if (doPrint) {
+            _printRecordedAddresses();
+            _printActions();
+            _printCalldata();
+        }
+    }
+
     function _outerBuild() private {
         _startBuild();
 
