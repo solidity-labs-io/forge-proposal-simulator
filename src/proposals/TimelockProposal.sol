@@ -9,7 +9,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
-    bytes32 predecessor = bytes32(0);
+    bytes32 public predecessor = bytes32(0);
 
     /// @notice get schedule calldata
     function getCalldata()

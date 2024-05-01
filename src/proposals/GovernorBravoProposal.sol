@@ -104,6 +104,7 @@ abstract contract GovernorBravoProposal is Proposal {
 
         bytes memory proposeCalldata = getCalldata();
 
+        console.log("proposer", proposerAddress);
         // Register the proposal
         vm.prank(proposerAddress);
         bytes memory data = address(payable(governorAddress)).functionCall(
