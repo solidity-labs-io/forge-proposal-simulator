@@ -19,43 +19,15 @@ contract ValidateCalldata is Script, Test {
             addresses.getAddress("PROTOCOL_GOVERNOR")
         );
 
-        uint256 proposalId = vm.parseUint(vm.prompt("Proposal id"));
-
-        (uint256 id, , , , , , , , , ) = governor.proposals(proposalId);
-
         string memory proposalPath = vm.prompt("Proposal path");
 
         Proposal proposal = Proposal(deployCode(proposalPath));
         vm.makePersistent(address(proposal));
 
-        proposal.run(false, false, true, false, false, false, false);
+        proposal.build();
 
-        proposal.getCalldata();
+        bool matches = proposal.checkOnChainCalldata(address(governor));
 
-        (
-            address[] memory targets,
-            uint[] memory values,
-            string[] memory signatures,
-            bytes[] memory calldatas
-        ) = governor.getActions(id);
-
-        bytes memory data = abi.encodeWithSignature(
-            "propose(address[],uint256[],string[],bytes[],string)",
-            targets,
-            values,
-            signatures,
-            calldatas,
-            proposal.description()
-        );
-
-        //console.logBytes(data);
-        for (uint256 i = 0; i < calldatas.length; i++) {
-            console.log("targets on chain: ", targets[i]);
-            console.log("values on chain: ", values[i]);
-            console.log("signatures on chain: ", signatures[i]);
-            console.logBytes(calldatas[i]);
-        }
-
-        assertEq(proposal.getCalldata(), data);
+        require(matches, "Calldata does not match on-chain proposal");
     }
 }

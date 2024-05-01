@@ -40,6 +40,12 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice primary fork id
     uint256 public primaryForkId;
 
+    modifier buildModifier() {
+        _startBuild();
+        _;
+        _endBuild();
+    }
+
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
@@ -115,8 +121,12 @@ abstract contract Proposal is Test, Script, IProposal {
         _endBuild();
     }
 
-    /// @notice Print proposal calldata
+    /// @notice Return proposal calldata
     function getCalldata() public virtual returns (bytes memory data);
+
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(address) public virtual returns (bool) {}
 
     /// @notice get proposal actions
     /// @dev do not override
@@ -153,6 +163,8 @@ abstract contract Proposal is Test, Script, IProposal {
             values[i] = actions[i].value;
         }
     }
+
+    function build() public virtual {}
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------

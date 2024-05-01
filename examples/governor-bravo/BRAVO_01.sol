@@ -63,6 +63,16 @@ contract BRAVO_01 is GovernorBravoProposal {
         Vault(timelockVault).whitelistToken(token, true);
     }
 
+    /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
+    function build() public override buildModifier {
+        /// STATICCALL -- not recorded for the run stage
+        address timelockVault = addresses.getAddress("VAULT");
+        address token = addresses.getAddress("TOKEN_1");
+
+        /// CALL -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
+    }
+
     /// @notice Executes the proposal actions.
     function _run() internal override {
         /// Call parent _run function to check if there are actions to execute
