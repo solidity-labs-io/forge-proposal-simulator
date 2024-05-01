@@ -38,6 +38,8 @@ abstract contract GovernorBravoProposal is Proposal {
         );
     }
 
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
     function checkOnChainCalldata(
         address governorAddress
     ) public view override returns (bool calldataExist) {
