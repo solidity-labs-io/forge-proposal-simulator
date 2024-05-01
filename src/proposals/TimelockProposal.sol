@@ -69,7 +69,7 @@ abstract contract TimelockProposal is Proposal {
     /// proposal calldata
     function checkOnChainCalldata(
         address timelockAddress
-    ) public override returns (bool) {
+    ) public view override returns (bool calldataExist) {
         TimelockController timelockController = TimelockController(
             payable(timelockAddress)
         );

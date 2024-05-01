@@ -40,7 +40,7 @@ abstract contract GovernorBravoProposal is Proposal {
 
     function checkOnChainCalldata(
         address governorAddress
-    ) public override returns (bool) {
+    ) public view override returns (bool calldataExist) {
         GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
 
         uint256 proposalCount = governor.proposalCount();

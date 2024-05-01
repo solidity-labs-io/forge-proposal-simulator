@@ -30,7 +30,7 @@ interface IProposal {
 
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata(address addr) external returns (bool);
+    function checkOnChainCalldata(address addr) external view returns (bool);
 
     /// @notice Return Addresses object
     function addresses() external view returns (Addresses);
