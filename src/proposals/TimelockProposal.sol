@@ -9,6 +9,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
+    bytes32 predecessor = bytes32(0);
 
     /// @notice get schedule calldata
     function getCalldata()
@@ -18,7 +19,6 @@ abstract contract TimelockProposal is Proposal {
         returns (bytes memory scheduleCalldata)
     {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         (
             address[] memory targets,
@@ -48,7 +48,6 @@ abstract contract TimelockProposal is Proposal {
         returns (bytes memory executeCalldata)
     {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         (
             address[] memory targets,
@@ -66,6 +65,34 @@ abstract contract TimelockProposal is Proposal {
         );
     }
 
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(
+        address timelockAddress
+    ) public override returns (bool) {
+        TimelockController timelockController = TimelockController(
+            payable(timelockAddress)
+        );
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
+
+        bytes32 salt = keccak256(abi.encode(actions[0].description));
+
+        bytes32 hash = timelockController.hashOperationBatch(
+            targets,
+            values,
+            payloads,
+            predecessor,
+            salt
+        );
+
+        return timelockController.isOperation(hash);
+    }
+
     /// @notice simulate timelock proposal
     /// @param proposerAddress account to propose the proposal to the timelock
     /// @param executorAddress account to execute the proposal on the timelock
@@ -74,7 +101,6 @@ abstract contract TimelockProposal is Proposal {
         address executorAddress
     ) internal {
         bytes32 salt = keccak256(abi.encode(actions[0].description));
-        bytes32 predecessor = bytes32(0);
 
         if (DEBUG) {
             console.log("salt:");

@@ -26,15 +26,11 @@ contract BRAVO_01 is GovernorBravoProposal {
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
     function _deploy() internal override {
-        if (!addresses.isAddressSet("VAULT")) {
-            Vault timelockVault = new Vault();
-            addresses.addAddress("VAULT", address(timelockVault), true);
-        }
+        Vault timelockVault = new Vault();
+        addresses.addOrChangeAddress("VAULT", address(timelockVault), true);
 
-        if (!addresses.isAddressSet("TOKEN_1")) {
-            MockToken token = new MockToken();
-            addresses.addAddress("TOKEN_1", address(token), true);
-        }
+        MockToken token = new MockToken();
+        addresses.addOrChangeAddress("TOKEN_1", address(token), true);
     }
 
     /// @notice steps:
@@ -51,6 +47,16 @@ contract BRAVO_01 is GovernorBravoProposal {
 
         // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
+    }
+
+    /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
+    function _build() internal override {
+        /// STATICCALL -- not recorded for the run stage
+        address timelockVault = addresses.getAddress("VAULT");
+        address token = addresses.getAddress("TOKEN_1");
+
+        /// CALL -- mutative and recorded
+        Vault(timelockVault).whitelistToken(token, true);
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.

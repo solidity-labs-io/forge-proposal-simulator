@@ -9,6 +9,7 @@ import {GovernorBravoPostProposalCheck} from "@test/GovernorBravoPostProposalChe
 contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
     function setUp() public override {
         proposal = new BRAVO_01();
+        vm.makePersistent(address(proposal));
         super.setUp();
     }
 
@@ -53,5 +54,14 @@ contract Bravo01IntegrationTest is GovernorBravoPostProposalCheck {
             address(this)
         );
         assertTrue(amount == 100, "Token should be deposited");
+    }
+
+    function test_matchCalldata() public {
+        assertTrue(
+            proposal.checkOnChainCalldata(
+                addresses.getAddress("PROTOCOL_GOVERNOR")
+            ),
+            "Calldata does not match on-chain proposal"
+        );
     }
 }

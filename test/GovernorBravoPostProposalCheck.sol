@@ -22,75 +22,9 @@ contract GovernorBravoPostProposalCheck is Test {
             address(proposal) != address(0),
             "Test must override setUp and set the proposal contract"
         );
+
         addresses = proposal.addresses();
-
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
-        uint256 governorSize;
-        assembly {
-            // retrieve the size of the code, this needs assembly
-            governorSize := extcodesize(governor)
-        }
-        if (governorSize == 0) {
-            address govToken = addresses.getAddress(
-                "PROTOCOL_GOVERNANCE_TOKEN"
-            );
-            uint256 govTokenSize;
-            assembly {
-                // retrieve the size of the code, this needs assembly
-                govTokenSize := extcodesize(govToken)
-            }
-            if (govTokenSize == 0) {
-                // Deploy the governance token
-                MockERC20Votes govTokenContract = new MockERC20Votes(
-                    "Governance Token",
-                    "GOV"
-                );
-                govToken = address(govTokenContract);
-
-                // Update PROTOCOL_GOVERNANCE_TOKEN address
-                addresses.changeAddress(
-                    "PROTOCOL_GOVERNANCE_TOKEN",
-                    govToken,
-                    true
-                );
-            }
-
-            // Deploy and configure the timelock
-            Timelock timelock = new Timelock(address(this), 2 days);
-
-            // Deploy the GovernorBravoDelegate implementation
-            GovernorBravoDelegate implementation = new GovernorBravoDelegate();
-
-            // Deploy and configure the GovernorBravoDelegator
-            governor = address(
-                new GovernorBravoDelegator(
-                    address(timelock), // timelock
-                    govToken, // governance token
-                    address(this), // admin
-                    address(implementation), // implementation
-                    10_000, // voting period
-                    10_000, // voting delay
-                    1e21 // proposal threshold
-                )
-            );
-
-            // Deploy mock GovernorAlpha
-            address govAlpha = address(new MockGovernorAlpha());
-            // Set GovernorBravo as timelock's pending admin
-            vm.prank(address(timelock));
-            timelock.setPendingAdmin(governor);
-            // Initialize GovernorBravo
-            GovernorBravoDelegate(governor)._initiate(govAlpha);
-
-            // Update PROTOCOL_GOVERNOR address
-            addresses.changeAddress("PROTOCOL_GOVERNOR", governor, true);
-            // Update PROTOCOL_TIMELOCK address
-            addresses.changeAddress(
-                "PROTOCOL_TIMELOCK",
-                address(timelock),
-                true
-            );
-        }
+        vm.makePersistent(address(addresses));
 
         proposal.run();
     }
