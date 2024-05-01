@@ -69,7 +69,7 @@ jobs:
               run: "forge build --sizes"
 
             - name: "Run the tests"
-              run: "forge test --fork-url sepolia --nmc '(TypeCheck|TestAddresses)'"
+              run: "forge test --fork-url sepolia --nmc '(TypeCheck|TestAddresses)' -vvvvv"
 
             - name: "Add test summary"
               run: |
