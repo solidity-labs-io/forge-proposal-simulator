@@ -28,15 +28,11 @@ contract MULTISIG_01 is MultisigProposal {
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
     function _deploy() internal override {
-        if (!addresses.isAddressSet("VAULT")) {
-            Vault timelockVault = new Vault();
-            addresses.addAddress("VAULT", address(timelockVault), true);
-        }
+        Vault timelockVault = new Vault();
+        addresses.addOrChangeAddress("VAULT", address(timelockVault), true);
 
-        if (!addresses.isAddressSet("TOKEN_1")) {
-            MockToken token = new MockToken();
-            addresses.addAddress("TOKEN_1", address(token), true);
-        }
+        MockToken token = new MockToken();
+        addresses.addOrChangeAddress("TOKEN_1", address(token), true);
     }
 
     /// @notice proposal action steps:

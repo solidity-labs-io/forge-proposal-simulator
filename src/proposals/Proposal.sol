@@ -138,7 +138,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice Create actions for the proposal
     /// @dev implementations should use buildModifier modifier
-    /// @TODO remove implementation once move from internal to public functions
+    /// TODO remove implementation once move from internal to public functions
     function build() public virtual {}
 
     /// --------------------------------------------------------------------

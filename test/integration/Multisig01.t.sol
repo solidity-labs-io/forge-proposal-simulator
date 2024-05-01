@@ -11,6 +11,8 @@ import {MULTISIG_01} from "@examples/multisig/MULTISIG_01.sol";
 contract MultisigProposalTest is MultisigPostProposalCheck {
     function setUp() public override {
         proposal = new MULTISIG_01();
+        vm.makePersistent(address(proposal));
+
         super.setUp();
     }
 

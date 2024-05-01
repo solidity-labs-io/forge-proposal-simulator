@@ -24,7 +24,6 @@ contract GovernorBravoPostProposalCheck is Test {
         );
 
         addresses = proposal.addresses();
-        vm.makePersistent(address(addresses));
 
         proposal.run();
     }

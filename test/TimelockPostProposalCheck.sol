@@ -19,7 +19,6 @@ contract TimelockPostProposalCheck is Test {
             "Test must override setUp and set the proposal contract"
         );
         addresses = proposal.addresses();
-        vm.makePersistent(address(addresses));
 
         proposal.run();
     }
