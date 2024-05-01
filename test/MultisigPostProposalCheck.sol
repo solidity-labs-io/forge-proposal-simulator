@@ -2,7 +2,6 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/Test.sol";
 
-import {Constants} from "@utils/Constants.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 
