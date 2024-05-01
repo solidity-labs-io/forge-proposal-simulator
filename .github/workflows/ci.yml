@@ -42,6 +42,7 @@ jobs:
                     echo "## Lint result" >> $GITHUB_STEP_SUMMARY
                     echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
                   fi
+
     proposal-simulator-test:
         runs-on: "ubuntu-latest"
         steps:
@@ -69,6 +70,39 @@ jobs:
 
             - name: "Run the tests"
               run: "forge test --fork-url sepolia --nmc '(TypeCheck|TestAddresses)'"
+
+            - name: "Add test summary"
+              run: |
+                  echo "## Proposal simulator tests result" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+    addresses-test:
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: "actions/checkout@v3"
+              with:
+                  submodules: "recursive"
+
+            - name: "Install Foundry"
+              uses: "foundry-rs/foundry-toolchain@v1"
+
+            - name: "Show the Foundry config"
+              run: "forge config"
+
+            - name:
+                  "Generate a fuzz seed that changes weekly to avoid burning through RPC
+                  allowance"
+              run: >
+                  echo "FOUNDRY_FUZZ_SEED=$(
+                    echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
+                  )" >> $GITHUB_ENV
+
+            - name: "Build the contracts and print their size"
+              run: "forge build --sizes"
+
+            - name: "Run the tests"
+              run: "forge test --mc TestAddresses"
 
             - name: "Add test summary"
               run: |
