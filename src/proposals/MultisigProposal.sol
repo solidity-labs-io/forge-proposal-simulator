@@ -39,6 +39,12 @@ abstract contract MultisigProposal is Proposal {
         data = abi.encodeWithSignature("aggregate((address,bytes)[])", calls);
     }
 
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(address) public pure override returns (bool) {
+        revert("Not implemented");
+    }
+
     function _simulateActions(address multisig) internal {
         require(
             multisig.getContractHash() == MULTISIG_BYTECODE_HASH,
