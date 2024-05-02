@@ -80,7 +80,7 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Validates the post-execution state.
-    function validate() public override {
+    function validate() public view override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

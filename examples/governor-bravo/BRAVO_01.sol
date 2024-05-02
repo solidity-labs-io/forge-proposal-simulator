@@ -76,7 +76,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Validates the post-execution state.
-    function validate() public override {
+    function validate() public view override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

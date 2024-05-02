@@ -27,9 +27,14 @@ abstract contract Proposal is Test, Script, IProposal {
     /// they all follow the same structure
     Action[] public actions;
 
-    /// @notice debug flag to print proposal actions, calldata, new addresses and changed addresses
-    /// @dev default is true
+    /// @notice debug flag to print internal proposal logs
     bool internal DEBUG = false;
+    bool internal DO_DEPLOY = true;
+    bool internal DO_AFTER_DEPLOY = true;
+    bool internal DO_BUILD = true;
+    bool internal DO_SIMULATE = true;
+    bool internal DO_VALIDATE = true;
+    bool internal DO_PRINT = true;
 
     /// @notice Addresses contract
     Addresses public addresses;
@@ -47,12 +52,18 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @param addressesPath the path to the Addresses JSON file.
-    /// @param _caller the contract/EOA name recorded in Addresses JSON that will execute the proposal on-chain .
+    /// @param _caller the contract/EOA name recorded in Addresses JSON that will execute the proposal on-chain.
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
         caller = _caller;
         DEBUG = vm.envOr("DEBUG", false);
+        DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
+        DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
+        DO_BUILD = vm.envOr("DO_BUILD", true);
+        DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
+        DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
+        DO_PRINT = vm.envOr("DO_PRINT", true);
     }
 
     /// @notice proposal name, e.g. "BIP15".
@@ -74,15 +85,15 @@ abstract contract Proposal is Test, Script, IProposal {
         address deployer = addresses.getAddress("DEV");
 
         vm.startBroadcast(deployer);
-        deploy();
-        afterDeploy();
+        if (DO_DEPLOY) deploy();
+        if (DO_AFTER_DEPLOY) afterDeploy();
         vm.stopBroadcast();
 
-        build();
-        simulate();
-        validate();
+        if (DO_BUILD) build();
+        if (DO_SIMULATE) simulate();
+        if (DO_VALIDATE) validate();
 
-        if (DEBUG) {
+        if (DO_PRINT) {
             printRecordedAddresses();
             printActions();
             printCalldata();
