@@ -61,7 +61,10 @@ contract TIMELOCK_01 is TimelockProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
         // Make sure that DEV is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+        );
     }
 
     /// @notice Set up actions for the proposal, in this case, setting the MockToken to active.
@@ -79,7 +82,7 @@ contract TIMELOCK_01 is TimelockProposal {
         /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address dev = addresses.getAddress("DEV");
+        address dev = addresses.getAddress("DEPLOYER_EOA");
 
         /// Dev is the proposer and executor
         _simulateActions(dev, dev);
@@ -155,7 +158,7 @@ Before running the script, you must add the `DEV` address to the `Addresses.json
 [
     {
         "addr": "YOUR_DEV_ADDRESS",
-        "name": "DEV",
+        "name": "DEPLOYER_EOA",
         "chainId": 31337,
         "isContract": false
     }
@@ -186,7 +189,7 @@ Add the Timelock Controller address and deployer address to it. The file should 
     },
     {
         "addr": "YOUR_DEV_ADDRESS",
-        "name": "DEV",
+        "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
     }

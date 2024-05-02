@@ -44,7 +44,7 @@ contract BRAVO_03 is GovernorBravoProposal {
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("DEV");
+        address proposer = addresses.getAddress("DEPLOYER_EOA");
 
         /// Simulate time passing, vault time lock is 1 week
         vm.warp(block.timestamp + 1 weeks + 1);

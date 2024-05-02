@@ -64,7 +64,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function run() external {
         vm.selectFork(primaryForkId);
 
-        address deployer = addresses.getAddress("DEV");
+        address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         vm.startBroadcast(deployer);
         _deploy();

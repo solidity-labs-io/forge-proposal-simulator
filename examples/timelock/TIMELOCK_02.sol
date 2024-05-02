@@ -42,7 +42,7 @@ contract TIMELOCK_02 is TimelockProposal {
         /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address dev = addresses.getAddress("DEV");
+        address dev = addresses.getAddress("DEPLOYER_EOA");
 
         /// Dev is proposer and executor
         _simulateActions(dev, dev);

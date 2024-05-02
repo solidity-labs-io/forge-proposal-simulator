@@ -46,7 +46,10 @@ contract TIMELOCK_01 is TimelockProposal {
         timelockVault.transferOwnership(timelock);
         token.transferOwnership(timelock);
         /// Make sure that DEV is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+        );
     }
 
     /// @notice Set up actions for the proposal, in this case, setting the MockToken to active.
@@ -64,7 +67,7 @@ contract TIMELOCK_01 is TimelockProposal {
         /// Call parent _run function to check if there are actions to execute
         super._run();
 
-        address dev = addresses.getAddress("DEV");
+        address dev = addresses.getAddress("DEPLOYER_EOA");
 
         /// Dev is proposer and executor
         _simulateActions(dev, dev);

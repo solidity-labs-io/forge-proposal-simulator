@@ -64,7 +64,10 @@ contract BRAVO_01 is GovernorBravoProposal {
         token.transferOwnership(timelock);
 
         // Make sure that DEV is the address you specify in the --sender flag
-        token.transfer(timelock, token.balanceOf(addresses.getAddress("DEV")));
+        token.transfer(
+            timelock,
+            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+        );
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
@@ -84,7 +87,7 @@ contract BRAVO_01 is GovernorBravoProposal {
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("DEV");
+        address proposer = addresses.getAddress("DEPLOYER_EOA");
 
         _simulateActions(governor, govToken, proposer);
     }
@@ -238,7 +241,7 @@ to Address.json. The final Address.json file should be something like this:
     },
     {
         "addr": "YOUR_DEV_ADDRESS",
-        "name": "DEV",
+        "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
     }

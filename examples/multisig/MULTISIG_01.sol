@@ -50,7 +50,7 @@ contract MULTISIG_01 is MultisigProposal {
         // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(
             devMultisig,
-            token.balanceOf(addresses.getAddress("DEV"))
+            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
         );
     }
 
