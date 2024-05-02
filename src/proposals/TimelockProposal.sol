@@ -141,7 +141,18 @@ abstract contract TimelockProposal is Proposal {
     }
 
     /// @notice print schedule and execute calldata
-    function printCalldata() public view override {
+    function print() public view override {
+        console.log("\n---------------- Proposal Description ----------------");
+        console.log(description());
+
+        console.log("\n------------------ Proposal Actions ------------------");
+        for (uint256 i; i < actions.length; i++) {
+            console.log("%d). %s", i + 1, actions[i].description);
+            console.log("target: %s\npayload", actions[i].target);
+            console.logBytes(actions[i].arguments);
+            console.log("\n");
+        }
+
         console.log(
             "\n\n------------------ Schedule Calldata ------------------"
         );

@@ -58,12 +58,6 @@ interface IProposal {
     ///          states that are expected to have changed during the simulate step.
     function validate() external;
 
-    /// @notice print proposal calldata
-    function printCalldata() external;
-
-    /// @notice print proposal actions
-    function printActions() external;
-
-    /// @notice print recorded and changed addresses
-    function printRecordedAddresses() external;
+    /// @notice print proposal description, actions and calldata
+    function print() external;
 }

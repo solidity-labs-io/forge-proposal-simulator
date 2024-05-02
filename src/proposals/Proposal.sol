@@ -94,9 +94,8 @@ abstract contract Proposal is Test, Script, IProposal {
         if (DO_VALIDATE) validate();
 
         if (DO_PRINT) {
-            printRecordedAddresses();
-            printActions();
-            printCalldata();
+            addresses.printJSONChanges();
+            print();
         }
     }
 
@@ -189,18 +188,11 @@ abstract contract Proposal is Test, Script, IProposal {
     ///          states that are expected to have changed during the simulate step.
     function validate() public virtual {}
 
-    /// @notice print proposal calldata
-    function printCalldata() public virtual {
-        console.log(
-            "\n\n------------------ Proposal Calldata ------------------"
-        );
-        console.logBytes(getCalldata());
-    }
-
-    /// @notice print proposal actions
-    function printActions() public view {
+    /// @notice print proposal description, actions and calldata
+    function print() public virtual {
         console.log("\n---------------- Proposal Description ----------------");
         console.log(description());
+
         console.log("\n------------------ Proposal Actions ------------------");
         for (uint256 i; i < actions.length; i++) {
             console.log("%d). %s", i + 1, actions[i].description);
@@ -208,58 +200,11 @@ abstract contract Proposal is Test, Script, IProposal {
             console.logBytes(actions[i].arguments);
             console.log("\n");
         }
-    }
 
-    /// @notice print recorded and changed addresses
-    function printRecordedAddresses() public view {
-        (
-            string[] memory recordedNames,
-            ,
-            address[] memory recordedAddresses
-        ) = addresses.getRecordedAddresses();
-
-        if (recordedNames.length > 0) {
-            console.log(
-                "\n-------- Addresses added after running proposal --------"
-            );
-            for (uint256 j = 0; j < recordedNames.length; j++) {
-                console.log(
-                    "{\n          'addr': '%s', ",
-                    recordedAddresses[j]
-                );
-                console.log("        'chainId': %d,", block.chainid);
-                console.log("        'isContract': %s", true, ",");
-                console.log(
-                    "        'name': '%s'\n}%s",
-                    recordedNames[j],
-                    j < recordedNames.length - 1 ? "," : ""
-                );
-            }
-        }
-
-        (
-            string[] memory changedNames,
-            ,
-            ,
-            address[] memory changedAddresses
-        ) = addresses.getChangedAddresses();
-
-        if (changedNames.length > 0) {
-            console.log(
-                "\n------- Addresses changed after running proposal --------"
-            );
-
-            for (uint256 j = 0; j < changedNames.length; j++) {
-                console.log("{\n          'addr': '%s', ", changedAddresses[j]);
-                console.log("        'chainId': %d,", block.chainid);
-                console.log("        'isContract': %s", true, ",");
-                console.log(
-                    "        'name': '%s'\n}%s",
-                    changedNames[j],
-                    j < changedNames.length - 1 ? "," : ""
-                );
-            }
-        }
+        console.log(
+            "\n\n------------------ Proposal Calldata ------------------"
+        );
+        console.logBytes(getCalldata());
     }
 
     /// --------------------------------------------------------------------

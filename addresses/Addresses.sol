@@ -282,8 +282,8 @@ contract Addresses is IAddresses, Test {
         return _addresses[name][chainId].addr != address(0);
     }
 
-    /// @dev Print recorded addresses
-    function printRecordedAddresses() external view {
+    /// @dev Print new recorded and changed addresses
+    function printJSONChanges() external view {
         {
             (
                 string[] memory names,

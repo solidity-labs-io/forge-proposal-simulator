@@ -36,6 +36,6 @@ contract DeployTimelock is Script {
             true
         );
 
-        addresses.printRecordedAddresses();
+        addresses.printJSONChanges();
     }
 }

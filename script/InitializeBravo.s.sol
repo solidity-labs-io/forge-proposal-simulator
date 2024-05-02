@@ -41,6 +41,6 @@ contract DeployGovernorBravo is Script {
 
         addresses.changeAddress("PROTOCOL_GOVERNOR_ALPHA", govAlpha, true);
 
-        addresses.printRecordedAddresses();
+        addresses.printJSONChanges();
     }
 }
