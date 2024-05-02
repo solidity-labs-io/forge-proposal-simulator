@@ -75,6 +75,7 @@ abstract contract GovernorBravoProposal is Proposal {
                 return true;
             }
         }
+        return false;
     }
 
     /// @notice Simulate governance proposal

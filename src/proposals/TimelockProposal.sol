@@ -90,7 +90,9 @@ abstract contract TimelockProposal is Proposal {
             salt
         );
 
-        return timelockController.isOperation(hash);
+        return
+            timelockController.isOperation(hash) ||
+            timelockController.isOperationPending(hash);
     }
 
     /// @notice simulate timelock proposal
