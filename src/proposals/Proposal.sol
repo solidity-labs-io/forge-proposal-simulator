@@ -143,52 +143,6 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
-    /// ------------------------ Legacy FPS Support ------------------------
-    /// --------------------------------------------------------------------
-    /// --------------------------------------------------------------------
-
-    /// @dev push an action to the proposal
-    function _pushAction(
-        uint256 value,
-        address target,
-        bytes memory data,
-        string memory _description
-    ) internal {
-        actions.push(
-            Action({
-                value: value,
-                target: target,
-                arguments: data,
-                description: _description
-            })
-        );
-    }
-
-    /// @dev push an action to the proposal with a value of 0
-    function _pushAction(
-        address target,
-        bytes memory data,
-        string memory _description
-    ) internal {
-        _pushAction(0, target, data, _description);
-    }
-
-    /// @dev push an action to the proposal with empty description
-    function _pushAction(
-        uint256 value,
-        address target,
-        bytes memory data
-    ) internal {
-        _pushAction(value, target, data, "");
-    }
-
-    /// @dev push an action to the proposal with a value of 0 and empty description
-    function _pushAction(address target, bytes memory data) internal {
-        _pushAction(0, target, data, "");
-    }
-
-    /// --------------------------------------------------------------------
-    /// --------------------------------------------------------------------
     /// ------------------ Internal functions to override ------------------
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
@@ -356,21 +310,23 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
                 accountAccesses[i].accessor == addresses.getAddress(caller) /// caller is correct, not a subcall
             ) {
-                _pushAction(
-                    accountAccesses[i].value,
-                    accountAccesses[i].account,
-                    accountAccesses[i].data,
-                    string(
-                        abi.encodePacked(
-                            "calling ",
-                            accountAccesses[i].account.toHexString(),
-                            " with ",
-                            accountAccesses[i].value.toString(),
-                            " eth and ",
-                            _bytesToString(accountAccesses[i].data),
-                            " data."
+                actions.push(
+                    Action({
+                        value: accountAccesses[i].value,
+                        target: accountAccesses[i].account,
+                        arguments: accountAccesses[i].data,
+                        description: string(
+                            abi.encodePacked(
+                                "calling ",
+                                accountAccesses[i].account.toHexString(),
+                                " with ",
+                                accountAccesses[i].value.toString(),
+                                " eth and ",
+                                _bytesToString(accountAccesses[i].data),
+                                " data."
+                            )
                         )
-                    )
+                    })
                 );
             }
         }
