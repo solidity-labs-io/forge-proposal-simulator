@@ -40,6 +40,14 @@ abstract contract Proposal is Test, Script, IProposal {
     ///@notice primary fork id
     uint256 public primaryForkId;
 
+    modifier buildModifier() {
+        _startBuild();
+        _;
+        _endBuild();
+    }
+
+    /// @param addressesPath the path to the Addresses JSON file.
+    /// @param _caller the contract/EOA name recorded in Addresses JSON that will execute the proposal on-chain .
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
@@ -47,49 +55,45 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = vm.envOr("DEBUG", false);
     }
 
-    /// @notice override this to set the proposal name
+    /// @notice proposal name, e.g. "BIP15".
+    /// @dev override this to set the proposal name.
     function name() external view virtual returns (string memory);
 
-    /// @notice override this to set the proposal description
+    /// @notice proposal description.
+    /// @dev override this to set the proposal description.
     function description() public view virtual returns (string memory);
 
-    /// @notice main function
-    /// @dev do not override
+    /// @notice function to be used by forge script.
+    /// @dev use flags to determine which actions to take
+    ///      this function shoudn't be overriden.
     function run() external {
         vm.selectFork(primaryForkId);
 
+        /// DEV must be an unlocked account when running through forge script
+        /// use cast wallet to unlock the account
         address deployer = addresses.getAddress("DEV");
 
         vm.startBroadcast(deployer);
-        _deploy();
-        _afterDeploy();
+        deploy();
+        afterDeploy();
         vm.stopBroadcast();
 
-        _outerBuild();
-        _run();
-        _teardown();
-        _validate();
+        build();
+        simulate();
+        validate();
 
         if (DEBUG) {
-            _printRecordedAddresses();
-            _printActions();
-            _printCalldata();
+            printRecordedAddresses();
+            printActions();
+            printCalldata();
         }
     }
 
-    function _outerBuild() private {
-        _startBuild();
-
-        _build();
-
-        _endBuild();
-    }
-
-    /// @notice Print proposal calldata
+    /// @notice return proposal calldata.
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice get proposal actions
-    /// @dev do not override
+    /// @notice return proposal actions.
+    /// @dev this function shoudn't be overriden.
     function getProposalActions()
         public
         view
@@ -126,24 +130,29 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
-    /// ------------------ Internal functions to override ------------------
+    /// --------------------------- Public functions -----------------------
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
 
-    /// @dev Deploy contracts and add them to list of addresses
-    function _deploy() internal virtual {}
+    /// @notice deploy any contracts needed for the proposal.
+    /// @dev contracts calls here are broadcast if the broadcast flag is set.
+    function deploy() public virtual {}
 
-    /// @dev After deploying, call initializers and link contracts together
-    function _afterDeploy() internal virtual {}
+    /// @notice helper function to take any needed actions after deployment
+    ///         e.g. initialize contracts, transfer ownership, etc.
+    /// @dev contracts calls here are broadcast if the broadcast flag is set
+    function afterDeploy() public virtual {}
 
-    /// @dev After finishing deploy and deploy cleanup, build the proposal
-    function _build() internal virtual {}
+    /// @notice build the proposal actions
+    /// @dev contract calls must be perfomed in plain solidity.
+    ///      overriden requires using buildModifier modifier to leverage
+    ///      foundry snapshot and state diff recording to populate the actions array.
+    function build() public virtual {}
 
-    /// @dev Actually run the proposal (e.g. queue actions in the Timelock,
-    /// or execute a serie of Multisig calls...).
-    /// See proposals for helper contracts.
-    /// address param is the address of the proposal executor
-    function _run() internal virtual {
+    /// @notice actually simulates the proposal.
+    ///         e.g. schedule and execute on Timelock Controller,
+    ///         proposes, votes and execute on Governor Bravo, etc.
+    function simulate() public virtual {
         /// Check if there are actions to run
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
@@ -163,37 +172,22 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
-    /// @dev After a proposal executed, if you mocked some behavior in the
-    /// afterDeploy step, you might want to tear down the mocks here.
-    /// For instance, in afterDeploy() you could impersonate the multisig
-    /// of another protocol to do actions in their protocol (in anticipation
-    /// of changes that must happen before your proposal execution), and here
-    /// you could revert these changes, to make sure the integration tests
-    /// run on a state that is as close to mainnet as possible.
-    function _teardown() internal virtual {}
+    /// @notice execute post-proposal checks.
+    ///          e.g. read state variables of the deployed contracts to make
+    ///          sure they are deployed and initialized correctly, or read
+    ///          states that are expected to have changed during the simulate step.
+    function validate() public virtual {}
 
-    /// @dev For small post-proposal checks, e.g. read state variables of the
-    /// contracts you deployed, to make sure your deploy() and afterDeploy()
-    /// steps have deployed contracts in a correct configuration, or read
-    /// states that are expected to have change during your run() step.
-    function _validate() internal virtual {}
-
-    /// @dev Print proposal calldata
-    function _printCalldata() internal virtual {
+    /// @notice print proposal calldata
+    function printCalldata() public virtual {
         console.log(
             "\n\n------------------ Proposal Calldata ------------------"
         );
         console.logBytes(getCalldata());
     }
 
-    /// --------------------------------------------------------------------
-    /// --------------------------------------------------------------------
-    /// -------------------------- Private functions -------------------------
-    /// --------------------------------------------------------------------
-    /// --------------------------------------------------------------------
-
-    /// @dev Print proposal actions
-    function _printActions() private view {
+    /// @notice print proposal actions
+    function printActions() public view {
         console.log("\n---------------- Proposal Description ----------------");
         console.log(description());
         console.log("\n------------------ Proposal Actions ------------------");
@@ -205,8 +199,8 @@ abstract contract Proposal is Test, Script, IProposal {
         }
     }
 
-    /// @dev Print recorded addresses
-    function _printRecordedAddresses() private view {
+    /// @notice print recorded and changed addresses
+    function printRecordedAddresses() public view {
         (
             string[] memory recordedNames,
             ,
@@ -256,6 +250,12 @@ abstract contract Proposal is Test, Script, IProposal {
             }
         }
     }
+
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+    /// -------------------------- Private functions -------------------------
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
 
     /// @notice to be used by the build function to create a governance proposal
     /// kick off the process of creating a governance proposal by:

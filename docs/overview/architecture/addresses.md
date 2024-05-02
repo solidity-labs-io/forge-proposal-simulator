@@ -175,7 +175,7 @@ contract PROPOSAL_01 is MultisigProposal {
 
     constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
 
-    function _deploy() internal override {
+    function deploy() public override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract
             MyContract myContract = new MyContract();

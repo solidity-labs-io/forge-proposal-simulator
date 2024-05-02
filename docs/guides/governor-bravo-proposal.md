@@ -39,7 +39,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    function _deploy() internal override {
+    function deploy() public override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
             addresses.addAddress("VAULT", address(timelockVault), true);
@@ -55,7 +55,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// 1. Transfers vault ownership to timelock.
     /// 2. Transfer token ownership to timelock.
     /// 3. Transfers all tokens to timelock.
-    function _afterDeploy() internal override {
+    function afterDeploy() public override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
@@ -68,7 +68,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build() internal override {
+    function build() public override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -78,9 +78,9 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Executes the proposal actions.
-    function _run() internal override {
+    function simulate() public override {
         // Call parent _run function to check if there are actions to execute
-        super._run();
+        super.simulate();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
@@ -90,7 +90,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     }
 
     /// @notice Validates the post-execution state.
-    function _validate() internal override {
+    function validate() public override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
@@ -114,7 +114,7 @@ Let's go through each of the functions that are overridden.
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be
     written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function.
--   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
+-   `simulate()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract

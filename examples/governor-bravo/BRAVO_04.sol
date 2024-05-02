@@ -23,7 +23,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    function _deploy() internal override {
+    function deploy() public override {
         if (!addresses.isAddressSet("TOKEN_2")) {
             MockToken token = new MockToken();
             addresses.addAddress("TOKEN_2", address(token), true);
@@ -31,7 +31,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     /// Sets up actions for the proposal, in this case, withdrawing MockToken into Vault.
-    function _build() internal override {
+    function build() public override {
         /// STATICALL -- not recorded for the run stage
         address token = addresses.getAddress("TOKEN_2");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
@@ -41,9 +41,9 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     // Executes the proposal actions.
-    function _run() internal override {
+    function simulate() public override {
         // Call parent _run function to check if there are actions to execute
-        super._run();
+        super.simulate();
 
         address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
@@ -56,7 +56,7 @@ contract BRAVO_04 is GovernorBravoProposal {
     }
 
     // Validates the post-execution state.
-    function _validate() internal override {
+    function validate() public override {
         MockToken token = MockToken(addresses.getAddress("TOKEN_2"));
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
 

@@ -4,17 +4,11 @@ This section details optional internal functions offered by FPS. These functions
 allow for a significant level of customization and can be overridden in your
 proposal contract as needed.
 
--   `function _deploy() internal`: Defines new contract deployments. Newly deployed contracts must be added to the `Addresses` contract instance through the setters methods.
--   `function _afterDeploy() internal`: Specifies post-deployment actions. Such actions can include wiring contracts together, transferring ownership rights, or invoking setter functions as the deployer.
--   `function _build() internal`: Creates the proposal actions and saves them to storage in the proposal contract.
--   `function _run() internal`: Executes the actions that were previously saved during the `_build` step. It's dependent on the successful execution of the `_build` function. Without calling `_build` first, the `_run` function becomes ineffectual as there would be no predefined actions to execute.
--   `function _teardown() internal`: Defines the actions to be
-    taken post-proposal execution. For instance, in scenarios where a protocol
-    incorporates multiple timelocks and multisigs, this framework supports
-    executing only one proposal at a time. Hence, before executing the validate
-    function, this step can include pranking as another timelock to perform
-    necessary actions.
--   `function _validate() internal`: Validates the state post-execution. It ensures that the contracts variables and proposal targets are set up correctly.
+-   `function deploy() public`: Defines new contract deployments. Newly deployed contracts must be added to the `Addresses` contract instance through the setters methods.
+-   `function afterDeploy() public`: Specifies post-deployment actions. Such actions can include wiring contracts together, transferring ownership rights, or invoking setter functions as the deployer.
+-   `function build() public`: Creates the proposal actions and saves them to storage in the proposal contract.
+-   `function simulate() public`: Executes the actions that were previously saved during the `_build` step. It's dependent on the successful execution of the `_build` function. Without calling `_build` first, the `_run` function becomes ineffectual as there would be no predefined actions to execute.
+-   `function validate() public`: Validates the state post-execution. It ensures that the contracts variables and proposal targets are set up correctly.
 
 The actions in FPS are designed to be loosely coupled for flexible
 implementation, with the exception of the build and run functions, which require

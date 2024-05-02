@@ -25,7 +25,7 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, depositing MockToken into Vault.
-    function _build() internal override {
+    function build() public override {
         /// STATICCALL -- not recorded for the run stage
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         address timelockVault = addresses.getAddress("VAULT");
@@ -38,9 +38,9 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// @notice Executes the proposal actions.
-    function _run() internal override {
+    function simulate() public override {
         /// Call parent _run function to check if there are actions to execute
-        super._run();
+        super.simulate();
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
@@ -48,7 +48,7 @@ contract MULTISIG_02 is MultisigProposal {
     }
 
     /// Validates the post-execution state
-    function _validate() internal override {
+    function validate() public override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
