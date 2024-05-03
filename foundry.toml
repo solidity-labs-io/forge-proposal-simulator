@@ -13,6 +13,6 @@ optimizer_runs = 200
 localhost = "http://127.0.0.1:8545"
 sepolia = "https://sepolia.drpc.org"
 
-#[etherscan]
-#sepolia = { key = "${ETHERSCAN_API_KEY}" }
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
 
