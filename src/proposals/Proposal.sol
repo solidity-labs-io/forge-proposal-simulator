@@ -37,8 +37,14 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    ///@notice primary fork id
+    /// @notice primary fork id
     uint256 public primaryForkId;
+
+    modifier buildModifier() {
+        _startBuild();
+        _;
+        _endBuild();
+    }
 
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
@@ -58,7 +64,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function run() external {
         vm.selectFork(primaryForkId);
 
-        address deployer = addresses.getAddress("DEV");
+        address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         vm.startBroadcast(deployer);
         _deploy();
@@ -85,8 +91,14 @@ abstract contract Proposal is Test, Script, IProposal {
         _endBuild();
     }
 
-    /// @notice Print proposal calldata
+    /// @notice Return proposal calldata
     function getCalldata() public virtual returns (bytes memory data);
+
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(
+        address
+    ) public view virtual returns (bool calldataMatch);
 
     /// @notice get proposal actions
     /// @dev do not override
@@ -123,6 +135,11 @@ abstract contract Proposal is Test, Script, IProposal {
             values[i] = actions[i].value;
         }
     }
+
+    /// @notice Create actions for the proposal
+    /// @dev implementations should use buildModifier modifier
+    /// TODO remove implementation once move from internal to public functions
+    function build() public virtual {}
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
