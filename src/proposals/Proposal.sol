@@ -80,9 +80,8 @@ abstract contract Proposal is Test, Script, IProposal {
     function run() external {
         vm.selectFork(primaryForkId);
 
-        /// DEV must be an unlocked account when running through forge script
+        /// DEPLOYER_EOA must be an unlocked account when running through forge script
         /// use cast wallet to unlock the account
-        address deployer = addresses.getAddress("DEV");
         address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         vm.startBroadcast(deployer);
@@ -144,11 +143,6 @@ abstract contract Proposal is Test, Script, IProposal {
             values[i] = actions[i].value;
         }
     }
-
-    /// @notice Create actions for the proposal
-    /// @dev implementations should use buildModifier modifier
-    /// TODO remove implementation once move from internal to public functions
-    function build() public virtual {}
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
