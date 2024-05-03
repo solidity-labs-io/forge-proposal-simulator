@@ -42,7 +42,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice the actions caller name in the Addresses JSON
     string public caller;
 
-    ///@notice primary fork id
+    /// @notice primary fork id
     uint256 public primaryForkId;
 
     modifier buildModifier() {
@@ -83,6 +83,7 @@ abstract contract Proposal is Test, Script, IProposal {
         /// DEV must be an unlocked account when running through forge script
         /// use cast wallet to unlock the account
         address deployer = addresses.getAddress("DEV");
+        address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         vm.startBroadcast(deployer);
         if (DO_DEPLOY) deploy();
@@ -102,8 +103,14 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice return proposal calldata.
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice return proposal actions.
-    /// @dev this function shoudn't be overriden.
+    /// @notice check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(
+        address
+    ) public view virtual returns (bool calldataMatch);
+
+    /// @notice get proposal actions
+    /// @dev do not override
     function getProposalActions()
         public
         view
@@ -137,6 +144,11 @@ abstract contract Proposal is Test, Script, IProposal {
             values[i] = actions[i].value;
         }
     }
+
+    /// @notice Create actions for the proposal
+    /// @dev implementations should use buildModifier modifier
+    /// TODO remove implementation once move from internal to public functions
+    function build() public virtual {}
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------

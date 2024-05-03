@@ -65,7 +65,7 @@ contract MULTISIG_01 is MultisigProposal {
         // Make sure that DEV is the address you specify in the --sender flag
         token.transfer(
             devMultisig,
-            token.balanceOf(addresses.getAddress("DEV"))
+            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
         );
     }
 
@@ -172,7 +172,7 @@ Set up Addresses.json file and add the Gnosis Safe address and deployer address 
     },
     {
         "addr": "YOUR_DEV_EOA",
-        "name": "DEV",
+        "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
     }

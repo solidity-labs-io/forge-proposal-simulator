@@ -11,7 +11,7 @@ contract DeployTimelock is Script {
         Addresses addresses = new Addresses("./addresses/Addresses.json");
 
         // Get proposer and executor addresses
-        address dev = addresses.getAddress("DEV");
+        address dev = addresses.getAddress("DEPLOYER_EOA");
 
         // Create arrays of addresses to pass to the TimelockController constructor
         address[] memory proposers = new address[](1);

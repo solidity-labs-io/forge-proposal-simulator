@@ -42,7 +42,41 @@ jobs:
                     echo "## Lint result" >> $GITHUB_STEP_SUMMARY
                     echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
                   fi
-    proposal-simulator-test:
+
+    unit-test:
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: "actions/checkout@v3"
+              with:
+                  submodules: "recursive"
+
+            - name: "Install Foundry"
+              uses: "foundry-rs/foundry-toolchain@v1"
+
+            - name: "Show the Foundry config"
+              run: "forge config"
+
+            - name:
+                  "Generate a fuzz seed that changes weekly to avoid burning through RPC
+                  allowance"
+              run: >
+                  echo "FOUNDRY_FUZZ_SEED=$(
+                    echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
+                  )" >> $GITHUB_ENV
+
+            - name: "Build the contracts and print their size"
+              run: "forge build --sizes"
+
+            - name: "Proposal Simulator Test"
+              run: "forge test --nmc '(TypeCheck|TestAddresses)'"
+
+            - name: "Add test summary"
+              run: |
+                  echo "## Proposal simulator tests result" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+    addresses-test:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Check out the repo"
@@ -68,7 +102,7 @@ jobs:
               run: "forge build --sizes"
 
             - name: "Run the tests"
-              run: "forge test --nmc TypeCheck"
+              run: "forge test --mc TestAddresses"
 
             - name: "Add test summary"
               run: |
@@ -107,81 +141,3 @@ jobs:
               run: |
                   echo "## Type check tests result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
-    run-proposal:
-        permissions:
-            pull-requests: write
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-              with:
-                  submodules: "recursive"
-
-            - name: "Install Foundry"
-              uses: "foundry-rs/foundry-toolchain@v1"
-
-            - name: Get Changed Files
-              id: files
-              uses: jitterbit/get-changed-files@v1
-              with:
-                  format: "space-delimited"
-
-            - name: Set PR_CHANGED_FILES
-              run: echo "PR_CHANGED_FILES=${{ steps.files.outputs.all }}" >> $GITHUB_ENV
-
-            - name: Set DEBUG flag
-              run: echo "DEBUG=true" >> $GITHUB_ENV
-
-            - name: Set PROPOSALS_FOLDER
-              run: echo "PROPOSALS_FOLDER=examples" >> $GITHUB_ENV
-
-            - name: Run Proposals
-              id: run_proposals
-              run: |
-                  output=$(./run-proposal.sh)
-                  echo "result=${output}" >> $GITHUB_ENV
-
-            - name: List and Delete Previous Comments
-              uses: actions/github-script@v6
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const issue_number = context.payload.pull_request.number;
-                      const comments = await github.rest.issues.listComments({
-                        ...context.repo,
-                        issue_number: issue_number
-                      });
-
-                      const actionComments = comments.data.filter(comment => comment.user.login === 'github-actions[bot]');
-
-                      if (actionComments.length === 0) {
-                        return;
-                      }
-                      for (const comment of actionComments) {
-                        await github.rest.issues.deleteComment({
-                          ...context.repo,
-                          comment_id: comment.id,
-                        });
-                      }
-
-            - name: Decode and Comment PR with Proposal Output
-              id: decode
-              if: env.result
-              run: |
-                  echo "${{ env.result }}" | base64 -d > decoded_output.json
-              shell: bash
-
-            - name: Use Decoded Output
-              if: env.result
-              uses: actions/github-script@v6
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const fs = require('fs');
-                      const output = JSON.parse(fs.readFileSync('decoded_output.json', 'utf8'));
-                      const prNumber = context.payload.pull_request.number;
-                      github.rest.issues.createComment({
-                        ...context.repo,
-                        issue_number: prNumber,
-                        body: `### Proposal output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
-                      });

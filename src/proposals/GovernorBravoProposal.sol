@@ -38,6 +38,46 @@ abstract contract GovernorBravoProposal is Proposal {
         );
     }
 
+    /// @notice Check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(
+        address governorAddress
+    ) public view override returns (bool calldataExist) {
+        GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
+
+        uint256 proposalCount = governor.proposalCount();
+
+        while (proposalCount > 0) {
+            (
+                address[] memory targets,
+                uint256[] memory values,
+                string[] memory signatures,
+                bytes[] memory calldatas
+            ) = governor.getActions(proposalCount);
+            proposalCount--;
+
+            bytes memory onchainCalldata = abi.encodeWithSignature(
+                "propose(address[],uint256[],string[],bytes[],string)",
+                targets,
+                values,
+                signatures,
+                calldatas,
+                description()
+            );
+
+            bytes memory proposalCalldata = getCalldata();
+
+            if (keccak256(proposalCalldata) == keccak256(onchainCalldata)) {
+                console.log(
+                    "Proposal calldata matches on-chain calldata with proposalId: ",
+                    proposalCount
+                );
+                return true;
+            }
+        }
+        return false;
+    }
+
     /// @notice Simulate governance proposal
     /// @param governorAddress address of the Governor Bravo Delegator contract
     /// @param governanceToken address of the governance token of the system

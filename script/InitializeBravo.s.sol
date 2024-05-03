@@ -8,7 +8,7 @@ import {MockGovernorAlpha} from "@mocks/MockGovernorAlpha.sol";
 import {Timelock} from "@mocks/bravo/Timelock.sol";
 import {GovernorBravoDelegate} from "@mocks/bravo/GovernorBravoDelegate.sol";
 
-contract DeployGovernorBravo is Script {
+contract InitializeGovernorBravo is Script {
     function run() public virtual {
         Addresses addresses = new Addresses("./addresses/Addresses.json");
 

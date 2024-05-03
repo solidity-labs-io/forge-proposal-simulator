@@ -31,7 +31,7 @@ Deployed contract addresses are registered along with their respective names and
     },
     {
         "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "DEV",
+        "name": "DEPLOYER_EOA",
         "chainId": 123,
         "isContract": true
     }

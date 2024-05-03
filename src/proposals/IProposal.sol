@@ -26,10 +26,14 @@ interface IProposal {
             bytes[] memory arguments
         );
 
-    /// @notice return proposal calldata.
+    /// @notice return proposal calldata
     function getCalldata() external returns (bytes memory data);
 
-    /// @notice return addresses object.
+    /// @notice check if there are any on-chain proposal that matches the
+    /// proposal calldata
+    function checkOnChainCalldata(address addr) external view returns (bool);
+
+    /// @notice return Addresses object
     function addresses() external view returns (Addresses);
 
     /// @notice deploy any contracts needed for the proposal.
