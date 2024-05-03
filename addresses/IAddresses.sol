@@ -60,16 +60,6 @@ interface IAddresses {
         bool isContract
     ) external;
 
-    /// @notice add or change an address (if is aready set) for the current chainId
-    /// @param name the name of the address
-    /// @param addr the address to change to
-    /// @param isContract whether the address is a contract
-    function addOrChangeAddress(
-        string memory name,
-        address addr,
-        bool isContract
-    ) external;
-
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external;
 
