@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
+import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+
 import {console} from "@forge-std/console.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 import {Proposal} from "@proposals/Proposal.sol";
@@ -182,5 +184,36 @@ contract TimelockProposalUnitTest is Test {
             token.totalSupply(),
             "Wrong token balance"
         );
+    }
+
+    function test_getCalldata() public {
+        test_build();
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
+
+        (, , , string memory description) = proposal.actions(0);
+
+        bytes32 salt = keccak256(abi.encode(description));
+        uint256 delay = TimelockController(
+            payable(addresses.getAddress("PROTOCOL_TIMELOCK"))
+        ).getMinDelay();
+
+        bytes memory expectedData = abi.encodeWithSignature(
+            "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
+            targets,
+            values,
+            calldatas,
+            bytes32(0),
+            salt,
+            delay
+        );
+
+        bytes memory data = proposal.getCalldata();
+
+        assertEq(data, expectedData, "Wrong calldata");
     }
 }
