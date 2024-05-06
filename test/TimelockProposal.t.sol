@@ -18,7 +18,7 @@ contract MockTimelockProposal is TimelockProposal {
         return "Timelock proposal mock";
     }
 
-    constructor() Proposal("./addresses/Addresses.json", "DEPLOYER_EOA") {
+    constructor() Proposal("./addresses/Addresses.json") {
         timelock = payable(addresses.getAddress("PROTOCOL_TIMELOCK"));
     }
 

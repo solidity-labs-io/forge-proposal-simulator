@@ -28,13 +28,13 @@ abstract contract Proposal is Test, Script, IProposal {
     Action[] public actions;
 
     /// @notice debug flag to print internal proposal logs
-    bool internal DEBUG = false;
-    bool internal DO_DEPLOY = true;
-    bool internal DO_AFTER_DEPLOY = true;
-    bool internal DO_BUILD = true;
-    bool internal DO_SIMULATE = true;
-    bool internal DO_VALIDATE = true;
-    bool internal DO_PRINT = true;
+    bool internal DEBUG;
+    bool internal DO_DEPLOY;
+    bool internal DO_AFTER_DEPLOY;
+    bool internal DO_BUILD;
+    bool internal DO_SIMULATE;
+    bool internal DO_VALIDATE;
+    bool internal DO_PRINT;
 
     /// @notice Addresses contract
     Addresses public addresses;
@@ -53,8 +53,7 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @param addressesPath the path to the Addresses JSON file.
-    /// @param _caller the contract/EOA name recorded in Addresses JSON that will execute the proposal on-chain.
-    constructor(string memory addressesPath, string memory _caller) {
+    constructor(string memory addressesPath) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
 
