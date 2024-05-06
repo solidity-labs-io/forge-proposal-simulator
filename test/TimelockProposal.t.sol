@@ -50,14 +50,11 @@ contract MockTimelockProposal is TimelockProposal {
         address token = addresses.getAddress("TOKEN_1");
         uint256 balance = Token(token).balanceOf(address(timelock));
 
-        vm.startPrank(address(timelock));
         Vault(timelockVault).whitelistToken(token, true);
 
         /// CALLS -- mutative and recorded
         Token(token).approve(timelockVault, balance);
         Vault(timelockVault).deposit(token, balance);
-
-        vm.stopPrank();
     }
 
     /// @notice Executes the proposal actions.

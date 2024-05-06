@@ -228,8 +228,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @param toPrank the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _startBuild(address toPrank) private {
-        //vm.startPrank(toPrank);
-        console.log("to prank", toPrank);
+        vm.startPrank(toPrank);
 
         _startSnapshot = vm.snapshot();
         vm.startStateDiffRecording();
@@ -241,9 +240,10 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @param caller the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _endBuild(address caller) private {
-        vm.stopPrank();
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();
+
+        vm.stopPrank();
 
         /// roll back all state changes made during the governance proposal
         require(
