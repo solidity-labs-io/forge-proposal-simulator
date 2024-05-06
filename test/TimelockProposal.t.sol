@@ -44,7 +44,6 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function build() public override buildModifier(timelock) {
-        console.log("Building proposal");
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -83,11 +82,11 @@ contract TimelockProposalUnitTest is Test {
         proposal.getProposalActions();
 
         Token token = Token(addresses.getAddress("TOKEN_1"));
+
         uint256 expectedBalance = token.balanceOf(
-            addresses.getAddress("DEPLOYER_EOA")
+            addresses.getAddress("PROTOCOL_TIMELOCK")
         );
 
-        vm.startPrank(addresses.getAddress("DEPLOYER_EOA"));
         proposal.build();
 
         (
@@ -97,40 +96,57 @@ contract TimelockProposalUnitTest is Test {
         ) = proposal.getProposalActions();
 
         // check that the proposal targets are correct
-        assertEq(targets.length, 3);
-        assertEq(targets[0], addresses.getAddress("VAULT"));
-        assertEq(targets[1], addresses.getAddress("TOKEN_1"));
-        assertEq(targets[2], addresses.getAddress("TOKEN_1"));
+        assertEq(targets.length, 3, "Wrong targets length");
+        assertEq(
+            targets[0],
+            addresses.getAddress("VAULT"),
+            "Wrong target at index 0"
+        );
+        assertEq(
+            targets[1],
+            addresses.getAddress("TOKEN_1"),
+            "Wrong target at index 1"
+        );
+        assertEq(
+            targets[2],
+            addresses.getAddress("VAULT"),
+            "Wrong target at index 2"
+        );
 
         // check that the proposal values are correct
-        assertEq(values.length, 3);
-        assertEq(values[0], 0);
-        assertEq(values[1], 0);
-        assertEq(values[2], 0);
+        assertEq(values.length, 3, "Wrong values length");
+        assertEq(values[0], 0, "Wrong value at index 0");
+        assertEq(values[1], 0, "Wrong value at index 1");
+        assertEq(values[2], 0, "Wrong value at index 2");
 
         // check that the proposal calldatas are correct
         assertEq(calldatas.length, 3);
         assertEq(
             calldatas[0],
             abi.encodeWithSignature(
-                "transferOwnership(address)",
-                addresses.getAddress("PROTOCOL_TIMELOCK")
-            )
+                "whitelistToken(address,bool)",
+                addresses.getAddress("TOKEN_1"),
+                true
+            ),
+            "Wrong calldata at index 0"
         );
         assertEq(
             calldatas[1],
             abi.encodeWithSignature(
-                "transferOwnership(address)",
-                addresses.getAddress("PROTOCOL_TIMELOCK")
-            )
+                "approve(address,uint256)",
+                addresses.getAddress("VAULT"),
+                expectedBalance
+            ),
+            "Wrong calldata at index 1"
         );
         assertEq(
             calldatas[2],
             abi.encodeWithSignature(
-                "transfer(address,uint256)",
-                addresses.getAddress("PROTOCOL_TIMELOCK"),
+                "deposit(address,uint256)",
+                addresses.getAddress("TOKEN_1"),
                 expectedBalance
-            )
+            ),
+            "Wrong calldata at index 2"
         );
     }
 
@@ -147,19 +163,24 @@ contract TimelockProposalUnitTest is Test {
         );
 
         // check that the proposal actions were executed
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        Token token = Token(addresses.getAddress("TOKEN_1"));
+
         assertEq(
-            Vault(addresses.getAddress("VAULT")).owner(),
-            addresses.getAddress("DEPLOYER_EOA")
+            timelockVault.owner(),
+            addresses.getAddress("PROTOCOL_TIMELOCK"),
+            "Wrong owner"
         );
-        assertEq(
-            Token(addresses.getAddress("TOKEN_1")).owner(),
-            addresses.getAddress("DEPLOYER_EOA")
+
+        assertTrue(
+            timelockVault.tokenWhitelist(addresses.getAddress("TOKEN_1")),
+            "Token not whitelisted"
         );
+
         assertEq(
-            Token(addresses.getAddress("TOKEN_1")).balanceOf(
-                addresses.getAddress("DEPLOYER_EOA")
-            ),
-            0
+            token.balanceOf(addresses.getAddress("VAULT")),
+            token.totalSupply(),
+            "Wrong token balance"
         );
     }
 }

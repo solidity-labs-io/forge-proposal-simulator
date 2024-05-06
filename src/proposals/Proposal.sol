@@ -252,7 +252,6 @@ abstract contract Proposal is Test, Script, IProposal {
         );
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
-            console.log("accessor", accountAccesses[i].accessor);
             /// only care about calls from the original caller,
             /// static calls are ignored,
             /// calls to and from Addresses and the vm contract are ignored
