@@ -72,10 +72,10 @@ contract MockTimelockProposal is TimelockProposal {
 
 contract TimelockProposalUnitTest is Test {
     Addresses public addresses;
-    Proposal public proposal;
+    TimelockProposal public proposal;
 
     function setUp() public {
-        proposal = Proposal(new MockTimelockProposal());
+        proposal = TimelockProposal(new MockTimelockProposal());
         addresses = proposal.addresses();
     }
 
@@ -214,6 +214,33 @@ contract TimelockProposalUnitTest is Test {
 
         bytes memory data = proposal.getCalldata();
 
-        assertEq(data, expectedData, "Wrong calldata");
+        assertEq(data, expectedData, "Wrong scheduleBatch calldata");
+    }
+
+    function test_getExecuteCalldata() public {
+        test_build();
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
+
+        (, , , string memory description) = proposal.actions(0);
+
+        bytes32 salt = keccak256(abi.encode(description));
+
+        bytes memory expectedData = abi.encodeWithSignature(
+            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
+            targets,
+            values,
+            calldatas,
+            bytes32(0),
+            salt
+        );
+
+        bytes memory data = proposal.getExecuteCalldata();
+
+        assertEq(data, expectedData, "Wrong executeBatch calldata");
     }
 }
