@@ -55,7 +55,7 @@ contract BRAVO_01 is GovernorBravoProposal {
     /// 1. Transfers vault ownership to timelock.
     /// 2. Transfer token ownership to timelock.
     /// 3. Transfers all tokens to timelock.
-    function afterDeploy() public override {
+    function afterDeployMock() public override {
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

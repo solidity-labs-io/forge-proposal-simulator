@@ -10,6 +10,7 @@ import {Proposal} from "@proposals/Proposal.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
     bytes32 public predecessor = bytes32(0);
+    address payable public timelock;
 
     /// @notice get schedule calldata
     function getCalldata()
@@ -26,9 +27,7 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        address addressCaller = addresses.getAddress(caller);
-        uint256 delay = TimelockController(payable(addressCaller))
-            .getMinDelay();
+        uint256 delay = TimelockController(timelock).getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -112,10 +111,7 @@ abstract contract TimelockProposal is Proposal {
         bytes memory scheduleCalldata = getCalldata();
         bytes memory executeCalldata = getExecuteCalldata();
 
-        address addressCaller = addresses.getAddress(caller);
-        TimelockController timelockController = TimelockController(
-            payable(addressCaller)
-        );
+        TimelockController timelockController = TimelockController(timelock);
         (
             address[] memory targets,
             uint256[] memory values,
@@ -137,8 +133,9 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller))
-                .functionCall(scheduleCalldata);
+            bytes memory returndata = address(timelock).functionCall(
+                scheduleCalldata
+            );
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");
@@ -156,8 +153,9 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller))
-                .functionCall(executeCalldata);
+            bytes memory returndata = address(timelock).functionCall(
+                executeCalldata
+            );
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");

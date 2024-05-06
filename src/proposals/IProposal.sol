@@ -43,7 +43,7 @@ interface IProposal {
     /// @notice helper function to take any needed actions after deployment
     ///         e.g. initialize contracts, transfer ownership, etc.
     /// @dev contracts calls here are broadcast if the broadcast flag is set
-    function afterDeploy() external;
+    function afterDeployMock() external;
 
     /// @notice build the proposal actions
     /// @dev contract calls must be perfomed in plain solidity.

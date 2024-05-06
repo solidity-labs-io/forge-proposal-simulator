@@ -39,16 +39,17 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice Addresses contract
     Addresses public addresses;
 
-    /// @notice the actions caller name in the Addresses JSON
-    string public caller;
-
     /// @notice primary fork id
     uint256 public primaryForkId;
 
-    modifier buildModifier() {
-        _startBuild();
+    /// @notice buildModifier to be used by the build function to populate the
+    /// actions array
+    /// @param toPrank the address that will be used as the caller for the
+    /// actions, e.g. multisig address, timelock address, etc.
+    modifier buildModifier(address toPrank) {
+        _startBuild(toPrank);
         _;
-        _endBuild();
+        _endBuild(toPrank);
     }
 
     /// @param addressesPath the path to the Addresses JSON file.
@@ -56,7 +57,7 @@ abstract contract Proposal is Test, Script, IProposal {
     constructor(string memory addressesPath, string memory _caller) {
         addresses = new Addresses(addressesPath);
         vm.makePersistent(address(addresses));
-        caller = _caller;
+
         DEBUG = vm.envOr("DEBUG", false);
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
         DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
@@ -86,7 +87,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         vm.startBroadcast(deployer);
         if (DO_DEPLOY) deploy();
-        if (DO_AFTER_DEPLOY) afterDeploy();
+        if (DO_AFTER_DEPLOY) afterDeployMock();
         vm.stopBroadcast();
 
         if (DO_BUILD) build();
@@ -157,7 +158,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice helper function to take any needed actions after deployment
     ///         e.g. initialize contracts, transfer ownership, etc.
     /// @dev contracts calls here are broadcast if the broadcast flag is set
-    function afterDeploy() public virtual {}
+    function afterDeployMock() public virtual {}
 
     /// @notice build the proposal actions
     /// @dev contract calls must be perfomed in plain solidity.
@@ -224,16 +225,22 @@ abstract contract Proposal is Test, Script, IProposal {
     ///  1). taking a snapshot of the current state of the contract
     ///  2). starting prank as the caller
     ///  3). starting a $recording of all calls created during the proposal
-    function _startBuild() private {
+    /// @param toPrank the address that will be used as the caller for the
+    /// actions, e.g. multisig address, timelock address, etc.
+    function _startBuild(address toPrank) private {
+        //vm.startPrank(toPrank);
+        console.log("to prank", toPrank);
+
         _startSnapshot = vm.snapshot();
-        vm.startPrank(addresses.getAddress(caller));
         vm.startStateDiffRecording();
     }
 
     /// @notice to be used at the end of the build function to snapshot
     /// the actions performed by the proposal and revert these changes
     /// then, stop the prank and record the actions that were taken by the proposal.
-    function _endBuild() private {
+    /// @param caller the address that will be used as the caller for the
+    /// actions, e.g. multisig address, timelock address, etc.
+    function _endBuild(address caller) private {
         vm.stopPrank();
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();
@@ -245,6 +252,7 @@ abstract contract Proposal is Test, Script, IProposal {
         );
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
+            console.log("accessor", accountAccesses[i].accessor);
             /// only care about calls from the original caller,
             /// static calls are ignored,
             /// calls to and from Addresses and the vm contract are ignored
@@ -253,7 +261,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
                 accountAccesses[i].accessor != address(addresses) &&
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == addresses.getAddress(caller) /// caller is correct, not a subcall
+                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
             ) {
                 actions.push(
                     Action({

@@ -23,7 +23,7 @@ FPS accommodates different Governance types (e.g., Timelock, Multisig) through s
 
 ## Proposal Specific Contract
 
-Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `_afterDeploy()` for proposals involving new contract deployments. For more details, refer to [internal functions](internal-functions.md).
+Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `_afterDeployMock()` for proposals involving new contract deployments. For more details, refer to [internal functions](internal-functions.md).
 
 ## Test Suite
 

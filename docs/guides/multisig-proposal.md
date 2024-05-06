@@ -55,7 +55,7 @@ contract MULTISIG_01 is MultisigProposal {
     /// 1. Transfers vault ownership to dev multisig.
     /// 2. Transfer token ownership to dev multisig.
     /// 3. Transfers all tokens to dev multisig.
-    function afterDeploy() public override {
+    function afterDeployMock() public override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {console} from "@forge-std/console.sol";
 import {Test} from "@forge-std/Test.sol";
+import {console} from "@forge-std/console.sol";
 import {Addresses} from "@addresses/Addresses.sol";
-import {IProposal} from "@proposals/IProposal.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 import {Vault} from "@mocks/Vault.sol";
@@ -19,31 +18,57 @@ contract MockTimelockProposal is TimelockProposal {
         return "Timelock proposal mock";
     }
 
-    constructor() Proposal("./addresses/Addresses.json", "DEPLOYER_EOA") {}
+    constructor() Proposal("./addresses/Addresses.json", "DEPLOYER_EOA") {
+        timelock = payable(addresses.getAddress("PROTOCOL_TIMELOCK"));
+    }
 
     function deploy() public override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
+
             addresses.changeAddress("VAULT", address(timelockVault), true);
+
+            timelockVault.transferOwnership(address(timelock));
         }
 
         if (!addresses.isAddressSet("TOKEN_1")) {
             Token token = new Token();
             addresses.changeAddress("TOKEN_1", address(token), true);
+
+            token.transferOwnership(timelock);
+            token.transfer(
+                address(timelock),
+                token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+            );
         }
     }
 
-    function build() public override buildModifier {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        Token token = Token(addresses.getAddress("TOKEN_1"));
+    function build() public override buildModifier(timelock) {
+        console.log("Building proposal");
+        /// STATICCALL -- not recorded for the run stage
+        address timelockVault = addresses.getAddress("VAULT");
+        address token = addresses.getAddress("TOKEN_1");
+        uint256 balance = Token(token).balanceOf(address(timelock));
 
-        timelockVault.transferOwnership(timelock);
-        token.transferOwnership(timelock);
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
-        );
+        vm.startPrank(address(timelock));
+        Vault(timelockVault).whitelistToken(token, true);
+
+        /// CALLS -- mutative and recorded
+        Token(token).approve(timelockVault, balance);
+        Vault(timelockVault).deposit(token, balance);
+
+        vm.stopPrank();
+    }
+
+    /// @notice Executes the proposal actions.
+    function simulate() public override {
+        /// Call parent simulate function to check if there are actions to execute
+        super.simulate();
+
+        address dev = addresses.getAddress("DEPLOYER_EOA");
+
+        /// Dev is proposer and executor
+        _simulateActions(dev, dev);
     }
 }
 
@@ -109,6 +134,35 @@ contract TimelockProposalUnitTest is Test {
                 addresses.getAddress("PROTOCOL_TIMELOCK"),
                 expectedBalance
             )
+        );
+    }
+
+    function test_simulate() public {
+        test_build();
+
+        proposal.simulate();
+
+        // check that proposal exists
+        assertTrue(
+            proposal.checkOnChainCalldata(
+                addresses.getAddress("PROTOCOL_TIMELOCK")
+            )
+        );
+
+        // check that the proposal actions were executed
+        assertEq(
+            Vault(addresses.getAddress("VAULT")).owner(),
+            addresses.getAddress("DEPLOYER_EOA")
+        );
+        assertEq(
+            Token(addresses.getAddress("TOKEN_1")).owner(),
+            addresses.getAddress("DEPLOYER_EOA")
+        );
+        assertEq(
+            Token(addresses.getAddress("TOKEN_1")).balanceOf(
+                addresses.getAddress("DEPLOYER_EOA")
+            ),
+            0
         );
     }
 }
