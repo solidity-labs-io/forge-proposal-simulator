@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {Addresses} from "@addresses/Addresses.sol";
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
-import {Proposal} from "@proposals/Proposal.sol";
 
 import {ITimelockController} from "@interfaces/ITimelockController.sol";
 

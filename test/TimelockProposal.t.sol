@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
-import {ITimelockController} from "@interfaces/ITimelockController.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";

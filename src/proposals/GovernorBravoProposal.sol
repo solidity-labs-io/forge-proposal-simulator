@@ -3,13 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
-import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
+import {TimelockInterface} from "@comp-governance/GovernorBravoInterfaces.sol";
 import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
 import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
 
 import {Address} from "@utils/Address.sol";
-import {Proposal} from "./Proposal.sol";
 
 abstract contract GovernorBravoProposal is Proposal {
     using Address for address;
