@@ -52,13 +52,9 @@ abstract contract Proposal is Test, Script, IProposal {
         _endBuild(toPrank);
     }
 
-    /// @param addressesPath the path to the Addresses JSON file.
-    constructor(string memory addressesPath) {
-        addresses = new Addresses(addressesPath);
-        vm.makePersistent(address(addresses));
-
+    constructor() {
         DEBUG = vm.envOr("DEBUG", false);
-        DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
+
         DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
         DO_BUILD = vm.envOr("DO_BUILD", true);
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
@@ -77,7 +73,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice function to be used by forge script.
     /// @dev use flags to determine which actions to take
     ///      this function shoudn't be overriden.
-    function run() external {
+    function run() public virtual {
         vm.selectFork(primaryForkId);
 
         /// DEPLOYER_EOA must be an unlocked account when running through forge script
@@ -147,6 +143,10 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------- Public functions -----------------------
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
+
+    function setAddresses(Addresses _addresses) public {
+        addresses = _addresses;
+    }
 
     /// @notice deploy any contracts needed for the proposal.
     /// @dev contracts calls here are broadcast if the broadcast flag is set.

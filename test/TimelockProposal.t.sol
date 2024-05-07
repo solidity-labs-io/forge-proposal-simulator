@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
 import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {ITimelockController} from "@interfaces/ITimelockController.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
@@ -15,8 +16,36 @@ contract TimelockProposalUnitTest is Test {
     TimelockProposal public proposal;
 
     function setUp() public {
+        // Instantiate the Addresses contract
+        addresses = new Addresses("./addresses/Addresses.json");
+        vm.makePersistent(address(addresses));
+
+        // Instantiate the TimelockProposal contract
         proposal = TimelockProposal(new MockTimelockProposal());
-        addresses = proposal.addresses();
+
+        // Set the addresses contract
+        proposal.setAddresses(addresses);
+
+        // Set the timelock address
+        proposal.setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
+    }
+
+    function test_setUp() public view {
+        assertEq(
+            proposal.name(),
+            string("TIMELOCK_MOCK"),
+            "Wrong proposal name"
+        );
+        assertEq(
+            proposal.description(),
+            string("Timelock proposal mock"),
+            "Wrong proposal description"
+        );
+        assertEq(
+            address(proposal.timelock()),
+            addresses.getAddress("PROTOCOL_TIMELOCK"),
+            "Wrong timelock address"
+        );
     }
 
     function test_build() public {

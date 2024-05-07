@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {Proposal} from "@proposals/Proposal.sol";
+import {Addresses} from "@addresses/Addresses.sol";
+
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {Proposal} from "@proposals/Proposal.sol";
 
 import {ITimelockController} from "@interfaces/ITimelockController.sol";
 
@@ -18,12 +20,18 @@ contract MockTimelockProposal is TimelockProposal {
         return "Timelock proposal mock";
     }
 
-    constructor()
-        Proposal("./addresses/Addresses.json")
-        TimelockProposal(
-            ITimelockController(addresses.getAddress("PROTOCOL_TIMELOCK"))
-        )
-    {}
+    function run() public override {
+        addresses = new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        );
+        vm.makePersistent(address(addresses));
+
+        timelock = ITimelockController(
+            addresses.getAddress("PROTOCOL_TIMELOCK")
+        );
+
+        super.run();
+    }
 
     function deploy() public override {
         if (!addresses.isAddressSet("VAULT")) {
