@@ -1,13 +1,10 @@
 pragma solidity ^0.8.0;
 
 import {Addresses} from "@addresses/Addresses.sol";
-import {Strings} from "@openzeppelin/utils/Strings.sol";
 import {Test} from "@forge-std/Test.sol";
 import "@forge-std/console.sol";
 
 contract TypeChecker is Test {
-    using Strings for string;
-
     Addresses public addresses;
 
     bytes public constant IPFS = hex"69706673";
