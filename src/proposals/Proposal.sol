@@ -86,10 +86,10 @@ abstract contract Proposal is Test, Script, IProposal {
             deploy();
             addresses.printJSONChanges();
         }
-        if (DO_AFTER_DEPLOY) afterDeployMock();
 
         vm.stopBroadcast();
 
+        if (DO_AFTER_DEPLOY) afterDeployMock();
         if (DO_BUILD) build();
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
