@@ -2,7 +2,11 @@
 pragma solidity ^0.8.0;
 
 import {Proposal} from "@proposals/Proposal.sol";
-import {TimelockProposal} from "@proposals/TimelockProposal.sol";
+import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
+
+import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
+
+import {Addresses} from "@addresses/Addresses.sol";
 
 import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
@@ -16,37 +20,48 @@ contract MockBravoProposal is GovernorBravoProposal {
         return "Bravo proposal mock";
     }
 
-    constructor()
-        Proposal("./addresses/Addresses.json")
-        GovernorBravoProposal(addresses.getAddress("PROTOCOL_GOVERNOR"))
-    {}
+    function run() public override {
+        addresses = new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        );
+        vm.makePersistent(address(addresses));
+
+        governor = IGovernorBravo(addresses.getAddress("PROTOCOL_GOVERNOR"));
+
+        super.run();
+    }
 
     function deploy() public override {
+        address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
         if (!addresses.isAddressSet("BRAVO_VAULT")) {
             Vault timelockVault = new Vault();
 
             addresses.addAddress("BRAVO_VAULT", address(timelockVault), true);
 
-            timelockVault.transferOwnership(address(timelock));
+            timelockVault.transferOwnership(owner);
         }
 
         if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
 
-            token.transferOwnership(timelock);
-            token.transfer(
-                address(timelock),
-                token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
-            );
+            token.transferOwnership(owner);
+
+            token.transfer(address(owner), token.balanceOf(address(this)));
         }
     }
 
-    function build() public override buildModifier(timelock) {
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"))
+    {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("BRAVO_VAULT");
         address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
-        uint256 balance = Token(token).balanceOf(address(timelock));
+        uint256 balance = Token(token).balanceOf(
+            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
+        );
 
         Vault(timelockVault).whitelistToken(token, true);
 
@@ -66,6 +81,6 @@ contract MockBravoProposal is GovernorBravoProposal {
         address proposer = addresses.getAddress("DEPLOYER_EOA");
 
         /// Dev is proposer and executor
-        _simulateActions(governaceToken, proposer);
+        _simulateActions(governanceToken, proposer);
     }
 }

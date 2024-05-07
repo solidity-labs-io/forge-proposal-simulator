@@ -18,6 +18,7 @@ abstract contract TimelockProposal is Proposal {
     /// @dev must be set by the inheriting contract
     ITimelockController public timelock;
 
+    /// @notice set the timelock controller
     function setTimelock(address _timelock) public {
         timelock = ITimelockController(_timelock);
     }

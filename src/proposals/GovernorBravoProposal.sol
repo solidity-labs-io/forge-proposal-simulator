@@ -18,8 +18,9 @@ abstract contract GovernorBravoProposal is Proposal {
     /// @dev must be set by the inheriting contract
     IGovernorBravo public governor;
 
-    constructor(IGovernorBravo _governor) {
-        governor = _governor;
+    /// @notice set the Governor Bravo contract
+    function setGovernor(address _governor) public {
+        governor = IGovernorBravo(_governor);
     }
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
