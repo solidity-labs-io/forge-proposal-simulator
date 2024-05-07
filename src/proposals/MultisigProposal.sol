@@ -41,7 +41,7 @@ abstract contract MultisigProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata(address) public pure override returns (bool) {
+    function checkOnChainCalldata() public pure override returns (bool) {
         revert("Not implemented");
     }
 

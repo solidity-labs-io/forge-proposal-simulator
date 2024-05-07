@@ -98,11 +98,7 @@ contract TimelockProposalUnitTest is Test {
         proposal.simulate();
 
         // check that proposal exists
-        assertTrue(
-            proposal.checkOnChainCalldata(
-                addresses.getAddress("PROTOCOL_TIMELOCK")
-            )
-        );
+        assertTrue(proposal.checkOnChainCalldata());
 
         // check that the proposal actions were executed
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));

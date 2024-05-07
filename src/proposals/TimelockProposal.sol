@@ -2,15 +2,25 @@ pragma solidity ^0.8.0;
 
 import {console} from "@forge-std/console.sol";
 
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {ITimelockController} from "@interfaces/ITimelockController.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
+
+    /// @notice the predecessor timelock id - default is 0 but inherited
+    /// @dev default is 0 but can be set by the inheriting contract
     bytes32 public predecessor = bytes32(0);
-    address payable public timelock;
+
+    /// @notice the timelock controller
+    /// @dev must be set by the inheriting contract
+    ITimelockController public timelock;
+
+    constructor(ITimelockController _timelock) {
+        timelock = _timelock;
+    }
 
     /// @notice get schedule calldata
     function getCalldata()
@@ -27,7 +37,7 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        uint256 delay = TimelockController(timelock).getMinDelay();
+        uint256 delay = timelock.getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -66,13 +76,12 @@ abstract contract TimelockProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata(
-        address timelockAddress
-    ) public view override returns (bool calldataExist) {
-        TimelockController timelockController = TimelockController(
-            payable(timelockAddress)
-        );
-
+    function checkOnChainCalldata()
+        public
+        view
+        override
+        returns (bool calldataExist)
+    {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -81,7 +90,7 @@ abstract contract TimelockProposal is Proposal {
 
         bytes32 salt = keccak256(abi.encode(actions[0].description));
 
-        bytes32 hash = timelockController.hashOperationBatch(
+        bytes32 hash = timelock.hashOperationBatch(
             targets,
             values,
             payloads,
@@ -89,9 +98,7 @@ abstract contract TimelockProposal is Proposal {
             salt
         );
 
-        return
-            timelockController.isOperation(hash) ||
-            timelockController.isOperationPending(hash);
+        return timelock.isOperation(hash) || timelock.isOperationPending(hash);
     }
 
     /// @notice simulate timelock proposal
@@ -111,14 +118,13 @@ abstract contract TimelockProposal is Proposal {
         bytes memory scheduleCalldata = getCalldata();
         bytes memory executeCalldata = getExecuteCalldata();
 
-        TimelockController timelockController = TimelockController(timelock);
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 proposalId = timelockController.hashOperationBatch(
+        bytes32 proposalId = timelock.hashOperationBatch(
             targets,
             values,
             payloads,
@@ -127,8 +133,8 @@ abstract contract TimelockProposal is Proposal {
         );
 
         if (
-            !timelockController.isOperationPending(proposalId) &&
-            !timelockController.isOperation(proposalId)
+            !timelock.isOperationPending(proposalId) &&
+            !timelock.isOperation(proposalId)
         ) {
             vm.prank(proposerAddress);
 
@@ -146,10 +152,10 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(proposalId);
         }
 
-        uint256 delay = timelockController.getMinDelay();
+        uint256 delay = timelock.getMinDelay();
         vm.warp(block.timestamp + delay);
 
-        if (!timelockController.isOperationDone(proposalId)) {
+        if (!timelock.isOperationDone(proposalId)) {
             vm.prank(executorAddress);
 
             // Perform the low-level call

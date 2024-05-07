@@ -104,9 +104,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata(
-        address
-    ) public view virtual returns (bool calldataMatch);
+    function checkOnChainCalldata() public view virtual returns (bool matches);
 
     /// @notice get proposal actions
     /// @dev do not override
