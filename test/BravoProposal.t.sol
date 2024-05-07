@@ -190,4 +190,10 @@ contract BravoProposalUnitTest is Test {
 
         assertTrue(proposal.checkOnChainCalldata());
     }
+
+    function test_validate() public {
+        test_simulate();
+
+        proposal.validate();
+    }
 }

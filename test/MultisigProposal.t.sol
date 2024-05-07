@@ -196,4 +196,10 @@ contract MultisigProposalUnitTest is Test {
         vm.expectRevert("Not implemented");
         proposal.checkOnChainCalldata();
     }
+
+    function test_validate() public {
+        test_simulate();
+
+        proposal.validate();
+    }
 }

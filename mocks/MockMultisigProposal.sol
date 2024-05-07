@@ -75,7 +75,6 @@ contract MockMultisigProposal is MultisigProposal {
         Vault(timelockVault).deposit(token, balance);
     }
 
-    /// @notice Executes the proposal actions.
     function simulate() public override {
         /// Call parent simulate function to check if there are actions to execute
         super.simulate();
@@ -84,5 +83,25 @@ contract MockMultisigProposal is MultisigProposal {
 
         /// Dev is proposer and executor
         _simulateActions(multisig);
+    }
+
+    function validate() public view override {
+        Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
+        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
+        address multisig = addresses.getAddress("DEV_MULTISIG");
+
+        uint256 balance = token.balanceOf(address(timelockVault));
+        (uint256 amount, ) = timelockVault.deposits(
+            address(token),
+            address(multisig)
+        );
+        assertEq(amount, balance);
+
+        assertEq(timelockVault.owner(), address(multisig));
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+        assertFalse(timelockVault.paused());
+
+        assertEq(token.owner(), address(multisig));
+        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }

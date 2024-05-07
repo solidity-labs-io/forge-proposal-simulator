@@ -76,7 +76,6 @@ contract MockTimelockProposal is TimelockProposal {
         Vault(timelockVault).deposit(token, balance);
     }
 
-    /// @notice Executes the proposal actions.
     function simulate() public override {
         /// Call parent simulate function to check if there are actions to execute
         super.simulate();
@@ -85,5 +84,24 @@ contract MockTimelockProposal is TimelockProposal {
 
         /// Dev is proposer and executor
         _simulateActions(dev, dev);
+    }
+
+    function validate() public view override {
+        Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
+        Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
+
+        uint256 balance = token.balanceOf(address(timelockVault));
+        (uint256 amount, ) = timelockVault.deposits(
+            address(token),
+            address(timelock)
+        );
+        assertEq(amount, balance);
+
+        assertEq(timelockVault.owner(), address(timelock));
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+        assertFalse(timelockVault.paused());
+
+        assertEq(token.owner(), address(timelock));
+        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }
