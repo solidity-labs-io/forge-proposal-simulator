@@ -8,6 +8,7 @@ import {Constants} from "@utils/Constants.sol";
 
 abstract contract MultisigProposal is Proposal {
     using Address for address;
+
     bytes32 public constant MULTISIG_BYTECODE_HASH =
         bytes32(
             0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
@@ -22,8 +23,9 @@ abstract contract MultisigProposal is Proposal {
     function getCalldata() public view override returns (bytes memory data) {
         /// get proposal actions
         (
-            address[] memory targets, /// ignore values
+            address[] memory targets,
             ,
+            /// ignore values
             bytes[] memory arguments
         ) = getProposalActions();
 

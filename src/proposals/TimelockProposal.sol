@@ -2,13 +2,14 @@ pragma solidity ^0.8.0;
 
 import {console} from "@forge-std/console.sol";
 
-import {TimelockController} from "@openzeppelin/governance/TimelockController.sol";
+import {ITimelockController} from "@interface/ITimelockController.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "@proposals/Proposal.sol";
 
 abstract contract TimelockProposal is Proposal {
     using Address for address;
+
     bytes32 public predecessor = bytes32(0);
 
     /// @notice get schedule calldata
@@ -27,7 +28,7 @@ abstract contract TimelockProposal is Proposal {
         ) = getProposalActions();
 
         address addressCaller = addresses.getAddress(caller);
-        uint256 delay = TimelockController(payable(addressCaller))
+        uint256 delay = ITimelockController(payable(addressCaller))
             .getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
@@ -70,7 +71,7 @@ abstract contract TimelockProposal is Proposal {
     function checkOnChainCalldata(
         address timelockAddress
     ) public view override returns (bool calldataExist) {
-        TimelockController timelockController = TimelockController(
+        ITimelockController timelockController = ITimelockController(
             payable(timelockAddress)
         );
 
@@ -113,7 +114,7 @@ abstract contract TimelockProposal is Proposal {
         bytes memory executeCalldata = getExecuteCalldata();
 
         address addressCaller = addresses.getAddress(caller);
-        TimelockController timelockController = TimelockController(
+        ITimelockController timelockController = ITimelockController(
             payable(addressCaller)
         );
         (
