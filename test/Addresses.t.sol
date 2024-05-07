@@ -32,29 +32,29 @@ contract TestAddresses is Test {
     }
 
     function test_getAddress() public {
-        address addr = addresses.getAddress("DEV_MULTISIG");
+        address addr = addresses.getAddress("DEPLOYER_EOA");
 
-        assertEq(addr, 0x3dd46846eed8D147841AE162C8425c08BD8E1b41);
+        assertEq(addr, 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739);
     }
 
     function test_getAddressChainId() public {
-        address addr = addresses.getAddress("TEAM_MULTISIG", block.chainid);
+        address addr = addresses.getAddress("DEPLOYER_EOA", block.chainid);
 
-        assertEq(addr, 0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9);
+        assertEq(addr, 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739);
     }
 
     function test_changeAddress() public {
         assertEq(
-            addresses.getAddress("DEV_MULTISIG"),
-            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            addresses.getAddress("DEPLOYER_EOA"),
+            0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739,
             "Wrong current address"
         );
 
         address addr = vm.addr(1);
-        addresses.changeAddress("DEV_MULTISIG", addr, false);
+        addresses.changeAddress("DEPLOYER_EOA", addr, false);
 
         assertEq(
-            addresses.getAddress("DEV_MULTISIG"),
+            addresses.getAddress("DEPLOYER_EOA"),
             addr,
             "Not updated correclty"
         );
@@ -62,31 +62,31 @@ contract TestAddresses is Test {
 
     function test_changeAddressToSameAddressFails() public {
         assertEq(
-            addresses.getAddress("DEV_MULTISIG"),
-            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            addresses.getAddress("DEPLOYER_EOA"),
+            0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739,
             "Wrong current address"
         );
 
-        address addr = addresses.getAddress("DEV_MULTISIG");
+        address addr = addresses.getAddress("DEPLOYER_EOA");
         vm.expectRevert(
-            "Address: DEV_MULTISIG already set to the same value on chain: 31337"
+            "Address: DEPLOYER_EOA already set to the same value on chain: 31337"
         );
-        addresses.changeAddress("DEV_MULTISIG", addr, true);
+        addresses.changeAddress("DEPLOYER_EOA", addr, true);
     }
 
     function test_changeAddressChainId() public {
         assertEq(
-            addresses.getAddress("DEV_MULTISIG"),
-            0x3dd46846eed8D147841AE162C8425c08BD8E1b41,
+            addresses.getAddress("DEPLOYER_EOA"),
+            0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739,
             "Wrong current address"
         );
         address addr = vm.addr(1);
 
         uint256 chainId = 31337;
-        addresses.changeAddress("DEV_MULTISIG", addr, chainId, false);
+        addresses.changeAddress("DEPLOYER_EOA", addr, chainId, false);
 
         assertEq(
-            addresses.getAddress("DEV_MULTISIG", chainId),
+            addresses.getAddress("DEPLOYER_EOA", chainId),
             addr,
             "Not updated correclty"
         );
@@ -110,13 +110,13 @@ contract TestAddresses is Test {
     function test_addAddressDifferentChain() public {
         address addr = vm.addr(1);
         uint256 chainId = 123;
-        addresses.addAddress("DEV_MULTISIG", addr, chainId, false);
+        addresses.addAddress("DEPLOYER_EOA", addr, chainId, false);
 
-        assertEq(addresses.getAddress("DEV_MULTISIG", chainId), addr);
-        // Validate that the 'DEV_MULTISIG' address for chain 31337 matches the address from Addresses.json.
+        assertEq(addresses.getAddress("DEPLOYER_EOA", chainId), addr);
+        // Validate that the 'DEPLOYER_EOA' address for chain 31337 matches the address from Addresses.json.
         assertEq(
-            addresses.getAddress("DEV_MULTISIG"),
-            0x3dd46846eed8D147841AE162C8425c08BD8E1b41
+            addresses.getAddress("DEPLOYER_EOA"),
+            0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739
         );
     }
 
@@ -172,7 +172,7 @@ contract TestAddresses is Test {
 
     function test_getChangedAddresses() public {
         address addr = vm.addr(1);
-        addresses.changeAddress("DEV_MULTISIG", addr, false);
+        addresses.changeAddress("DEPLOYER_EOA", addr, false);
         (
             string[] memory names,
             uint256[] memory chainIds,
@@ -198,7 +198,7 @@ contract TestAddresses is Test {
 
     function test_revertGetAddressChainZero() public {
         vm.expectRevert("ChainId cannot be 0");
-        addresses.getAddress("DEV_MULTISIG", 0);
+        addresses.getAddress("DEPLOYER_EOA", 0);
     }
 
     function test_reverGetAddressNotSet() public {
@@ -207,22 +207,22 @@ contract TestAddresses is Test {
     }
 
     function test_reverGetAddressNotSetOnChain() public {
-        vm.expectRevert("Address: DEV_MULTISIG not set on chain: 666");
-        addresses.getAddress("DEV_MULTISIG", 666);
+        vm.expectRevert("Address: DEPLOYER_EOA not set on chain: 666");
+        addresses.getAddress("DEPLOYER_EOA", 666);
     }
 
     function test_revertAddAddressAlreadySet() public {
         vm.expectRevert(
-            "Address with name: DEV_MULTISIG already set on chain: 31337"
+            "Address with name: DEPLOYER_EOA already set on chain: 31337"
         );
-        addresses.addAddress("DEV_MULTISIG", vm.addr(1), false);
+        addresses.addAddress("DEPLOYER_EOA", vm.addr(1), false);
     }
 
     function test_revertAddAddressChainAlreadySet() public {
         vm.expectRevert(
-            "Address with name: DEV_MULTISIG already set on chain: 31337"
+            "Address with name: DEPLOYER_EOA already set on chain: 31337"
         );
-        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 31337, false);
+        addresses.addAddress("DEPLOYER_EOA", vm.addr(1), 31337, false);
     }
 
     function test_revertChangedAddressDoesNotExist() public {
@@ -236,33 +236,33 @@ contract TestAddresses is Test {
         string memory addressesPath = "./addresses/AddressesDuplicated.json";
 
         vm.expectRevert(
-            "Address with name: DEV_MULTISIG already set on chain: 31337"
+            "Address with name: DEPLOYER_EOA already set on chain: 31337"
         );
         new Addresses(addressesPath);
     }
 
     function test_addAddressCannotBeZero() public {
         vm.expectRevert("Address cannot be 0");
-        addresses.addAddress("DEV_MULTISIG", address(0), false);
+        addresses.addAddress("DEPLOYER_EOA", address(0), false);
     }
 
     function test_addAddressCannotBeZeroChainId() public {
         vm.expectRevert("ChainId cannot be 0");
-        addresses.addAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+        addresses.addAddress("DEPLOYER_EOA", vm.addr(1), 0, false);
     }
 
     function test_revertChangeAddressCannotBeZero() public {
         vm.expectRevert("Address cannot be 0");
-        addresses.changeAddress("DEV_MULTISIG", address(0), false);
+        addresses.changeAddress("DEPLOYER_EOA", address(0), false);
     }
 
     function test_revertChangeAddresCannotBeZeroChainId() public {
         vm.expectRevert("ChainId cannot be 0");
-        addresses.changeAddress("DEV_MULTISIG", vm.addr(1), 0, false);
+        addresses.changeAddress("DEPLOYER_EOA", vm.addr(1), 0, false);
     }
 
     function test_isContractFalse() public {
-        assertEq(addresses.isAddressContract("DEV_MULTISIG"), false);
+        assertEq(addresses.isAddressContract("DEPLOYER_EOA"), false);
     }
 
     function test_isContractTrue() public {
@@ -296,8 +296,8 @@ contract TestAddresses is Test {
     }
 
     function addressIsNotPresentOnChain() public {
-        assertEq(addresses.isAddressSet("DEV_MULTISIG", 31337), true);
-        assertEq(addresses.isAddressSet("DEV_MULTISIG", 123), false);
+        assertEq(addresses.isAddressSet("DEPLOYER_EOA", 31337), true);
+        assertEq(addresses.isAddressSet("DEPLOYER_EOA", 123), false);
     }
 
     function test_checkAddressRevertIfNotContract() public {
@@ -329,7 +329,7 @@ contract TestAddresses is Test {
             memory addressesPath = "./addresses/AddressesDuplicatedDifferentName.json";
 
         vm.expectRevert(
-            "Address: 0x3dd46846eed8d147841ae162c8425c08bd8e1b41 already set on chain: 31337"
+            "Address: 0x9679e26bf0c470521de83ad77bb1bf1e7312f739 already set on chain: 31337"
         );
         new Addresses(addressesPath);
     }
