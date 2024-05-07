@@ -30,7 +30,7 @@ abstract contract TimelockProposal is Proposal {
         override
         returns (bytes memory scheduleCalldata)
     {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         (
             address[] memory targets,
@@ -57,7 +57,7 @@ abstract contract TimelockProposal is Proposal {
         view
         returns (bytes memory executeCalldata)
     {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         (
             address[] memory targets,
@@ -89,7 +89,7 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         bytes32 hash = timelock.hashOperationBatch(
             targets,
@@ -109,7 +109,7 @@ abstract contract TimelockProposal is Proposal {
         address proposerAddress,
         address executorAddress
     ) internal {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         if (DEBUG) {
             console.log("salt:");

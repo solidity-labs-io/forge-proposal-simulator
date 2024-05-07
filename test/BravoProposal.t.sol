@@ -169,7 +169,6 @@ contract BravoProposalUnitTest is Test {
             bytes[] memory calldatas
         ) = proposal.getProposalActions();
 
-        (, , , string memory description) = proposal.actions(0);
         string[] memory signatures = new string[](targets.length);
 
         bytes memory expectedData = abi.encodeWithSignature(
@@ -178,7 +177,7 @@ contract BravoProposalUnitTest is Test {
             values,
             signatures,
             calldatas,
-            description
+            proposal.description()
         );
 
         bytes memory data = proposal.getCalldata();

@@ -30,7 +30,32 @@ contract TimelockProposalUnitTest is Test {
         proposal.setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
     }
 
-    function test_setUp() public view {
+    function test_deploy() public {
+        vm.startPrank(addresses.getAddress("DEPLOYER_EOA"));
+        proposal.deploy();
+        vm.stopPrank();
+
+        address expectedOwner = addresses.getAddress("PROTOCOL_TIMELOCK");
+
+        // check that the vault was deployed
+        assertTrue(addresses.isAddressSet("VAULT"));
+        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        assertEq(timelockVault.owner(), expectedOwner, "Wrong owner");
+
+        // check that the token was deployed
+        assertTrue(addresses.isAddressSet("TOKEN_1"));
+        Token token = Token(addresses.getAddress("TOKEN_1"));
+        assertEq(token.owner(), expectedOwner, "Wrong owner");
+        assertEq(
+            token.balanceOf(expectedOwner),
+            token.totalSupply(),
+            "Wrong token balance"
+        );
+    }
+
+    function test_setUp() public {
+        test_deploy();
+
         assertEq(
             proposal.name(),
             string("TIMELOCK_MOCK"),
@@ -191,9 +216,7 @@ contract TimelockProposalUnitTest is Test {
             bytes[] memory calldatas
         ) = proposal.getProposalActions();
 
-        (, , , string memory description) = proposal.actions(0);
-
-        bytes32 salt = keccak256(abi.encode(description));
+        bytes32 salt = keccak256(abi.encode(proposal.description()));
 
         bytes memory expectedData = abi.encodeWithSignature(
             "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
