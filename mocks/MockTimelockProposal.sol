@@ -48,7 +48,9 @@ contract MockTimelockProposal is TimelockProposal {
             token.transferOwnership(address(timelock));
             token.transfer(
                 address(timelock),
-                token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+                // TODO check if should be the DEPLOYER_EOA instead of address
+                // this when running through forge script
+                token.balanceOf(address(this))
             );
         }
     }

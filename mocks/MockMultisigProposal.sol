@@ -5,8 +5,6 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
-import {ITimelockController} from "@interfaces/ITimelockController.sol";
-
 import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 
@@ -29,31 +27,39 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function deploy() public override {
-        if (!addresses.isAddressSet("VAULT")) {
+        address multisig = addresses.getAddress("DEV_MULTISIG");
+        if (!addresses.isAddressSet("MULTISIG_VAULT")) {
             Vault timelockVault = new Vault();
 
-            addresses.addAddress("VAULT", address(timelockVault), true);
+            addresses.addAddress(
+                "MULTISIG_VAULT",
+                address(timelockVault),
+                true
+            );
 
-            timelockVault.transferOwnership(address(timelock));
+            timelockVault.transferOwnership(address(multisig));
         }
 
-        if (!addresses.isAddressSet("TOKEN_1")) {
+        if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
             Token token = new Token();
-            addresses.addAddress("TOKEN_1", address(token), true);
+            addresses.addAddress("MULTISIG_TOKEN", address(token), true);
 
-            token.transferOwnership(address(timelock));
-            token.transfer(
-                address(timelock),
-                token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
-            );
+            token.transferOwnership(address(multisig));
+            token.transfer(address(multisig), token.balanceOf(address(this)));
         }
     }
 
-    function build() public override buildModifier(address(timelock)) {
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("DEV_MULTISIG"))
+    {
+        address multisig = addresses.getAddress("DEV_MULTISIG");
+
         /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("VAULT");
-        address token = addresses.getAddress("TOKEN_1");
-        uint256 balance = Token(token).balanceOf(address(timelock));
+        address timelockVault = addresses.getAddress("MULTISIG_VAULT");
+        address token = addresses.getAddress("MULTISIG_TOKEN");
+        uint256 balance = Token(token).balanceOf(address(multisig));
 
         Vault(timelockVault).whitelistToken(token, true);
 
