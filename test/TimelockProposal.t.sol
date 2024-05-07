@@ -185,9 +185,7 @@ contract TimelockProposalUnitTest is Test {
             bytes[] memory calldatas
         ) = proposal.getProposalActions();
 
-        (, , , string memory description) = proposal.actions(0);
-
-        bytes32 salt = keccak256(abi.encode(description));
+        bytes32 salt = keccak256(abi.encode(proposal.description()));
         uint256 delay = TimelockController(
             payable(addresses.getAddress("PROTOCOL_TIMELOCK"))
         ).getMinDelay();
