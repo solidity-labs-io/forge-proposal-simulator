@@ -8,6 +8,7 @@ import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
 import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
 
 import {Address} from "@utils/Address.sol";
+import {Proposal} from "./Proposal.sol";
 
 abstract contract GovernorBravoProposal is Proposal {
     using Address for address;
