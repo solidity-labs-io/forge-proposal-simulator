@@ -1,35 +1,5 @@
 [
     {
-        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
-        "name": "DEV_MULTISIG",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
-        "name": "TEAM_MULTISIG",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
-        "name": "PROTOCOL_TIMELOCK",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        "name": "PROTOCOL_GOVERNOR",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-        "name": "PROTOCOL_GOVERNANCE_TOKEN",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
         "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
         "name": "DEV_MULTISIG",
         "chainId": 11155111,
@@ -78,6 +48,30 @@
         "name": "PROTOCOL_GOVERNOR_ALPHA"
     },
     {
+        "addr": "0x7D26D5978cD4617C6c7a02C75a42927eF52f405C",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "TIMELOCK_VAULT"
+    },
+    {
+        "addr": "0x861bB12491F453F48fE1A05e9C034588de638262",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "TIMELOCK_TOKEN"
+    },
+    {
+        "addr": "0x0CB10d561C2a273AFBB81E535738BA3095E9dCF2",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "BRAVO_VAULT"
+    },
+    {
+        "addr": "0x76126BDFC0893d9A27336b93824778432cA60808",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "BRAVO_VAULT_TOKEN"
+    },
+    {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
         "chainId": 11155111,
         "name": "ExampleTypeCheck",
@@ -88,17 +82,5 @@
         "chainId": 11155111,
         "name": "ExampleTypeCheck_02",
         "isContract": true
-    },
-    {
-        "addr": "0x91c38e9DAC0519f710A51fC1eD9c596120117a89",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "VAULT"
-    },
-    {
-        "addr": "0x976c4fC31ec068493d56C1BFeFB913E03E857723",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "TOKEN_1"
     }
 ]

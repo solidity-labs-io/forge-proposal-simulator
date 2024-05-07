@@ -37,13 +37,13 @@ contract TimelockProposalUnitTest is Test {
         address expectedOwner = addresses.getAddress("PROTOCOL_TIMELOCK");
 
         // check that the vault was deployed
-        assertTrue(addresses.isAddressSet("VAULT"));
-        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
+        assertTrue(addresses.isAddressSet("TIMELOCK_VAULT"));
+        Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
         assertEq(timelockVault.owner(), expectedOwner, "Wrong owner");
 
         // check that the token was deployed
-        assertTrue(addresses.isAddressSet("TOKEN_1"));
-        Token token = Token(addresses.getAddress("TOKEN_1"));
+        assertTrue(addresses.isAddressSet("TIMELOCK_TOKEN"));
+        Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
         assertEq(token.owner(), expectedOwner, "Wrong owner");
         assertEq(
             token.balanceOf(expectedOwner),
@@ -73,10 +73,12 @@ contract TimelockProposalUnitTest is Test {
     }
 
     function test_build() public {
+        test_deploy();
+
         vm.expectRevert("No actions found");
         proposal.getProposalActions();
 
-        Token token = Token(addresses.getAddress("TOKEN_1"));
+        Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
 
         uint256 expectedBalance = token.balanceOf(
             addresses.getAddress("PROTOCOL_TIMELOCK")
@@ -94,17 +96,17 @@ contract TimelockProposalUnitTest is Test {
         assertEq(targets.length, 3, "Wrong targets length");
         assertEq(
             targets[0],
-            addresses.getAddress("VAULT"),
+            addresses.getAddress("TIMELOCK_VAULT"),
             "Wrong target at index 0"
         );
         assertEq(
             targets[1],
-            addresses.getAddress("TOKEN_1"),
+            addresses.getAddress("TIMELOCK_TOKEN"),
             "Wrong target at index 1"
         );
         assertEq(
             targets[2],
-            addresses.getAddress("VAULT"),
+            addresses.getAddress("TIMELOCK_VAULT"),
             "Wrong target at index 2"
         );
 
@@ -120,7 +122,7 @@ contract TimelockProposalUnitTest is Test {
             calldatas[0],
             abi.encodeWithSignature(
                 "whitelistToken(address,bool)",
-                addresses.getAddress("TOKEN_1"),
+                addresses.getAddress("TIMELOCK_TOKEN"),
                 true
             ),
             "Wrong calldata at index 0"
@@ -129,7 +131,7 @@ contract TimelockProposalUnitTest is Test {
             calldatas[1],
             abi.encodeWithSignature(
                 "approve(address,uint256)",
-                addresses.getAddress("VAULT"),
+                addresses.getAddress("TIMELOCK_VAULT"),
                 expectedBalance
             ),
             "Wrong calldata at index 1"
@@ -138,7 +140,7 @@ contract TimelockProposalUnitTest is Test {
             calldatas[2],
             abi.encodeWithSignature(
                 "deposit(address,uint256)",
-                addresses.getAddress("TOKEN_1"),
+                addresses.getAddress("TIMELOCK_TOKEN"),
                 expectedBalance
             ),
             "Wrong calldata at index 2"
@@ -154,8 +156,8 @@ contract TimelockProposalUnitTest is Test {
         assertTrue(proposal.checkOnChainCalldata());
 
         // check that the proposal actions were executed
-        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        Token token = Token(addresses.getAddress("TOKEN_1"));
+        Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
+        Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
 
         assertEq(
             timelockVault.owner(),
@@ -164,12 +166,14 @@ contract TimelockProposalUnitTest is Test {
         );
 
         assertTrue(
-            timelockVault.tokenWhitelist(addresses.getAddress("TOKEN_1")),
+            timelockVault.tokenWhitelist(
+                addresses.getAddress("TIMELOCK_TOKEN")
+            ),
             "Token not whitelisted"
         );
 
         assertEq(
-            token.balanceOf(addresses.getAddress("VAULT")),
+            token.balanceOf(addresses.getAddress("TIMELOCK_VAULT")),
             token.totalSupply(),
             "Wrong token balance"
         );
@@ -227,5 +231,11 @@ contract TimelockProposalUnitTest is Test {
         bytes memory data = proposal.getExecuteCalldata();
 
         assertEq(data, expectedData, "Wrong executeBatch calldata");
+    }
+
+    function test_checkOnChainCalldata() public {
+        test_build();
+
+        assertTrue(proposal.checkOnChainCalldata());
     }
 }

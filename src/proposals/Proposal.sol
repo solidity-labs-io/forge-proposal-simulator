@@ -55,6 +55,7 @@ abstract contract Proposal is Test, Script, IProposal {
     constructor() {
         DEBUG = vm.envOr("DEBUG", false);
 
+        DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
         DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
         DO_BUILD = vm.envOr("DO_BUILD", true);
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
@@ -81,18 +82,18 @@ abstract contract Proposal is Test, Script, IProposal {
         address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         vm.startBroadcast(deployer);
-        if (DO_DEPLOY) deploy();
+        if (DO_DEPLOY) {
+            deploy();
+            addresses.printJSONChanges();
+        }
         if (DO_AFTER_DEPLOY) afterDeployMock();
+
         vm.stopBroadcast();
 
         if (DO_BUILD) build();
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
-
-        if (DO_PRINT) {
-            addresses.printJSONChanges();
-            print();
-        }
+        if (DO_PRINT) print();
     }
 
     /// @notice return proposal calldata.

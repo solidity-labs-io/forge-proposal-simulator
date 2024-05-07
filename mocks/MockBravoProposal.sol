@@ -46,7 +46,13 @@ contract MockBravoProposal is GovernorBravoProposal {
 
             token.transferOwnership(owner);
 
-            token.transfer(address(owner), token.balanceOf(address(this)));
+            // During forge script execution, the deployer of the contracts is
+            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
+            uint256 balance = token.balanceOf(address(this)) > 0
+                ? token.balanceOf(address(this))
+                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
+
+            token.transfer(address(owner), balance);
         }
     }
 

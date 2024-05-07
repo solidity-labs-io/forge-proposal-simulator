@@ -10,6 +10,8 @@ import {ITimelockController} from "@interfaces/ITimelockController.sol";
 import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 
+// forge script mocks/MockTimelockProposal.sol --rpc-url sepolia --account
+// ${CAST_WALLET} -vvvv --broadcast --slow
 contract MockTimelockProposal is TimelockProposal {
     function name() public pure override returns (string memory) {
         return "TIMELOCK_MOCK";
@@ -33,32 +35,38 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function deploy() public override {
-        if (!addresses.isAddressSet("VAULT")) {
+        if (!addresses.isAddressSet("TIMELOCK_VAULT")) {
             Vault timelockVault = new Vault();
 
-            addresses.addAddress("VAULT", address(timelockVault), true);
+            addresses.addAddress(
+                "TIMELOCK_VAULT",
+                address(timelockVault),
+                true
+            );
 
             timelockVault.transferOwnership(address(timelock));
         }
 
-        if (!addresses.isAddressSet("TOKEN_1")) {
+        if (!addresses.isAddressSet("TIMELOCK_TOKEN")) {
             Token token = new Token();
-            addresses.addAddress("TOKEN_1", address(token), true);
+            addresses.addAddress("TIMELOCK_TOKEN", address(token), true);
 
             token.transferOwnership(address(timelock));
-            token.transfer(
-                address(timelock),
-                // TODO check if should be the DEPLOYER_EOA instead of address
-                // this when running through forge script
-                token.balanceOf(address(this))
-            );
+
+            // During forge script execution, the deployer of the contracts is
+            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
+            uint256 balance = token.balanceOf(address(this)) > 0
+                ? token.balanceOf(address(this))
+                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
+
+            token.transfer(address(timelock), balance);
         }
     }
 
     function build() public override buildModifier(address(timelock)) {
         /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("VAULT");
-        address token = addresses.getAddress("TOKEN_1");
+        address timelockVault = addresses.getAddress("TIMELOCK_VAULT");
+        address token = addresses.getAddress("TIMELOCK_TOKEN");
         uint256 balance = Token(token).balanceOf(address(timelock));
 
         Vault(timelockVault).whitelistToken(token, true);

@@ -13,6 +13,11 @@ contract MultisigProposalUnitTest is Test {
     Addresses public addresses;
     MultisigProposal public proposal;
 
+    struct Call {
+        address target;
+        bytes callData;
+    }
+
     function setUp() public {
         // Instantiate the Addresses contract
         addresses = new Addresses("./addresses/Addresses.json");
@@ -165,11 +170,6 @@ contract MultisigProposalUnitTest is Test {
         );
     }
 
-    struct Call {
-        address target;
-        bytes callData;
-    }
-
     function test_getCalldata() public {
         test_build();
 
@@ -190,5 +190,10 @@ contract MultisigProposalUnitTest is Test {
         bytes memory data = proposal.getCalldata();
 
         assertEq(data, expectedData, "Wrong scheduleBatch calldata");
+    }
+
+    function test_checkOnChainCalldata() public {
+        vm.expectRevert("Not implemented");
+        proposal.checkOnChainCalldata();
     }
 }

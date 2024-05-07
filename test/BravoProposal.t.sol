@@ -184,4 +184,10 @@ contract BravoProposalUnitTest is Test {
 
         assertEq(data, expectedData, "Wrong propose calldata");
     }
+
+    function test_checkOnChainCalldata() public {
+        test_build();
+
+        assertTrue(proposal.checkOnChainCalldata());
+    }
 }
