@@ -68,8 +68,8 @@ jobs:
             - name: "Build the contracts and print their size"
               run: "forge build --sizes"
 
-            - name: "Proposal Simulator Unit Tests"
-              run: "forge test --mc UnitTest --fork-url sepolia"
+            - name: "Proposal Simulator Integration Tests"
+              run: "forge test --mc IntegrationTest --fork-url sepolia"
 
             - name: "Add test summary"
               run: |

@@ -10,7 +10,7 @@ import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 import {MockTimelockProposal} from "@mocks/MockTimelockProposal.sol";
 
-contract TimelockProposalUnitTest is Test {
+contract TimelockProposalIntegrationTest is Test {
     Addresses public addresses;
     TimelockProposal public proposal;
 

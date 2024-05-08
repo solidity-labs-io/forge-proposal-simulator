@@ -9,7 +9,7 @@ import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 import {MockMultisigProposal} from "@mocks/MockMultisigProposal.sol";
 
-contract MultisigProposalUnitTest is Test {
+contract MultisigProposalIntegrationTest is Test {
     Addresses public addresses;
     MultisigProposal public proposal;
 

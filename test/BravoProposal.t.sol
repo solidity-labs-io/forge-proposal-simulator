@@ -9,7 +9,7 @@ import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 import {MockBravoProposal} from "@mocks/MockBravoProposal.sol";
 
-contract BravoProposalUnitTest is Test {
+contract BravoProposalIntegrationTest is Test {
     Addresses public addresses;
     GovernorBravoProposal public proposal;
 
