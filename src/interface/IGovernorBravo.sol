@@ -178,7 +178,7 @@ abstract contract GovernorBravoDelegateStorageV1 is
     ) external view virtual returns (ProposalState);
 }
 
-interface GovernorAlphaInterface {
+interface IGovernorAlpha {
     function quorumVotes() external view returns (uint256);
 
     function getActions(
@@ -200,7 +200,7 @@ interface GovernorAlphaInterface {
 
 abstract contract GovernorBravoDelegateStorageV2 is
     GovernorBravoDelegateStorageV1,
-    GovernorAlphaInterface
+    IGovernorAlpha
 {
     /// @notice Stores the expiration of account whitelist status as a timestamp
     mapping(address account => uint expiration)
