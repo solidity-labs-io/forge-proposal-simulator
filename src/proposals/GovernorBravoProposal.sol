@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@comp-governance/GovernorBravoInterfaces.sol";
-import {GovernorBravoDelegate} from "@comp-governance/GovernorBravoDelegate.sol";
-import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
+import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@interface/IGovernorBravo.sol";
+import {GovernorBravoDelegateStorageV2} from "@interface/IGovernorBravo.sol";
+import {IVotes} from "@interface/IVotes.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "./Proposal.sol";
@@ -38,12 +38,14 @@ abstract contract GovernorBravoProposal is Proposal {
         );
     }
 
-    /// @notice Check if there are any on-chain proposal that matches the
+    /// @notice Check if there are any on-chain proposals that match the
     /// proposal calldata
     function checkOnChainCalldata(
         address governorAddress
     ) public view override returns (bool calldataExist) {
-        GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
+        GovernorBravoDelegateStorageV2 governor = GovernorBravoDelegateStorageV2(
+                governorAddress
+            );
 
         uint256 proposalCount = governor.proposalCount();
 
@@ -87,7 +89,9 @@ abstract contract GovernorBravoProposal is Proposal {
         address governanceToken,
         address proposerAddress
     ) internal {
-        GovernorBravoDelegate governor = GovernorBravoDelegate(governorAddress);
+        GovernorBravoDelegateStorageV2 governor = GovernorBravoDelegateStorageV2(
+                governorAddress
+            );
 
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal

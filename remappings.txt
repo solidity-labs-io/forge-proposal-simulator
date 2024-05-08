@@ -1,11 +1,10 @@
 @forge-std/=lib/forge-std/src/
 @test=test/
 @proposals/=src/proposals/
+@interface/=src/interface/
 @type-check/=src/type-check/
 @addresses/=addresses/
 @utils/=utils/
 @examples/=examples/
 @script=script/
 @mocks=mocks/
-@openzeppelin=lib/openzeppelin-contracts/contracts
-@comp-governance=lib/compound-governance/contracts

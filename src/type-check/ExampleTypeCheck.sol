@@ -13,6 +13,7 @@ contract ExampleTypeCheck {
         uint256 varB2;
         StructC structC;
     }
+
     struct StructA {
         address varA1;
         bytes32 varA2;
