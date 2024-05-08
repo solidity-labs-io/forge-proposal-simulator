@@ -2,7 +2,7 @@ pragma solidity ^0.8.0;
 
 import {console} from "@forge-std/console.sol";
 
-import {ITimelockController} from "@interfaces/ITimelockController.sol";
+import {ITimelockController} from "@interface/ITimelockController.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "@proposals/Proposal.sol";
@@ -11,7 +11,6 @@ abstract contract TimelockProposal is Proposal {
     using Address for address;
 
     /// @notice the predecessor timelock id - default is 0 but inherited
-    /// @dev default is 0 but can be set by the inheriting contract
     bytes32 public predecessor = bytes32(0);
 
     /// @notice the timelock controller

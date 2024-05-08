@@ -4,15 +4,11 @@ pragma solidity ^0.8.0;
 import {console} from "@forge-std/console.sol";
 import {Test} from "@forge-std/Test.sol";
 import {IAddresses} from "@addresses/IAddresses.sol";
-import {Strings} from "@openzeppelin/utils/Strings.sol";
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses
 /// for a given network.
 contract Addresses is IAddresses, Test {
-    using Strings for uint256;
-    using Strings for address;
-
     struct Address {
         address addr;
         bool isContract;
@@ -154,7 +150,7 @@ contract Addresses is IAddresses, Test {
                     "Address: ",
                     name,
                     " doesn't exist on chain: ",
-                    chainId.toString(),
+                    vm.toString(chainId),
                     ". Use addAddress instead"
                 )
             )
@@ -167,7 +163,7 @@ contract Addresses is IAddresses, Test {
                     "Address: ",
                     name,
                     " already set to the same value on chain: ",
-                    chainId.toString()
+                    vm.toString(chainId)
                 )
             )
         );
@@ -355,7 +351,7 @@ contract Addresses is IAddresses, Test {
                     "Address with name: ",
                     name,
                     " already set on chain: ",
-                    chainId.toString()
+                    vm.toString(chainId)
                 )
             )
         );
@@ -369,7 +365,7 @@ contract Addresses is IAddresses, Test {
                     "Address: ",
                     addressToString(addr),
                     " already set on chain: ",
-                    chainId.toString()
+                    vm.toString(chainId)
                 )
             )
         );
@@ -403,7 +399,7 @@ contract Addresses is IAddresses, Test {
                     "Address: ",
                     name,
                     " not set on chain: ",
-                    chainId.toString()
+                    vm.toString(chainId)
                 )
             )
         );
@@ -429,7 +425,7 @@ contract Addresses is IAddresses, Test {
                             "Address: ",
                             name,
                             " is not a contract on chain: ",
-                            chainId.toString()
+                            vm.toString(chainId)
                         )
                     )
                 );
@@ -441,7 +437,7 @@ contract Addresses is IAddresses, Test {
                             "Address: ",
                             name,
                             " is a contract on chain: ",
-                            chainId.toString()
+                            vm.toString(chainId)
                         )
                     )
                 );

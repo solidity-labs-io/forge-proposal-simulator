@@ -1,7 +1,5 @@
 pragma solidity ^0.8.0;
 
-import {Strings} from "@openzeppelin/utils/Strings.sol";
-
 import {Test} from "@forge-std/Test.sol";
 import {VmSafe} from "@forge-std/Vm.sol";
 import {console} from "@forge-std/console.sol";
@@ -11,8 +9,6 @@ import {IProposal} from "@proposals/IProposal.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 abstract contract Proposal is Test, Script, IProposal {
-    using Strings for *;
-
     struct Action {
         address target;
         uint256 value;
@@ -254,11 +250,14 @@ abstract contract Proposal is Test, Script, IProposal {
             /// calls to and from Addresses and the vm contract are ignored
             if (
                 accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].account != address(vm) && /// ignore calls to vm in the build function
+                accountAccesses[i].account != address(vm) &&
+                /// ignore calls to vm in the build function
                 accountAccesses[i].accessor != address(addresses) &&
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
                 accountAccesses[i].accessor == caller /// caller is correct, not a subcall
             ) {
+                /// caller is correct, not a subcall
+
                 actions.push(
                     Action({
                         value: accountAccesses[i].value,
@@ -267,9 +266,9 @@ abstract contract Proposal is Test, Script, IProposal {
                         description: string(
                             abi.encodePacked(
                                 "calling ",
-                                accountAccesses[i].account.toHexString(),
+                                vm.toString(accountAccesses[i].account),
                                 " with ",
-                                accountAccesses[i].value.toString(),
+                                vm.toString(accountAccesses[i].value),
                                 " eth and ",
                                 _bytesToString(accountAccesses[i].data),
                                 " data."

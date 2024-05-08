@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {TimelockInterface} from "@comp-governance/GovernorBravoInterfaces.sol";
 import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
-import {IVotes} from "@openzeppelin/governance/utils/IVotes.sol";
+import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@interface/IGovernorBravo.sol";
+import {GovernorBravoDelegateStorageV2} from "@interface/IGovernorBravo.sol";
+import {IVotes} from "@interface/IVotes.sol";
 
 import {Address} from "@utils/Address.sol";
 import {Proposal} from "./Proposal.sol";
@@ -47,14 +48,13 @@ abstract contract GovernorBravoProposal is Proposal {
         );
     }
 
-    /// @notice Check if there are any on-chain proposal that matches the
+    /// @notice Check if there are any on-chain proposals that match the
     /// proposal calldata
     function checkOnChainCalldata()
         public
         view
         override
-        returns (bool calldataExist)
-    {
+        returns (bool calldataExist) {
         uint256 proposalCount = governor.proposalCount();
 
         while (proposalCount > 0) {

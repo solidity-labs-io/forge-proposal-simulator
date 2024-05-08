@@ -88,7 +88,9 @@ contract GovernorBravoDelegatorStorage {
  * contract which implements GovernorBravoDelegateStorageV1 and following the naming convention
  * GovernorBravoDelegateStorageVX.
  */
-contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
+abstract contract GovernorBravoDelegateStorageV1 is
+    GovernorBravoDelegatorStorage
+{
     /// @notice The delay before voting on a proposal may take place, once proposed, in blocks
     uint public votingDelay;
 
@@ -170,9 +172,36 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
         Expired,
         Executed
     }
+
+    function state(
+        uint proposalId
+    ) external view virtual returns (ProposalState);
 }
 
-contract GovernorBravoDelegateStorageV2 is GovernorBravoDelegateStorageV1 {
+interface IGovernorAlpha {
+    function quorumVotes() external view returns (uint256);
+
+    function getActions(
+        uint256 proposalId
+    )
+        external
+        view
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            string[] memory signatures,
+            bytes[] memory calldatas
+        );
+
+    function castVote(uint proposalId, uint8 support) external;
+    function queue(uint proposalId) external;
+    function execute(uint proposalId) external payable;
+}
+
+abstract contract GovernorBravoDelegateStorageV2 is
+    GovernorBravoDelegateStorageV1,
+    IGovernorAlpha
+{
     /// @notice Stores the expiration of account whitelist status as a timestamp
     mapping(address account => uint expiration)
         public whitelistAccountExpirations;
@@ -214,9 +243,4 @@ interface CompInterface {
         address account,
         uint blockNumber
     ) external view returns (uint96);
-}
-
-interface GovernorAlphaInterface {
-    /// @notice The total number of proposals
-    function proposalCount() external returns (uint);
 }
