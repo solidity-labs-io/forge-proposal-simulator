@@ -54,7 +54,8 @@ abstract contract GovernorBravoProposal is Proposal {
         public
         view
         override
-        returns (bool calldataExist) {
+        returns (bool calldataExist)
+    {
         uint256 proposalCount = governor.proposalCount();
 
         while (proposalCount > 0) {
