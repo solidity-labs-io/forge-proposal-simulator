@@ -50,7 +50,6 @@ contract MultisigProposalIntegrationTest is Test {
 
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("MULTISIG_VAULT"));
-        Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("MULTISIG_TOKEN"));

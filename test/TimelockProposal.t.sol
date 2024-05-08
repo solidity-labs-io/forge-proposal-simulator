@@ -36,7 +36,6 @@ contract TimelockProposalIntegrationTest is Test {
 
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("TIMELOCK_VAULT"));
-        Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("TIMELOCK_TOKEN"));

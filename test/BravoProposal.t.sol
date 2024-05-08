@@ -49,7 +49,6 @@ contract BravoProposalIntegrationTest is Test {
 
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("BRAVO_VAULT"));
-        Vault timelockVault = Vault(addresses.getAddress("BRAVO_VAULT"));
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("BRAVO_VAULT_TOKEN"));

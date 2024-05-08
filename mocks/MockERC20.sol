@@ -33,9 +33,10 @@ contract MockERC20 is IERC20 {
 
     uint256 internal _totalSupply;
 
-    mapping(address => uint256) internal _balanceOf;
+    mapping(address owner => uint256 balance) internal _balanceOf;
 
-    mapping(address => mapping(address => uint256)) internal _allowance;
+    mapping(address owner => mapping(address spender => uint256 balance))
+        internal _allowance;
 
     function totalSupply() external view override returns (uint256) {
         return _totalSupply;
@@ -51,16 +52,6 @@ contract MockERC20 is IERC20 {
     ) external view override returns (uint256) {
         return _allowance[owner][spender];
     }
-
-    /*//////////////////////////////////////////////////////////////
-                            EIP-2612 STORAGE
-    //////////////////////////////////////////////////////////////*/
-
-    uint256 internal INITIAL_CHAIN_ID;
-
-    bytes32 internal INITIAL_DOMAIN_SEPARATOR;
-
-    mapping(address => uint256) public nonces;
 
     /*//////////////////////////////////////////////////////////////
                                INITIALIZE

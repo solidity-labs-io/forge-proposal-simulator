@@ -4,8 +4,7 @@ pragma solidity ^0.8.0;
 import "@forge-std/console.sol";
 
 import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
-import {TimelockInterface, GovernorBravoDelegateStorageV1 as Bravo} from "@interface/IGovernorBravo.sol";
-import {GovernorBravoDelegateStorageV2} from "@interface/IGovernorBravo.sol";
+import {TimelockInterface} from "@interface/IGovernorBravo.sol";
 import {IVotes} from "@interface/IVotes.sol";
 
 import {Address} from "@utils/Address.sol";
