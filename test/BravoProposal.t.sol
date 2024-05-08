@@ -47,19 +47,15 @@ contract BravoProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        address expectedOwner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
-
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("BRAVO_VAULT"));
         Vault timelockVault = Vault(addresses.getAddress("BRAVO_VAULT"));
-        assertEq(timelockVault.owner(), expectedOwner, "Wrong owner");
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("BRAVO_VAULT_TOKEN"));
         Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
-        assertEq(token.owner(), expectedOwner, "Wrong owner");
         assertEq(
-            token.balanceOf(expectedOwner),
+            token.balanceOf(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")),
             token.totalSupply(),
             "Wrong token balance"
         );
@@ -141,12 +137,6 @@ contract BravoProposalIntegrationTest is Test {
         // check that the proposal actions were executed
         Vault vault = Vault(addresses.getAddress("BRAVO_VAULT"));
         Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
-
-        assertEq(
-            vault.owner(),
-            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"),
-            "Wrong owner"
-        );
 
         assertTrue(
             vault.tokenWhitelist(address(token)),

@@ -36,15 +36,11 @@ contract MockBravoProposal is GovernorBravoProposal {
             Vault timelockVault = new Vault();
 
             addresses.addAddress("BRAVO_VAULT", address(timelockVault), true);
-
-            timelockVault.transferOwnership(owner);
         }
 
         if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
-
-            token.transferOwnership(owner);
 
             // During forge script execution, the deployer of the contracts is
             // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
@@ -101,11 +97,8 @@ contract MockBravoProposal is GovernorBravoProposal {
         );
         assertEq(amount, balance);
 
-        assertEq(timelockVault.owner(), address(timelock));
         assertTrue(timelockVault.tokenWhitelist(address(token)));
-        assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), address(timelock));
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }

@@ -34,19 +34,15 @@ contract TimelockProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        address expectedOwner = addresses.getAddress("PROTOCOL_TIMELOCK");
-
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("TIMELOCK_VAULT"));
         Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
-        assertEq(timelockVault.owner(), expectedOwner, "Wrong owner");
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("TIMELOCK_TOKEN"));
         Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
-        assertEq(token.owner(), expectedOwner, "Wrong owner");
         assertEq(
-            token.balanceOf(expectedOwner),
+            token.balanceOf(addresses.getAddress("PROTOCOL_TIMELOCK")),
             token.totalSupply(),
             "Wrong token balance"
         );
@@ -158,12 +154,6 @@ contract TimelockProposalIntegrationTest is Test {
         // check that the proposal actions were executed
         Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
         Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
-
-        assertEq(
-            timelockVault.owner(),
-            addresses.getAddress("PROTOCOL_TIMELOCK"),
-            "Wrong owner"
-        );
 
         assertTrue(
             timelockVault.tokenWhitelist(

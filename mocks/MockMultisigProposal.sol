@@ -36,15 +36,11 @@ contract MockMultisigProposal is MultisigProposal {
                 address(timelockVault),
                 true
             );
-
-            timelockVault.transferOwnership(multisig);
         }
 
         if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("MULTISIG_TOKEN", address(token), true);
-
-            token.transferOwnership(multisig);
 
             // During forge script execution, the deployer of the contracts is
             // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
@@ -94,11 +90,8 @@ contract MockMultisigProposal is MultisigProposal {
         (uint256 amount, ) = timelockVault.deposits(address(token), multisig);
         assertEq(amount, balance);
 
-        assertEq(timelockVault.owner(), multisig);
         assertTrue(timelockVault.tokenWhitelist(address(token)));
-        assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), multisig);
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }

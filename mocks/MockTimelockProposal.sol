@@ -43,15 +43,11 @@ contract MockTimelockProposal is TimelockProposal {
                 address(timelockVault),
                 true
             );
-
-            timelockVault.transferOwnership(address(timelock));
         }
 
         if (!addresses.isAddressSet("TIMELOCK_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("TIMELOCK_TOKEN", address(token), true);
-
-            token.transferOwnership(address(timelock));
 
             // During forge script execution, the deployer of the contracts is
             // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
@@ -97,11 +93,8 @@ contract MockTimelockProposal is TimelockProposal {
         );
         assertEq(amount, balance);
 
-        assertEq(timelockVault.owner(), address(timelock));
         assertTrue(timelockVault.tokenWhitelist(address(token)));
-        assertFalse(timelockVault.paused());
 
-        assertEq(token.owner(), address(timelock));
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
     }
 }

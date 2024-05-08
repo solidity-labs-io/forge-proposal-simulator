@@ -48,19 +48,15 @@ contract MultisigProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        address expectedOwner = addresses.getAddress("DEV_MULTISIG");
-
         // check that the vault was deployed
         assertTrue(addresses.isAddressSet("MULTISIG_VAULT"));
         Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-        assertEq(timelockVault.owner(), expectedOwner, "Wrong owner");
 
         // check that the token was deployed
         assertTrue(addresses.isAddressSet("MULTISIG_TOKEN"));
         Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-        assertEq(token.owner(), expectedOwner, "Wrong owner");
         assertEq(
-            token.balanceOf(expectedOwner),
+            token.balanceOf(addresses.getAddress("DEV_MULTISIG")),
             token.totalSupply(),
             "Wrong token balance"
         );
@@ -149,12 +145,6 @@ contract MultisigProposalIntegrationTest is Test {
         // check that the proposal actions were executed
         Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
         Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-
-        assertEq(
-            timelockVault.owner(),
-            addresses.getAddress("DEV_MULTISIG"),
-            "Wrong owner"
-        );
 
         assertTrue(
             timelockVault.tokenWhitelist(
