@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 pragma solidity ^0.8.0;
 
-import {GovernorBravoDelegateStorageV2, GovernorBravoEvents, TimelockInterface, CompInterface, GovernorAlphaInterface} from "./GovernorBravoInterfaces.sol";
+import {GovernorBravoDelegateStorageV2, GovernorBravoEvents, TimelockInterface, CompInterface, IGovernorAlpha} from "./IGovernorBravo.sol";
 
 /// @custom:security-contact security@compound.finance
 contract GovernorBravoDelegate is
@@ -768,7 +768,7 @@ contract GovernorBravoDelegate is
             initialProposalId == 0,
             "GovernorBravo::_initiate: can only initiate once"
         );
-        proposalCount = GovernorAlphaInterface(governorAlpha).proposalCount();
+        proposalCount = IGovernorAlpha(governorAlpha).proposalCount();
         initialProposalId = proposalCount;
         timelock.acceptAdmin();
     }
