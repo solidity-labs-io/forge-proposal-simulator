@@ -30,7 +30,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice debug flag to print internal proposal logs
     bool internal DEBUG;
     bool internal DO_DEPLOY;
-    bool internal DO_AFTER_DEPLOY;
+    bool internal DO_AFTER_DEPLOY_MOCK;
     bool internal DO_BUILD;
     bool internal DO_SIMULATE;
     bool internal DO_VALIDATE;
@@ -56,7 +56,7 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = vm.envOr("DEBUG", false);
 
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
-        DO_AFTER_DEPLOY = vm.envOr("DO_AFTER_DEPLOY", true);
+        DO_AFTER_DEPLOY_MOCK = vm.envOr("DO_AFTER_DEPLOY_MOCK", true);
         DO_BUILD = vm.envOr("DO_BUILD", true);
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
@@ -89,7 +89,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         vm.stopBroadcast();
 
-        if (DO_AFTER_DEPLOY) afterDeployMock();
+        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
         if (DO_BUILD) build();
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
@@ -153,9 +153,8 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev contracts calls here are broadcast if the broadcast flag is set.
     function deploy() public virtual {}
 
-    /// @notice helper function to take any needed actions after deployment
-    ///         e.g. initialize contracts, transfer ownership, etc.
-    /// @dev contracts calls here are broadcast if the broadcast flag is set
+    /// @notice helper function to mock on-chain data after deployment
+    ///         e.g. pranking, etching, etc.
     function afterDeployMock() public virtual {}
 
     /// @notice build the proposal actions
