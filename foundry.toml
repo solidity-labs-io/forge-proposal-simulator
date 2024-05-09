@@ -12,7 +12,7 @@ optimizer_runs = 200
 [rpc_endpoints]
 localhost = "http://127.0.0.1:8545"
 sepolia = "https://sepolia.drpc.org"
-mainnet = "${MAINNET_RPC_URL}" 
+mainnet = "https://mainnet.gateway.tenderly.co" 
 
 #[etherscan]
 #sepolia = { key = "${ETHERSCAN_API_KEY}" }

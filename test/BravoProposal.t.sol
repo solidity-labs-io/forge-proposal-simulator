@@ -2,12 +2,9 @@
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
-import {console} from "@forge-std/console.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {Vault} from "@mocks/Vault.sol";
-import {Token} from "@mocks/Token.sol";
 import {MockBravoProposal} from "@mocks/MockBravoProposal.sol";
 
 contract BravoProposalIntegrationTest is Test {

@@ -8,12 +8,9 @@ import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
-import {Vault} from "@mocks/Vault.sol";
-import {Token} from "@mocks/Token.sol";
-
 contract MockBravoProposal is GovernorBravoProposal {
     // @notice new kink value
-    uint64 kink = 750000000000000000;
+    uint64 public kink = 750000000000000000;
 
     function name() public pure override returns (string memory) {
         return "ADJUST_WETH_IR_CURVE";
