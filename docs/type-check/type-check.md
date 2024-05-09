@@ -9,7 +9,7 @@ The `TypeCheckAddresses.json file` is a JSON file used for verifying the bytecod
 ExampleTypeCheck.sol
 
 ```solidity
-pragma solidity =0.8.19;
+pragma solidity ^0.8.0;
 
 contract ExampleTypeCheck {
     struct StructC {
@@ -49,7 +49,7 @@ contract ExampleTypeCheck {
 ExampleTypeCheck_02.sol
 
 ```solidity
-pragma solidity =0.8.19;
+pragma solidity ^0.8.0;
 
 contract ExampleTypeCheck_02 {
     struct StructA {

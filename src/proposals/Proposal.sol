@@ -161,25 +161,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice actually simulates the proposal.
     ///         e.g. schedule and execute on Timelock Controller,
     ///         proposes, votes and execute on Governor Bravo, etc.
-    function simulate() public virtual {
-        /// Check if there are actions to run
-        uint256 actionsLength = actions.length;
-        require(actionsLength > 0, "No actions found");
-
-        for (uint256 i = 0; i < actionsLength; i++) {
-            for (uint256 j = i + 1; j < actionsLength; j++) {
-                // Check if either the target or the arguments are the same for any two actions
-                bool isDuplicateTarget = actions[i].target == actions[j].target;
-                bool isDuplicateArguments = keccak256(actions[i].arguments) ==
-                    keccak256(actions[j].arguments);
-
-                require(
-                    !(isDuplicateTarget && isDuplicateArguments),
-                    "Duplicate actions found"
-                );
-            }
-        }
-    }
+    function simulate() public virtual {}
 
     /// @notice execute post-proposal checks.
     ///          e.g. read state variables of the deployed contracts to make
@@ -204,6 +186,35 @@ abstract contract Proposal is Test, Script, IProposal {
             "\n\n------------------ Proposal Calldata ------------------"
         );
         console.logBytes(getCalldata());
+    }
+
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+    /// -------------------------- Internal functions -------------------------
+    /// --------------------------------------------------------------------
+    /// --------------------------------------------------------------------
+
+    /// @notice validate actions inclusion
+    /// default implementation check for duplicate actions
+    function _validateActionInclusion(
+        address target,
+        uint256 value,
+        bytes memory data
+    ) internal {
+        // uses transition storage to check for duplicate actions
+        bytes32 actionHash = bytes32(abi.encodePacked(target, value, data));
+
+        uint256 found;
+
+        assembly {
+            found := tload(actionHash)
+        }
+
+        require(found == 0, "Duplicated action found");
+
+        assembly {
+            tstore(actionHash, 1)
+        }
     }
 
     /// --------------------------------------------------------------------
@@ -255,7 +266,11 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
                 accountAccesses[i].accessor == caller /// caller is correct, not a subcall
             ) {
-                /// caller is correct, not a subcall
+                _validateActionInclusion(
+                    accountAccesses[i].account,
+                    accountAccesses[i].value,
+                    accountAccesses[i].data
+                );
 
                 actions.push(
                     Action({

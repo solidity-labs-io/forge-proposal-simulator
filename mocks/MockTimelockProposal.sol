@@ -73,9 +73,6 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function simulate() public override {
-        /// Call parent simulate function to check if there are actions to execute
-        super.simulate();
-
         address dev = addresses.getAddress("DEPLOYER_EOA");
 
         /// Dev is proposer and executor

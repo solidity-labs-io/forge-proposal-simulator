@@ -8,7 +8,7 @@ import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
-contract MockBravoProposal is GovernorBravoProposal {
+contract MockDuplicatedActionProposal is GovernorBravoProposal {
     // @notice new kink value
     uint64 public kink = 750000000000000000;
 
@@ -47,27 +47,7 @@ contract MockBravoProposal is GovernorBravoProposal {
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded
-        configurator.setBorrowKink(comet, kink);
         configurator.setSupplyKink(comet, kink);
-    }
-
-    function simulate() public override {
-        address governanceToken = addresses.getAddress("COMP_TOKEN");
-        address proposer = addresses.getAddress("COMPOUND_PROPOSER");
-
-        /// Dev is proposer and executor
-        _simulateActions(governanceToken, proposer);
-    }
-
-    function validate() public view override {
-        ICompoundConfigurator configurator = ICompoundConfigurator(
-            addresses.getAddress("COMPOUND_CONFIGURATOR")
-        );
-        address comet = addresses.getAddress("COMPOUND_COMET");
-
-        ICompoundConfigurator.Configuration memory config = configurator
-            .getConfiguration(comet);
-        assertEq(config.supplyKink, kink);
-        assertEq(config.borrowKink, kink);
+        configurator.setSupplyKink(comet, kink);
     }
 }

@@ -13,7 +13,7 @@ Add file `ExampleTypeCheck.sol` in `src` of root repository:
 ```solidity
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity =0.8.19;
+pragma solidity ^0.8.0;
 
 contract ExampleTypeCheck {
     struct StructC {

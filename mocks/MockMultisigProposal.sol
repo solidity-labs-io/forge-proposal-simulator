@@ -72,9 +72,6 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function simulate() public override {
-        /// Call parent simulate function to check if there are actions to execute
-        super.simulate();
-
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
         /// Dev is proposer and executor
