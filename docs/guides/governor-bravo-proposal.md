@@ -85,7 +85,7 @@ contract BRAVO_01 is GovernorBravoProposal {
         // Call parent _run function to check if there are actions to execute
         super.simulate();
 
-        address governor = addresses.getAddress("PROTOCOL_GOVERNOR");
+        address governor = addresses.getAddress("GOVERNOR_BRAVO");
         address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
         address proposer = addresses.getAddress("DEPLOYER_EOA");
 
@@ -175,7 +175,7 @@ Copy the addresses of the timelock, governor, and governance token from the scri
     },
     {
         "addr": "YOUR_GOVERNOR_ADDRESS",
-        "name": "PROTOCOL_GOVERNOR",
+        "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
@@ -205,7 +205,7 @@ Run the script:
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Copy the _PROTOCOL_GOVERNOR_ALPHA_ address from the script output and add it to
+Copy the _GOVERNOR_BRAVO_ALPHA_ address from the script output and add it to
 the `Addresses.json` file.
 
 ### Setting Up the Addresses JSON
@@ -223,7 +223,7 @@ to Address.json. The final Address.json file should be something like this:
     },
     {
         "addr": "YOUR_GOVERNOR_ADDRESS",
-        "name": "PROTOCOL_GOVERNOR",
+        "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
@@ -235,7 +235,7 @@ to Address.json. The final Address.json file should be something like this:
     },
     {
         "addr": "YOUR_GOVERNOR_ALPHA_ADDRESS",
-        "name": "PROTOCOL_GOVERNOR_ALPHA",
+        "name": "GOVERNOR_BRAVO_ALPHA",
         "chainId": 11155111,
         "isContract": true
     },

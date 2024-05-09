@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
 import {IGovernorAlpha} from "@interface/IGovernorBravo.sol";
+import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
@@ -12,11 +13,12 @@ import {Token} from "@mocks/Token.sol";
 
 contract MockBravoProposal is GovernorBravoProposal {
     function name() public pure override returns (string memory) {
-        return "BRAVO_MOCK";
+        return "ADJUST_WETH_IR_CURVE";
     }
 
     function description() public pure override returns (string memory) {
-        return "Bravo proposal mock";
+        return
+            "Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet";
     }
 
     function run() public override {
@@ -25,80 +27,50 @@ contract MockBravoProposal is GovernorBravoProposal {
         );
         vm.makePersistent(address(addresses));
 
-        governor = IGovernorAlpha(addresses.getAddress("PROTOCOL_GOVERNOR"));
+        governor = IGovernorAlpha(addresses.getAddress("GOVERNOR_BRAVO"));
 
         super.run();
-    }
-
-    function deploy() public override {
-        address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
-        if (!addresses.isAddressSet("BRAVO_VAULT")) {
-            Vault timelockVault = new Vault();
-
-            addresses.addAddress("BRAVO_VAULT", address(timelockVault), true);
-        }
-
-        if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
-            Token token = new Token();
-            addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
-
-            // During forge script execution, the deployer of the contracts is
-            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
-            uint256 balance = token.balanceOf(address(this)) > 0
-                ? token.balanceOf(address(this))
-                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
-
-            token.transfer(address(owner), balance);
-        }
     }
 
     function build()
         public
         override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"))
+        buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO"))
     {
         /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("BRAVO_VAULT");
-        address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
-        uint256 balance = Token(token).balanceOf(
-            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
-        );
 
-        Vault(timelockVault).whitelistToken(token, true);
+        ICompoundConfigurator configurator = ICompoundConfigurator(
+            addresses.getAddress("COMPOUND_CONFIGURATOR")
+        );
+        address comet = addresses.getAddress("COMPOUND_COMET");
+        uint64 kink = 850000000000000000;
 
         /// CALLS -- mutative and recorded
-        Token(token).approve(timelockVault, balance);
-        Vault(timelockVault).deposit(token, balance);
+        configurator.setBorrowKink(comet, kink);
+        configurator.setSupplyKink(comet, kink);
     }
 
     function simulate() public override {
         /// Call parent simulate function to check if there are actions to execute
         super.simulate();
 
-        address governanceToken = addresses.getAddress(
-            "PROTOCOL_GOVERNANCE_TOKEN"
-        );
-        address proposer = addresses.getAddress("DEPLOYER_EOA");
+        address governanceToken = addresses.getAddress("COMP_TOKEN");
+        address proposer = addresses.getAddress("COMPOUND_PROPOSER");
 
         /// Dev is proposer and executor
         _simulateActions(governanceToken, proposer);
     }
 
     function validate() public view override {
-        Vault timelockVault = Vault(addresses.getAddress("BRAVO_VAULT"));
-        Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
-
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
-
-        uint256 balance = token.balanceOf(address(timelockVault));
-        (uint256 amount, ) = timelockVault.deposits(
-            address(token),
-            address(timelock)
+        ICompoundConfigurator configurator = ICompoundConfigurator(
+            addresses.getAddress("COMPOUND_CONFIGURATOR")
         );
-        assertEq(amount, balance);
+        address comet = addresses.getAddress("COMPOUND_COMET");
+        uint64 kink = 850000000000000000;
 
-        assertTrue(timelockVault.tokenWhitelist(address(token)));
-
-        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
+        ICompoundConfigurator.Configuration memory config = configurator
+            .getConfiguration(comet);
+        assertEq(config.supplyKink, kink);
+        assertEq(config.borrowKink, kink);
     }
 }

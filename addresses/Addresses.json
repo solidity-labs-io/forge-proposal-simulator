@@ -17,12 +17,47 @@
         "chainId": 11155111,
         "isContract": false
     },
-
     {
         "addr": "0x2EE28b12156fCaa13Bb188347cE6635C18bc94ef",
         "chainId": 11155111,
         "isContract": true,
-        "name": "PROTOCOL_GOVERNOR"
+        "name": "GOVERNOR_BRAVO"
+    },
+    {
+        "addr": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_GOVERNOR_BRAVO"
+    },
+    {
+        "addr": "0x316f9708bB98af7dA9c68C1C3b5e79039cD336E3",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_CONFIGURATOR"
+    },
+    {
+        "addr": "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18",
+        "chainId": 1,
+        "isContract": false,
+        "name": "COMPOUND_PROPOSER"
+    },
+    {
+        "addr": "0xa17581a9e3356d9a858b789d68b4d866e593ae94",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_COMET"
+    },
+    {
+        "addr": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMP_TOKEN"
+    },
+    {
+        "addr": "0x6d903f6003cca6255D85CcA4D3B5E5146dC33925",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_TIMELOCK_BRAVO"
     },
     {
         "addr": "0x37039662a2364Df8206691c1D1b9ff8d22389290",
@@ -46,7 +81,7 @@
         "addr": "0x35e292eA59C71caC368ecdf9046eF7C3ED0DF79E",
         "chainId": 11155111,
         "isContract": true,
-        "name": "PROTOCOL_GOVERNOR_ALPHA"
+        "name": "GOVERNOR_BRAVO_ALPHA"
     },
     {
         "addr": "0x7D26D5978cD4617C6c7a02C75a42927eF52f405C",
