@@ -43,7 +43,7 @@ jobs:
                     echo "✅ Passed or warnings found" >> $GITHUB_STEP_SUMMARY
                   fi
 
-    unit-test:
+    integration-test:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Check out the repo"
@@ -69,7 +69,7 @@ jobs:
               run: "forge build --sizes"
 
             - name: "Proposal Simulator Integration Tests"
-              run: "forge test --mc IntegrationTest --fork-url sepolia"
+              run: "forge test --mc IntegrationTest --fork-url mainnet"
 
             - name: "Add test summary"
               run: |
