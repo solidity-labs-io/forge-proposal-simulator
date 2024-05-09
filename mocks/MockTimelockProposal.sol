@@ -5,7 +5,7 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
-import {ITimelockController} from "@interfaces/ITimelockController.sol";
+import {ITimelockController} from "@interface/ITimelockController.sol";
 
 import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";

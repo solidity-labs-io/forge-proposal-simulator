@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
-import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
+import {IGovernorAlpha} from "@interface/IGovernorBravo.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
@@ -25,7 +25,7 @@ contract MockBravoProposal is GovernorBravoProposal {
         );
         vm.makePersistent(address(addresses));
 
-        governor = IGovernorBravo(addresses.getAddress("PROTOCOL_GOVERNOR"));
+        governor = IGovernorAlpha(addresses.getAddress("PROTOCOL_GOVERNOR"));
 
         super.run();
     }

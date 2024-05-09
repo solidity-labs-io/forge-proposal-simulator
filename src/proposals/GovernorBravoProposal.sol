@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {IGovernorBravo} from "@interfaces/IGovernorBravo.sol";
+import {IGovernorAlpha, GovernorBravoDelegateStorageV1} from "@interface/IGovernorBravo.sol";
 import {TimelockInterface} from "@interface/IGovernorBravo.sol";
 import {IVotes} from "@interface/IVotes.sol";
 
@@ -15,11 +15,11 @@ abstract contract GovernorBravoProposal is Proposal {
 
     /// @notice Governor Bravo contract
     /// @dev must be set by the inheriting contract
-    IGovernorBravo public governor;
+    IGovernorAlpha public governor;
 
     /// @notice set the Governor Bravo contract
     function setGovernor(address _governor) public {
-        governor = IGovernorBravo(_governor);
+        governor = IGovernorAlpha(_governor);
     }
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
@@ -55,7 +55,9 @@ abstract contract GovernorBravoProposal is Proposal {
         override
         returns (bool calldataExist)
     {
-        uint256 proposalCount = governor.proposalCount();
+        uint256 proposalCount = GovernorBravoDelegateStorageV1(
+            address(governor)
+        ).proposalCount();
 
         while (proposalCount > 0) {
             (
@@ -98,7 +100,9 @@ abstract contract GovernorBravoProposal is Proposal {
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
-            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 proposalThreshold = GovernorBravoDelegateStorageV1(
+                address(governor)
+            ).proposalThreshold();
             uint256 votingPower = quorumVotes > proposalThreshold
                 ? quorumVotes
                 : proposalThreshold;
@@ -116,15 +120,21 @@ abstract contract GovernorBravoProposal is Proposal {
         bytes memory data = address(governor).functionCall(proposeCalldata);
         uint256 proposalId = abi.decode(data, (uint256));
 
+        GovernorBravoDelegateStorageV1 governorCast = GovernorBravoDelegateStorageV1(
+                address(governor)
+            );
+
         // Check proposal is in Pending state
         require(
-            governor.state(proposalId) == IGovernorBravo.ProposalState.Pending
+            governorCast.state(proposalId) ==
+                GovernorBravoDelegateStorageV1.ProposalState.Pending
         );
 
         // Roll to Active state (voting period)
-        vm.roll(block.number + governor.votingDelay() + 1);
+        vm.roll(block.number + governorCast.votingDelay() + 1);
         require(
-            governor.state(proposalId) == IGovernorBravo.ProposalState.Active
+            governorCast.state(proposalId) ==
+                GovernorBravoDelegateStorageV1.ProposalState.Active
         );
 
         // Vote YES
@@ -132,25 +142,28 @@ abstract contract GovernorBravoProposal is Proposal {
         governor.castVote(proposalId, 1);
 
         // Roll to allow proposal state transitions
-        vm.roll(block.number + governor.votingPeriod());
+        vm.roll(block.number + governorCast.votingPeriod());
         require(
-            governor.state(proposalId) == IGovernorBravo.ProposalState.Succeeded
+            governorCast.state(proposalId) ==
+                GovernorBravoDelegateStorageV1.ProposalState.Succeeded
         );
 
         // Queue the proposal
         governor.queue(proposalId);
         require(
-            governor.state(proposalId) == IGovernorBravo.ProposalState.Queued
+            governorCast.state(proposalId) ==
+                GovernorBravoDelegateStorageV1.ProposalState.Queued
         );
 
         // Warp to allow proposal execution on timelock
-        TimelockInterface timelock = TimelockInterface(governor.timelock());
+        TimelockInterface timelock = TimelockInterface(governorCast.timelock());
         vm.warp(block.timestamp + timelock.delay());
 
         // Execute the proposal
         governor.execute(proposalId);
         require(
-            governor.state(proposalId) == IGovernorBravo.ProposalState.Executed
+            governorCast.state(proposalId) ==
+                GovernorBravoDelegateStorageV1.ProposalState.Executed
         );
     }
 }
