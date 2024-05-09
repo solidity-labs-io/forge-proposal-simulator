@@ -80,10 +80,12 @@ abstract contract GovernorBravoProposal is Proposal {
             bytes memory proposalCalldata = getCalldata();
 
             if (keccak256(proposalCalldata) == keccak256(onchainCalldata)) {
-                console.log(
-                    "Proposal calldata matches on-chain calldata with proposalId: ",
-                    proposalCount
-                );
+                if (DEBUG) {
+                    console.log(
+                        "Proposal calldata matches on-chain calldata with proposalId: ",
+                        proposalCount
+                    );
+                }
                 return true;
             }
         }
