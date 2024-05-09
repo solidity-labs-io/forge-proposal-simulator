@@ -12,6 +12,9 @@ import {Vault} from "@mocks/Vault.sol";
 import {Token} from "@mocks/Token.sol";
 
 contract MockBravoProposal is GovernorBravoProposal {
+    // @notice new kink value
+    uint64 kink = 750000000000000000;
+
     function name() public pure override returns (string memory) {
         return "ADJUST_WETH_IR_CURVE";
     }
@@ -27,7 +30,9 @@ contract MockBravoProposal is GovernorBravoProposal {
         );
         vm.makePersistent(address(addresses));
 
-        governor = IGovernorAlpha(addresses.getAddress("GOVERNOR_BRAVO"));
+        governor = IGovernorAlpha(
+            addresses.getAddress("COMPOUND_GOVERNOR_BRAVO")
+        );
 
         super.run();
     }
@@ -43,7 +48,6 @@ contract MockBravoProposal is GovernorBravoProposal {
             addresses.getAddress("COMPOUND_CONFIGURATOR")
         );
         address comet = addresses.getAddress("COMPOUND_COMET");
-        uint64 kink = 850000000000000000;
 
         /// CALLS -- mutative and recorded
         configurator.setBorrowKink(comet, kink);
@@ -66,7 +70,6 @@ contract MockBravoProposal is GovernorBravoProposal {
             addresses.getAddress("COMPOUND_CONFIGURATOR")
         );
         address comet = addresses.getAddress("COMPOUND_COMET");
-        uint64 kink = 850000000000000000;
 
         ICompoundConfigurator.Configuration memory config = configurator
             .getConfiguration(comet);

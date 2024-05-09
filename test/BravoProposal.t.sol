@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
+import {console} from "@forge-std/console.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
@@ -53,6 +54,43 @@ contract BravoProposalIntegrationTest is Test {
         proposal.getProposalActions();
 
         proposal.build();
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
+
+        address target = addresses.getAddress("COMPOUND_CONFIGURATOR");
+        assertEq(targets.length, 2, "Wrong targets length");
+        assertEq(targets[0], target, "Wrong target at index 0");
+        assertEq(targets[1], target, "Wrong target at index 1");
+
+        uint256 expectedValue = 0;
+        assertEq(values.length, 2, "Wrong values length");
+        assertEq(values[0], expectedValue, "Wrong value at index 0");
+
+        uint64 kink = 750000000000000000;
+        assertEq(calldatas.length, 2);
+        assertEq(
+            calldatas[0],
+            abi.encodeWithSignature(
+                "setBorrowKink(address,uint64)",
+                addresses.getAddress("COMPOUND_COMET"),
+                kink
+            ),
+            "Wrong calldata at index 0"
+        );
+
+        assertEq(
+            calldatas[1],
+            abi.encodeWithSignature(
+                "setSupplyKink(address,uint64)",
+                addresses.getAddress("COMPOUND_COMET"),
+                kink
+            ),
+            "Wrong calldata at index 1"
+        );
     }
 
     function test_simulate() public {
@@ -62,6 +100,8 @@ contract BravoProposalIntegrationTest is Test {
 
         // check that proposal exists
         assertTrue(proposal.checkOnChainCalldata());
+
+        proposal.validate();
     }
 
     function test_getCalldata() public {
@@ -87,17 +127,5 @@ contract BravoProposalIntegrationTest is Test {
         bytes memory data = proposal.getCalldata();
 
         assertEq(data, expectedData, "Wrong propose calldata");
-    }
-
-    function test_checkOnChainCalldata() public {
-        test_build();
-
-        assertTrue(proposal.checkOnChainCalldata());
-    }
-
-    function test_validate() public {
-        test_simulate();
-
-        proposal.validate();
     }
 }

@@ -73,17 +73,16 @@ abstract contract Proposal is Test, Script, IProposal {
     function run() public virtual {
         vm.selectFork(primaryForkId);
 
-        /// DEPLOYER_EOA must be an unlocked account when running through forge script
-        /// use cast wallet to unlock the account
-        address deployer = addresses.getAddress("DEPLOYER_EOA");
-
-        vm.startBroadcast(deployer);
         if (DO_DEPLOY) {
+            /// DEPLOYER_EOA must be an unlocked account when running through forge script
+            /// use cast wallet to unlock the account
+            address deployer = addresses.getAddress("DEPLOYER_EOA");
+
+            vm.startBroadcast(deployer);
             deploy();
             addresses.printJSONChanges();
+            vm.stopBroadcast();
         }
-
-        vm.stopBroadcast();
 
         if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
         if (DO_BUILD) build();
