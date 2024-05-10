@@ -50,13 +50,6 @@ contract MockBravoProposal is GovernorBravoProposal {
         configurator.setSupplyKink(comet, kink);
     }
 
-    function simulate() public override {
-        address governanceToken = addresses.getAddress("COMP_TOKEN");
-        address proposer = addresses.getAddress("COMPOUND_PROPOSER");
-
-        _simulateActions(governanceToken, proposer);
-    }
-
     function validate() public view override {
         ICompoundConfigurator configurator = ICompoundConfigurator(
             addresses.getAddress("COMPOUND_CONFIGURATOR")

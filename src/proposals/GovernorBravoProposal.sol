@@ -3,8 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {IGovernorBravo, ITimelockBravo} from "@interface/IGovernorBravo.sol";
-import {IVotes} from "@interface/IVotes.sol";
+import {IGovernorBravo, ITimelockBravo, IERC20VotesComp} from "@interface/IGovernorBravo.sol";
 
 import {Address} from "@utils/Address.sol";
 
@@ -92,13 +91,9 @@ abstract contract GovernorBravoProposal is Proposal {
     }
 
     /// @notice Simulate governance proposal
-    /// @param governanceToken address of the governance token of the system
-    /// @param proposerAddress address of the proposer
-    /// TODO check if is possible to get rid of paramaters
-    function _simulateActions(
-        address governanceToken,
-        address proposerAddress
-    ) internal {
+    function simulate() public override {
+        address proposerAddress = address(1);
+        IERC20VotesComp governanceToken = governor.comp();
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
@@ -106,10 +101,10 @@ abstract contract GovernorBravoProposal is Proposal {
             uint256 votingPower = quorumVotes > proposalThreshold
                 ? quorumVotes
                 : proposalThreshold;
-            deal(governanceToken, proposerAddress, votingPower);
+            deal(address(governanceToken), proposerAddress, votingPower);
             // Delegate proposer's votes to itself
             vm.prank(proposerAddress);
-            IVotes(governanceToken).delegate(proposerAddress);
+            IERC20VotesComp(governanceToken).delegate(proposerAddress);
             vm.roll(block.number + 1);
         }
 

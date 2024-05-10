@@ -45,6 +45,8 @@ interface IGovernorBravo {
     function execute(uint proposalId) external payable;
 
     function state(uint proposalId) external view returns (ProposalState);
+
+    function comp() external view returns (IERC20VotesComp);
 }
 
 interface ITimelockBravo {
@@ -73,4 +75,13 @@ interface ITimelockBravo {
         bytes calldata data,
         uint eta
     ) external payable returns (bytes memory);
+}
+
+interface IERC20VotesComp {
+    function getPriorVotes(
+        address account,
+        uint blockNumber
+    ) external view returns (uint96);
+
+    function delegate(address delegatee) external;
 }
