@@ -202,7 +202,7 @@ abstract contract Proposal is Test, Script, IProposal {
         bytes memory data
     ) internal {
         // uses transition storage to check for duplicate actions
-        bytes32 actionHash = bytes32(abi.encodePacked(target, value, data));
+        bytes32 actionHash = keccak256(abi.encodePacked(target, value, data));
 
         uint256 found;
 
