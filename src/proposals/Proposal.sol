@@ -103,6 +103,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function getProposalActions()
         public
         view
+        virtual
         override
         returns (
             address[] memory targets,
@@ -140,6 +141,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
 
+    /// @notice set the Addresses contract
     function setAddresses(Addresses _addresses) public {
         addresses = _addresses;
     }
@@ -196,11 +198,11 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice validate actions inclusion
     /// default implementation check for duplicate actions
-    function _validateActionInclusion(
+    function _validateAction(
         address target,
         uint256 value,
         bytes memory data
-    ) internal {
+    ) internal virtual {
         // uses transition storage to check for duplicate actions
         bytes32 actionHash = keccak256(abi.encodePacked(target, value, data));
 
@@ -216,6 +218,9 @@ abstract contract Proposal is Test, Script, IProposal {
             tstore(actionHash, 1)
         }
     }
+
+    /// @notice validate actions
+    function _validateActions() internal virtual {}
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
@@ -234,6 +239,7 @@ abstract contract Proposal is Test, Script, IProposal {
         vm.startPrank(toPrank);
 
         _startSnapshot = vm.snapshot();
+
         vm.startStateDiffRecording();
     }
 
@@ -266,7 +272,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
                 accountAccesses[i].accessor == caller /// caller is correct, not a subcall
             ) {
-                _validateActionInclusion(
+                _validateAction(
                     accountAccesses[i].account,
                     accountAccesses[i].value,
                     accountAccesses[i].data
@@ -284,35 +290,15 @@ abstract contract Proposal is Test, Script, IProposal {
                                 " with ",
                                 vm.toString(accountAccesses[i].value),
                                 " eth and ",
-                                _bytesToString(accountAccesses[i].data),
+                                vm.toString(accountAccesses[i].data),
                                 " data."
                             )
                         )
                     })
                 );
             }
+
+            _validateActions();
         }
-    }
-
-    /// @notice convert bytes to a string
-    /// @param data the bytes to convert to a human readable string
-    function _bytesToString(
-        bytes memory data
-    ) private pure returns (string memory) {
-        /// Initialize an array of characters twice the length of data,
-        /// since each byte will be represented by two hexadecimal characters
-        bytes memory buffer = new bytes(data.length * 2);
-
-        /// Characters for conversion
-        bytes memory characters = "0123456789abcdef";
-
-        for (uint256 i = 0; i < data.length; i++) {
-            /// For each byte, find the corresponding hexadecimal characters
-            buffer[i * 2] = characters[uint256(uint8(data[i] >> 4))];
-            buffer[i * 2 + 1] = characters[uint256(uint8(data[i] & 0x0f))];
-        }
-
-        /// Convert the bytes array to a string and return
-        return string(buffer);
     }
 }

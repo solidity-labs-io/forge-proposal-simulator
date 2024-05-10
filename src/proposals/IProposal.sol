@@ -64,6 +64,6 @@ interface IProposal {
     /// @notice print proposal description, actions and calldata
     function print() external;
 
-    /// @notice set Addresses objec
+    /// @notice set the Addresses contract
     function setAddresses(Addresses _addresses) external;
 }

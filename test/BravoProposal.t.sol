@@ -66,6 +66,7 @@ contract BravoProposalIntegrationTest is Test {
         uint256 expectedValue = 0;
         assertEq(values.length, 2, "Wrong values length");
         assertEq(values[0], expectedValue, "Wrong value at index 0");
+        assertEq(values[1], expectedValue, "Wrong value at index 1");
 
         uint64 kink = 750000000000000000;
         assertEq(calldatas.length, 2);

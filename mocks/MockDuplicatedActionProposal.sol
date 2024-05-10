@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
-import {IGovernorAlpha} from "@interface/IGovernorBravo.sol";
 import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
@@ -27,9 +26,7 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
         );
         vm.makePersistent(address(addresses));
 
-        governor = IGovernorAlpha(
-            addresses.getAddress("COMPOUND_GOVERNOR_BRAVO")
-        );
+        setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
         super.run();
     }

@@ -98,6 +98,13 @@ abstract contract TimelockProposal is Proposal {
             salt
         );
 
+        if (DEBUG) {
+            console.log(
+                "Proposal calldata matches on-chain calldata with proposal hash: "
+            );
+            console.logBytes32(hash);
+        }
+
         return timelock.isOperation(hash) || timelock.isOperationPending(hash);
     }
 

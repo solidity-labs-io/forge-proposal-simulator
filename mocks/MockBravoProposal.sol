@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
 
-import {IGovernorAlpha} from "@interface/IGovernorBravo.sol";
 import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
@@ -22,14 +21,15 @@ contract MockBravoProposal is GovernorBravoProposal {
     }
 
     function run() public override {
-        addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+            )
         );
+
         vm.makePersistent(address(addresses));
 
-        governor = IGovernorAlpha(
-            addresses.getAddress("COMPOUND_GOVERNOR_BRAVO")
-        );
+        setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
         super.run();
     }
@@ -40,7 +40,6 @@ contract MockBravoProposal is GovernorBravoProposal {
         buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO"))
     {
         /// STATICCALL -- not recorded for the run stage
-
         ICompoundConfigurator configurator = ICompoundConfigurator(
             addresses.getAddress("COMPOUND_CONFIGURATOR")
         );
@@ -55,7 +54,6 @@ contract MockBravoProposal is GovernorBravoProposal {
         address governanceToken = addresses.getAddress("COMP_TOKEN");
         address proposer = addresses.getAddress("COMPOUND_PROPOSER");
 
-        /// Dev is proposer and executor
         _simulateActions(governanceToken, proposer);
     }
 
