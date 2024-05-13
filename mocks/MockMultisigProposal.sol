@@ -1,20 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {console} from "@forge-std/console.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 import {Vault} from "@mocks/Vault.sol";
-import {Token} from "@mocks/Token.sol";
+
+interface ProxyAdmin {
+    function upgrade(address proxy, address implementation) external;
+}
+
+interface Proxy {
+    function implementation() external view returns (address);
+}
 
 contract MockMultisigProposal is MultisigProposal {
     function name() public pure override returns (string memory) {
-        return "MULTISIG_MOCK";
+        return "OPTMISM_MULTISIG_MOCK";
     }
 
     function description() public pure override returns (string memory) {
-        return "Multisig proposal mock";
+        return "Mock proposal that upgrade the L1 NFT Bridge";
     }
 
     function run() public override {
@@ -27,68 +35,48 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function deploy() public override {
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-        if (!addresses.isAddressSet("MULTISIG_VAULT")) {
-            Vault timelockVault = new Vault();
+        if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
+            address l1NFTBridgeImplementation = address(new Vault());
 
             addresses.addAddress(
-                "MULTISIG_VAULT",
-                address(timelockVault),
+                "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
+                l1NFTBridgeImplementation,
                 true
             );
-        }
-
-        if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
-            Token token = new Token();
-            addresses.addAddress("MULTISIG_TOKEN", address(token), true);
-
-            // During forge script execution, the deployer of the contracts is
-            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
-            uint256 balance = token.balanceOf(address(this)) > 0
-                ? token.balanceOf(address(this))
-                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
-
-            token.transfer(multisig, balance);
         }
     }
 
     function build()
         public
         override
-        buildModifier(addresses.getAddress("DEV_MULTISIG"))
+        buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
     {
-        address multisig = addresses.getAddress("DEV_MULTISIG");
+        ProxyAdmin proxy = ProxyAdmin(
+            addresses.getAddress("OPTIMISM_PROXY_ADMIN")
+        );
 
-        /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("MULTISIG_VAULT");
-        address token = addresses.getAddress("MULTISIG_TOKEN");
-        uint256 balance = Token(token).balanceOf(address(multisig));
-
-        Vault(timelockVault).whitelistToken(token, true);
-
-        /// CALLS -- mutative and recorded
-        Token(token).approve(timelockVault, balance);
-        Vault(timelockVault).deposit(token, balance);
+        proxy.upgrade(
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
+        );
     }
 
     function simulate() public override {
-        address multisig = addresses.getAddress("DEV_MULTISIG");
+        address multisig = addresses.getAddress("OPTIMISM_MULTISIG");
 
-        /// Dev is proposer and executor
         _simulateActions(multisig);
     }
 
-    function validate() public view override {
-        Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-        address multisig = addresses.getAddress("DEV_MULTISIG");
+    function validate() public override {
+        Proxy proxy = Proxy(
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
+        );
 
-        uint256 balance = token.balanceOf(address(timelockVault));
-        (uint256 amount, ) = timelockVault.deposits(address(token), multisig);
-        assertEq(amount, balance);
-
-        assertTrue(timelockVault.tokenWhitelist(address(token)));
-
-        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
+        vm.prank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
+        require(
+            proxy.implementation() ==
+                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+            "Proxy implementation not set"
+        );
     }
 }

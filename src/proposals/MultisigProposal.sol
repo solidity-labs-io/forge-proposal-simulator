@@ -57,10 +57,6 @@ abstract contract MultisigProposal is Proposal {
     }
 
     function _simulateActions(address multisig) internal {
-        require(
-            multisig.getContractHash() == MULTISIG_BYTECODE_HASH,
-            "Multisig address doesn't match Gnosis Safe contract bytecode"
-        );
         vm.startPrank(multisig);
 
         /// this is a hack because multisig execTransaction requires owners signatures

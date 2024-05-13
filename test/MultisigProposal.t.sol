@@ -33,12 +33,12 @@ contract MultisigProposalIntegrationTest is Test {
     function test_setUp() public view {
         assertEq(
             proposal.name(),
-            string("MULTISIG_MOCK"),
+            string("OPTMISM_MULTISIG_MOCK"),
             "Wrong proposal name"
         );
         assertEq(
             proposal.description(),
-            string("Multisig proposal mock"),
+            string("Mock proposal that upgrade the L1 NFT Bridge"),
             "Wrong proposal description"
         );
     }
@@ -48,16 +48,8 @@ contract MultisigProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        // check that the vault was deployed
-        assertTrue(addresses.isAddressSet("MULTISIG_VAULT"));
-
-        // check that the token was deployed
-        assertTrue(addresses.isAddressSet("MULTISIG_TOKEN"));
-        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-        assertEq(
-            token.balanceOf(addresses.getAddress("DEV_MULTISIG")),
-            token.totalSupply(),
-            "Wrong token balance"
+        assertTrue(
+            addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
         );
     }
 
@@ -66,12 +58,6 @@ contract MultisigProposalIntegrationTest is Test {
 
         vm.expectRevert("No actions found");
         proposal.getProposalActions();
-
-        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-
-        uint256 expectedBalance = token.balanceOf(
-            addresses.getAddress("DEV_MULTISIG")
-        );
 
         proposal.build();
 
@@ -82,57 +68,27 @@ contract MultisigProposalIntegrationTest is Test {
         ) = proposal.getProposalActions();
 
         // check that the proposal targets are correct
-        assertEq(targets.length, 3, "Wrong targets length");
+        assertEq(targets.length, 1, "Wrong targets length");
         assertEq(
             targets[0],
-            addresses.getAddress("MULTISIG_VAULT"),
+            addresses.getAddress("OPTIMISM_PROXY_ADMIN"),
             "Wrong target at index 0"
-        );
-        assertEq(
-            targets[1],
-            addresses.getAddress("MULTISIG_TOKEN"),
-            "Wrong target at index 1"
-        );
-        assertEq(
-            targets[2],
-            addresses.getAddress("MULTISIG_VAULT"),
-            "Wrong target at index 2"
         );
 
         // check that the proposal values are correct
-        assertEq(values.length, 3, "Wrong values length");
+        assertEq(values.length, 1, "Wrong values length");
         assertEq(values[0], 0, "Wrong value at index 0");
-        assertEq(values[1], 0, "Wrong value at index 1");
-        assertEq(values[2], 0, "Wrong value at index 2");
 
         // check that the proposal calldatas are correct
-        assertEq(calldatas.length, 3);
+        assertEq(calldatas.length, 1);
         assertEq(
             calldatas[0],
             abi.encodeWithSignature(
-                "whitelistToken(address,bool)",
-                addresses.getAddress("MULTISIG_TOKEN"),
-                true
+                "upgrade(address,address)",
+                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
+                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
             ),
             "Wrong calldata at index 0"
-        );
-        assertEq(
-            calldatas[1],
-            abi.encodeWithSignature(
-                "approve(address,uint256)",
-                addresses.getAddress("MULTISIG_VAULT"),
-                expectedBalance
-            ),
-            "Wrong calldata at index 1"
-        );
-        assertEq(
-            calldatas[2],
-            abi.encodeWithSignature(
-                "deposit(address,uint256)",
-                addresses.getAddress("MULTISIG_TOKEN"),
-                expectedBalance
-            ),
-            "Wrong calldata at index 2"
         );
     }
 
@@ -141,22 +97,7 @@ contract MultisigProposalIntegrationTest is Test {
 
         proposal.simulate();
 
-        // check that the proposal actions were executed
-        Vault timelockVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-
-        assertTrue(
-            timelockVault.tokenWhitelist(
-                addresses.getAddress("MULTISIG_TOKEN")
-            ),
-            "Token not whitelisted"
-        );
-
-        assertEq(
-            token.balanceOf(addresses.getAddress("MULTISIG_VAULT")),
-            token.totalSupply(),
-            "Wrong token balance"
-        );
+        proposal.validate();
     }
 
     function test_getCalldata() public {
@@ -178,17 +119,11 @@ contract MultisigProposalIntegrationTest is Test {
 
         bytes memory data = proposal.getCalldata();
 
-        assertEq(data, expectedData, "Wrong scheduleBatch calldata");
+        assertEq(data, expectedData, "Wrong aggregate calldata");
     }
 
     function test_checkOnChainCalldata() public {
         vm.expectRevert("Not implemented");
         proposal.checkOnChainCalldata();
-    }
-
-    function test_validate() public {
-        test_simulate();
-
-        proposal.validate();
     }
 }
