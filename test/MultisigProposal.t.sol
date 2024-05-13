@@ -5,8 +5,6 @@ import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {Vault} from "@mocks/Vault.sol";
-import {Token} from "@mocks/Token.sol";
 import {MockMultisigProposal} from "@mocks/MockMultisigProposal.sol";
 
 contract MultisigProposalIntegrationTest is Test {
