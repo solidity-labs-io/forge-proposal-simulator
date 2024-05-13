@@ -6,7 +6,6 @@ auto_detect_solc = true
 fs_permissions = [{ access = "read", path = "./"}]
 optimizer = true
 optimizer_runs = 200
-solc_version = "0.8.25"
 evm_version="Cancun"
 
 [rpc_endpoints]

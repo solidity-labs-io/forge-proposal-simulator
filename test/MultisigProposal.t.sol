@@ -11,8 +11,10 @@ contract MultisigProposalIntegrationTest is Test {
     Addresses public addresses;
     MultisigProposal public proposal;
 
-    struct Call {
+    struct Call3Value {
         address target;
+        bool allowFailure;
+        uint256 value;
         bytes callData;
     }
 
@@ -101,17 +103,25 @@ contract MultisigProposalIntegrationTest is Test {
     function test_getCalldata() public {
         test_build();
 
-        (address[] memory targets, , bytes[] memory calldatas) = proposal
-            .getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
 
-        Call[] memory calls = new Call[](targets.length);
+        Call3Value[] memory calls = new Call3Value[](targets.length);
 
         for (uint256 i; i < calls.length; i++) {
-            calls[i] = Call({target: targets[i], callData: calldatas[i]});
+            calls[i] = Call3Value({
+                target: targets[i],
+                allowFailure: false,
+                value: values[i],
+                callData: calldatas[i]
+            });
         }
 
         bytes memory expectedData = abi.encodeWithSignature(
-            "aggregate((address,bytes)[])",
+            "aggregate3Value((address,bool,uint256,bytes)[])",
             calls
         );
 
