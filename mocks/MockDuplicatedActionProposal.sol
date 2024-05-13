@@ -9,7 +9,7 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 contract MockDuplicatedActionProposal is GovernorBravoProposal {
     // @notice new kink value
-    uint64 public kink = 750000000000000000;
+    uint64 public kink = 0.75 * 1e18;
 
     function name() public pure override returns (string memory) {
         return "ADJUST_WETH_IR_CURVE";
@@ -26,7 +26,7 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
         );
         vm.makePersistent(address(addresses));
 
-        setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
+        setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO");
 
         super.run();
     }
