@@ -72,11 +72,12 @@ contract MockMultisigProposal is MultisigProposal {
             addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
         );
 
-        vm.prank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
+        vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
         require(
             proxy.implementation() ==
                 addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
             "Proxy implementation not set"
         );
+        vm.stopPrank();
     }
 }
