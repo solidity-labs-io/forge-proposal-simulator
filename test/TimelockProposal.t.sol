@@ -45,9 +45,13 @@ contract TimelockProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
+        // calls after deploy mock to mock arbitrum outbox contract
+        proposal.afterDeployMock();
+
         assertTrue(
             addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
         );
+        assertTrue(addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"));
     }
 
     function test_build() public {
@@ -114,7 +118,7 @@ contract TimelockProposalIntegrationTest is Test {
 
         bytes32 salt = keccak256(abi.encode(proposal.description()));
         uint256 delay = ITimelockController(
-            payable(addresses.getAddress("PROTOCOL_TIMELOCK"))
+            payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
         ).getMinDelay();
 
         bytes memory expectedData = abi.encodeWithSignature(
@@ -158,7 +162,7 @@ contract TimelockProposalIntegrationTest is Test {
     }
 
     function test_checkOnChainCalldata() public {
-        test_build();
+        test_simulate();
 
         assertTrue(proposal.checkOnChainCalldata());
     }

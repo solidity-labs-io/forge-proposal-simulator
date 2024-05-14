@@ -19,6 +19,7 @@ interface IUpgradeExecutor {
     ) external payable;
 }
 
+// Arbitrum upgrades must be done through a delegate call to a GAC deployed contract
 contract GovernanceActionUpgradeWethGateway {
     function upgradeWethGateway(
         address proxyAdmin,
@@ -27,6 +28,14 @@ contract GovernanceActionUpgradeWethGateway {
     ) public {
         IProxyAdmin proxy = IProxyAdmin(proxyAdmin);
         proxy.upgrade(wethGatewayProxy, wethGatewayImpl);
+    }
+}
+
+// Mock arbitrum outbox to return L2 timelock on l2ToL2Sender call
+// otherwise L1 timelock reverts on onlyCounterpartTimelock modifier
+contract MockOutbox {
+    function l2ToL1Sender() external pure returns (address) {
+        return 0x34d45e99f7D8c45ed05B5cA72D54bbD1fb3F98f0;
     }
 }
 
@@ -75,6 +84,16 @@ contract MockTimelockProposal is TimelockProposal {
         }
     }
 
+    function afterDeployMock() public override {
+        address mockOutbox = address(new MockOutbox());
+
+        vm.store(
+            addresses.getAddress("ARBITRUM_BRIDGE"),
+            bytes32(uint256(5)),
+            bytes32(uint256(uint160(mockOutbox)))
+        );
+    }
+
     function build() public override buildModifier(address(timelock)) {
         IUpgradeExecutor upgradeExecutor = IUpgradeExecutor(
             addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR")
@@ -107,10 +126,10 @@ contract MockTimelockProposal is TimelockProposal {
         );
 
         // implementation() caller must be the owner
-        vm.startPrank(addresses.getAddress("ARBITRUM_PROXY_ADMIN"));
+        vm.startPrank(addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"));
         require(
             proxy.implementation() ==
-                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
             "Proxy implementation not set"
         );
         vm.stopPrank();
