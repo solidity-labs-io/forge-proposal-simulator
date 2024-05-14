@@ -18,6 +18,7 @@
     	"contract-name-camelcase": "off",
         "no-unused-import": "error",
         "explicit-types": "off",
-        "const-name-snakecase": "off"
+        "const-name-snakecase": "off",
+        "gas-custom-errors": "off"
     }
 }
