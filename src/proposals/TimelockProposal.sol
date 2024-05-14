@@ -10,7 +10,17 @@ import {Proposal} from "@proposals/Proposal.sol";
 abstract contract TimelockProposal is Proposal {
     using Address for address;
 
+    /// @notice the predecessor timelock id - default is 0 but inherited
     bytes32 public predecessor = bytes32(0);
+
+    /// @notice the timelock controller
+    /// @dev must be set by the inheriting contract
+    ITimelockController public timelock;
+
+    /// @notice set the timelock controller
+    function setTimelock(address _timelock) public {
+        timelock = ITimelockController(_timelock);
+    }
 
     /// @notice get schedule calldata
     function getCalldata()
@@ -19,7 +29,7 @@ abstract contract TimelockProposal is Proposal {
         override
         returns (bytes memory scheduleCalldata)
     {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         (
             address[] memory targets,
@@ -27,9 +37,7 @@ abstract contract TimelockProposal is Proposal {
             bytes[] memory payloads
         ) = getProposalActions();
 
-        address addressCaller = addresses.getAddress(caller);
-        uint256 delay = ITimelockController(payable(addressCaller))
-            .getMinDelay();
+        uint256 delay = timelock.getMinDelay();
 
         scheduleCalldata = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -48,7 +56,7 @@ abstract contract TimelockProposal is Proposal {
         view
         returns (bytes memory executeCalldata)
     {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         (
             address[] memory targets,
@@ -68,22 +76,21 @@ abstract contract TimelockProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata(
-        address timelockAddress
-    ) public view override returns (bool calldataExist) {
-        ITimelockController timelockController = ITimelockController(
-            payable(timelockAddress)
-        );
-
+    function checkOnChainCalldata()
+        public
+        view
+        override
+        returns (bool calldataExist)
+    {
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
-        bytes32 hash = timelockController.hashOperationBatch(
+        bytes32 hash = timelock.hashOperationBatch(
             targets,
             values,
             payloads,
@@ -91,9 +98,14 @@ abstract contract TimelockProposal is Proposal {
             salt
         );
 
-        return
-            timelockController.isOperation(hash) ||
-            timelockController.isOperationPending(hash);
+        if (DEBUG) {
+            console.log(
+                "Proposal calldata matches on-chain calldata with proposal hash: "
+            );
+            console.logBytes32(hash);
+        }
+
+        return timelock.isOperation(hash) || timelock.isOperationPending(hash);
     }
 
     /// @notice simulate timelock proposal
@@ -103,7 +115,7 @@ abstract contract TimelockProposal is Proposal {
         address proposerAddress,
         address executorAddress
     ) internal {
-        bytes32 salt = keccak256(abi.encode(actions[0].description));
+        bytes32 salt = keccak256(abi.encode(description()));
 
         if (DEBUG) {
             console.log("salt:");
@@ -113,17 +125,13 @@ abstract contract TimelockProposal is Proposal {
         bytes memory scheduleCalldata = getCalldata();
         bytes memory executeCalldata = getExecuteCalldata();
 
-        address addressCaller = addresses.getAddress(caller);
-        ITimelockController timelockController = ITimelockController(
-            payable(addressCaller)
-        );
         (
             address[] memory targets,
             uint256[] memory values,
             bytes[] memory payloads
         ) = getProposalActions();
 
-        bytes32 proposalId = timelockController.hashOperationBatch(
+        bytes32 proposalId = timelock.hashOperationBatch(
             targets,
             values,
             payloads,
@@ -132,14 +140,15 @@ abstract contract TimelockProposal is Proposal {
         );
 
         if (
-            !timelockController.isOperationPending(proposalId) &&
-            !timelockController.isOperation(proposalId)
+            !timelock.isOperationPending(proposalId) &&
+            !timelock.isOperation(proposalId)
         ) {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller))
-                .functionCall(scheduleCalldata);
+            bytes memory returndata = address(timelock).functionCall(
+                scheduleCalldata
+            );
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");
@@ -150,15 +159,16 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(proposalId);
         }
 
-        uint256 delay = timelockController.getMinDelay();
+        uint256 delay = timelock.getMinDelay();
         vm.warp(block.timestamp + delay);
 
-        if (!timelockController.isOperationDone(proposalId)) {
+        if (!timelock.isOperationDone(proposalId)) {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(payable(addressCaller))
-                .functionCall(executeCalldata);
+            bytes memory returndata = address(timelock).functionCall(
+                executeCalldata
+            );
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");
@@ -170,7 +180,18 @@ abstract contract TimelockProposal is Proposal {
     }
 
     /// @notice print schedule and execute calldata
-    function _printCalldata() internal view override {
+    function print() public view override {
+        console.log("\n---------------- Proposal Description ----------------");
+        console.log(description());
+
+        console.log("\n------------------ Proposal Actions ------------------");
+        for (uint256 i; i < actions.length; i++) {
+            console.log("%d). %s", i + 1, actions[i].description);
+            console.log("target: %s\npayload", actions[i].target);
+            console.logBytes(actions[i].arguments);
+            console.log("\n");
+        }
+
         console.log(
             "\n\n------------------ Schedule Calldata ------------------"
         );

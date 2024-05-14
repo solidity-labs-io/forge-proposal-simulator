@@ -39,7 +39,7 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Deploys a vault contract and an ERC20 token contract.
-    function _deploy() internal override {
+    function deploy() public override {
         if (!addresses.isAddressSet("VAULT")) {
             Vault timelockVault = new Vault();
             addresses.addAddress("VAULT", address(timelockVault), true);
@@ -55,7 +55,7 @@ contract MULTISIG_01 is MultisigProposal {
     /// 1. Transfers vault ownership to dev multisig.
     /// 2. Transfer token ownership to dev multisig.
     /// 3. Transfers all tokens to dev multisig.
-    function _afterDeploy() internal override {
+    function afterDeployMock() public override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
@@ -70,7 +70,7 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function _build() internal override {
+    function build() public override {
         /// STATICCALL -- not recorded for the run stage
         address timelockVault = addresses.getAddress("VAULT");
         address token = addresses.getAddress("TOKEN_1");
@@ -80,9 +80,9 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Executes the proposal actions.
-    function _run() internal override {
+    function simulate() public override {
         /// Call parent _run function to check if there are actions to execute
-        super._run();
+        super.simulate();
 
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
@@ -91,7 +91,7 @@ contract MULTISIG_01 is MultisigProposal {
     }
 
     /// @notice Validates the post-execution state.
-    function _validate() internal override {
+    function validate() public override {
         address devMultisig = addresses.getAddress("DEV_MULTISIG");
         Vault timelockVault = Vault(addresses.getAddress("VAULT"));
         MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
@@ -116,7 +116,7 @@ Let's go through each of the functions that are overridden.
 -   `_build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
     written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function.
--   `_run()`: Execute the proposal actions outlined in the `_build()` step. This
+-   `simulate()`: Execute the proposal actions outlined in the `_build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
 -   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract

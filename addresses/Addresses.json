@@ -1,32 +1,14 @@
 [
     {
-        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
-        "name": "DEV_MULTISIG",
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "DEPLOYER_EOA",
         "chainId": 31337,
         "isContract": false
     },
     {
-        "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
-        "name": "TEAM_MULTISIG",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
-        "name": "PROTOCOL_TIMELOCK",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        "name": "PROTOCOL_GOVERNOR",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
-        "addr": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-        "name": "PROTOCOL_GOVERNANCE_TOKEN",
-        "chainId": 31337,
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "DEPLOYER_EOA",
+        "chainId": 1,
         "isContract": false
     },
     {
@@ -42,16 +24,46 @@
         "isContract": false
     },
     {
-        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
-        "name": "DEPLOYER_EOA",
-        "chainId": 31337,
-        "isContract": false
-    },
-    {
         "addr": "0x2EE28b12156fCaa13Bb188347cE6635C18bc94ef",
         "chainId": 11155111,
         "isContract": true,
-        "name": "PROTOCOL_GOVERNOR"
+        "name": "GOVERNOR_BRAVO"
+    },
+    {
+        "addr": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_GOVERNOR_BRAVO"
+    },
+    {
+        "addr": "0x316f9708bB98af7dA9c68C1C3b5e79039cD336E3",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_CONFIGURATOR"
+    },
+    {
+        "addr": "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18",
+        "chainId": 1,
+        "isContract": false,
+        "name": "COMPOUND_PROPOSER"
+    },
+    {
+        "addr": "0xa17581a9e3356d9a858b789d68b4d866e593ae94",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_COMET"
+    },
+    {
+        "addr": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMP_TOKEN"
+    },
+    {
+        "addr": "0x6d903f6003cca6255D85CcA4D3B5E5146dC33925",
+        "chainId": 1,
+        "isContract": true,
+        "name": "COMPOUND_TIMELOCK_BRAVO"
     },
     {
         "addr": "0x37039662a2364Df8206691c1D1b9ff8d22389290",
@@ -66,7 +78,7 @@
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "0xb7dd5fd38c6dc6af3dded96bbd8935a71eb04b21",
+        "addr": "0xAE96E645c7c7628BA9507B1e91A5fA3Cb1EB5DA1",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_TIMELOCK"
@@ -75,7 +87,31 @@
         "addr": "0x35e292eA59C71caC368ecdf9046eF7C3ED0DF79E",
         "chainId": 11155111,
         "isContract": true,
-        "name": "PROTOCOL_GOVERNOR_ALPHA"
+        "name": "GOVERNOR_BRAVO_ALPHA"
+    },
+    {
+        "addr": "0x7D26D5978cD4617C6c7a02C75a42927eF52f405C",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "TIMELOCK_VAULT"
+    },
+    {
+        "addr": "0x861bB12491F453F48fE1A05e9C034588de638262",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "TIMELOCK_TOKEN"
+    },
+    {
+        "addr": "0x0CB10d561C2a273AFBB81E535738BA3095E9dCF2",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "BRAVO_VAULT"
+    },
+    {
+        "addr": "0x76126BDFC0893d9A27336b93824778432cA60808",
+        "chainId": 11155111,
+        "isContract": true,
+        "name": "BRAVO_VAULT_TOKEN"
     },
     {
         "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
@@ -90,15 +126,27 @@
         "isContract": true
     },
     {
-        "addr": "0x9eF929330b3ABB6A814DF726A5834D43Df093E2d",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "VAULT"
+        "addr": "0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A",
+        "chainId": 1,
+        "name": "OPTIMISM_MULTISIG",
+        "isContract": true
     },
     {
-        "addr": "0x8dfF5C5b38d65b36064226719F4839E288411376",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "TOKEN_1"
+        "addr": "0x543bA4AADBAb8f9025686Bd03993043599c6fB04",
+        "chainId": 1,
+        "name": "OPTIMISM_PROXY_ADMIN",
+        "isContract": true
+    },
+    {
+        "addr": "0x5a7749f83b81b301cab5f48eb8516b986daef23d",
+        "chainId": 1,
+        "name": "OPTIMISM_L1_NFT_BRIDGE_PROXY",
+        "isContract": true
+    },
+    {
+        "addr": "0xAE2AF01232a6c4a4d3012C5eC5b1b35059caF10d",
+        "chainId": 1,
+        "name": "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
+        "isContract": true
     }
 ]
