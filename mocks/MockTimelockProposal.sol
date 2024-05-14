@@ -1,24 +1,42 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+import {console} from "@forge-std/console.sol";
 import {Addresses} from "@addresses/Addresses.sol";
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
 import {ITimelockController} from "@interface/ITimelockController.sol";
+import {IProxy} from "@interface/IProxy.sol";
+import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 
 import {Vault} from "@mocks/Vault.sol";
-import {Token} from "@mocks/Token.sol";
 
-// forge script mocks/MockTimelockProposal.sol --rpc-url sepolia --account
-// ${CAST_WALLET} -vvvv --broadcast --slow
+interface IUpgradeExecutor {
+    function execute(
+        address upgrader,
+        bytes memory upgradeCalldata
+    ) external payable;
+}
+
+contract GovernanceActionUpgradeWethGateway {
+    function upgradeWethGateway(
+        address proxyAdmin,
+        address wethGatewayProxy,
+        address wethGatewayImpl
+    ) public {
+        IProxyAdmin proxy = IProxyAdmin(proxyAdmin);
+        proxy.upgrade(wethGatewayProxy, wethGatewayImpl);
+    }
+}
+
 contract MockTimelockProposal is TimelockProposal {
     function name() public pure override returns (string memory) {
-        return "TIMELOCK_MOCK";
+        return "ARBITRUM_L1_TIMELOCK_MOCK";
     }
 
     function description() public pure override returns (string memory) {
-        return "Timelock proposal mock";
+        return "Mock proposal that upgrades the weth gateway";
     }
 
     function run() public override {
@@ -28,70 +46,73 @@ contract MockTimelockProposal is TimelockProposal {
         vm.makePersistent(address(addresses));
 
         timelock = ITimelockController(
-            addresses.getAddress("PROTOCOL_TIMELOCK")
+            addresses.getAddress("ARBITRUM_L1_TIMELOCK")
         );
 
         super.run();
     }
 
     function deploy() public override {
-        if (!addresses.isAddressSet("TIMELOCK_VAULT")) {
-            Vault timelockVault = new Vault();
+        if (
+            !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
+        ) {
+            address l1NFTBridgeImplementation = address(new Vault());
 
             addresses.addAddress(
-                "TIMELOCK_VAULT",
-                address(timelockVault),
+                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
+                l1NFTBridgeImplementation,
                 true
             );
         }
 
-        if (!addresses.isAddressSet("TIMELOCK_TOKEN")) {
-            Token token = new Token();
-            addresses.addAddress("TIMELOCK_TOKEN", address(token), true);
-
-            // During forge script execution, the deployer of the contracts is
-            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
-            uint256 balance = token.balanceOf(address(this)) > 0
-                ? token.balanceOf(address(this))
-                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
-
-            token.transfer(address(timelock), balance);
+        if (!addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY")) {
+            address gac = address(new GovernanceActionUpgradeWethGateway());
+            addresses.addAddress(
+                "ARBITRUM_GAC_UPGRADE_WETH_GATEWAY",
+                gac,
+                true
+            );
         }
     }
 
     function build() public override buildModifier(address(timelock)) {
-        /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("TIMELOCK_VAULT");
-        address token = addresses.getAddress("TIMELOCK_TOKEN");
-        uint256 balance = Token(token).balanceOf(address(timelock));
+        IUpgradeExecutor upgradeExecutor = IUpgradeExecutor(
+            addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR")
+        );
 
-        Vault(timelockVault).whitelistToken(token, true);
-
-        /// CALLS -- mutative and recorded
-        Token(token).approve(timelockVault, balance);
-        Vault(timelockVault).deposit(token, balance);
+        upgradeExecutor.execute(
+            addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"),
+            abi.encodeWithSelector(
+                GovernanceActionUpgradeWethGateway.upgradeWethGateway.selector,
+                addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"),
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY"),
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
+            )
+        );
     }
 
     function simulate() public override {
-        address dev = addresses.getAddress("DEPLOYER_EOA");
+        // Proposer must be arbitrum bridge
+        address proposer = addresses.getAddress("ARBITRUM_BRIDGE");
 
-        /// Dev is proposer and executor
-        _simulateActions(dev, dev);
+        // Executor can be anyone
+        address executor = address(1);
+
+        _simulateActions(proposer, executor);
     }
 
-    function validate() public view override {
-        Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
-        Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
-
-        uint256 balance = token.balanceOf(address(timelockVault));
-        (uint256 amount, ) = timelockVault.deposits(
-            address(token),
-            address(timelock)
+    function validate() public override {
+        IProxy proxy = IProxy(
+            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
         );
-        assertEq(amount, balance);
 
-        assertTrue(timelockVault.tokenWhitelist(address(token)));
-
-        assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
+        // implementation() caller must be the owner
+        vm.startPrank(addresses.getAddress("ARBITRUM_PROXY_ADMIN"));
+        require(
+            proxy.implementation() ==
+                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+            "Proxy implementation not set"
+        );
+        vm.stopPrank();
     }
 }

@@ -5,15 +5,10 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
+import {IProxy} from "@interface/IProxy.sol";
+import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
+
 import {Vault} from "@mocks/Vault.sol";
-
-interface ProxyAdmin {
-    function upgrade(address proxy, address implementation) external;
-}
-
-interface Proxy {
-    function implementation() external view returns (address);
-}
 
 contract MockMultisigProposal is MultisigProposal {
     function name() public pure override returns (string memory) {
@@ -50,7 +45,7 @@ contract MockMultisigProposal is MultisigProposal {
         override
         buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
     {
-        ProxyAdmin proxy = ProxyAdmin(
+        IProxyAdmin proxy = IProxyAdmin(
             addresses.getAddress("OPTIMISM_PROXY_ADMIN")
         );
 
@@ -67,10 +62,11 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function validate() public override {
-        Proxy proxy = Proxy(
+        IProxy proxy = IProxy(
             addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
         );
 
+        // implementation() caller must be the owner
         vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
         require(
             proxy.implementation() ==
