@@ -10,7 +10,7 @@ import {ITimelockController} from "@interface/ITimelockController.sol";
 import {IProxy} from "@interface/IProxy.sol";
 import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 
-import {Vault} from "@mocks/Vault.sol";
+import {MockUpgrade} from "@mocks/MockUpgrade.sol";
 
 interface IUpgradeExecutor {
     function execute(
@@ -65,7 +65,7 @@ contract MockTimelockProposal is TimelockProposal {
         if (
             !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
         ) {
-            address l1NFTBridgeImplementation = address(new Vault());
+            address l1NFTBridgeImplementation = address(new MockUpgrade());
 
             addresses.addAddress(
                 "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",

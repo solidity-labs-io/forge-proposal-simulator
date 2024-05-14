@@ -8,7 +8,7 @@ import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 import {IProxy} from "@interface/IProxy.sol";
 import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 
-import {Vault} from "@mocks/Vault.sol";
+import {MockUpgrade} from "@mocks/MockUpgrade.sol";
 
 contract MockMultisigProposal is MultisigProposal {
     function name() public pure override returns (string memory) {
@@ -30,7 +30,7 @@ contract MockMultisigProposal is MultisigProposal {
 
     function deploy() public override {
         if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
-            address l1NFTBridgeImplementation = address(new Vault());
+            address l1NFTBridgeImplementation = address(new MockUpgrade());
 
             addresses.addAddress(
                 "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
