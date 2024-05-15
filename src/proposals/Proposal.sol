@@ -296,8 +296,7 @@ abstract contract Proposal is Test, Script, IProposal {
                     })
                 );
             }
-
-            _validateActions();
         }
+        _validateActions();
     }
 }
