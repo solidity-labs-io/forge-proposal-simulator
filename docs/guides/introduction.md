@@ -3,7 +3,7 @@
 FPS is designed to be loosely coupled, making it easy to integrate into any
 governance model. Each of these governance models have their unique
 specifications. To accommodate the unique requirements of different governance systems, FPS
-introduces [proposal-specific](../../proposals/) contracts. Each contract is designed to align with their respective governance model.
+introduces [proposal-specific](../../src/proposals) contracts. Each contract is designed to align with their respective governance model.
 
 ## Validated Governance Models
 
@@ -16,12 +16,10 @@ models. FPS has been tested and confirmed to be compatible with:
 
 ## Example Contracts
 
-The [Examples folder](../../examples/) includes contracts used in the guides mentioned
-above for demonstration purposes. Examples include [Vault](../../examples/Vault.sol)
-and [MockToken](../../examples/MockToken.sol). It is important to understand that
+The [Mocks folder](https://github.com/solidity-labs-io/fps-example-repo/tree/feat/test-cleanup/src/mocks) includes contracts used in the guides mentioned
+above for demonstration purposes. Examples include [Vault](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/src/mocks/Vault.sol)
+and [Token](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/src/mocks/Token.sol). It is important to understand that
 these contracts are intended solely for demonstration and are not recommended for production use due to their lack of validation and audit processes. Their primary purpose is to illustrate the deployment process and the setup of protocol parameters within proposals.
-
-For practical examples and additional insights, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) is also available for consultation.
 
 ## Know issues
 
