@@ -76,7 +76,7 @@ abstract contract GovernorOZProposal is Proposal {
     }
 
     /// @notice Simulate governance proposal
-    function simulate() public override {
+    function simulate() public virtual override {
         address proposerAddress = address(1);
         IVotes governanceToken = IVotes(IGovernorVotes(address(governor)).token());
         {
