@@ -30,7 +30,7 @@ contract GovernanceActionUpgradeWethGateway {
     }
 }
 
-// Mock arbitrum outbox to return L2 timelock on l2ToL2Sender call
+// Mock arbitrum outbox to return L2 timelock on l2ToL1Sender call
 // otherwise L1 timelock reverts on onlyCounterpartTimelock modifier
 contract MockOutbox {
     function l2ToL1Sender() external pure returns (address) {
