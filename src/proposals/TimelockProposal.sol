@@ -25,7 +25,6 @@ abstract contract TimelockProposal is Proposal {
     /// @notice get schedule calldata
     function getCalldata()
         public
-        view
         override
         returns (bytes memory scheduleCalldata)
     {
@@ -53,7 +52,6 @@ abstract contract TimelockProposal is Proposal {
     /// @notice get execute calldata
     function getExecuteCalldata()
         public
-        view
         returns (bytes memory executeCalldata)
     {
         bytes32 salt = keccak256(abi.encode(description()));
@@ -78,7 +76,6 @@ abstract contract TimelockProposal is Proposal {
     /// proposal calldata
     function checkOnChainCalldata()
         public
-        view
         override
         returns (bool calldataExist)
     {
@@ -180,7 +177,7 @@ abstract contract TimelockProposal is Proposal {
     }
 
     /// @notice print schedule and execute calldata
-    function print() public view override {
+    function print() public override {
         console.log("\n---------------- Proposal Description ----------------");
         console.log(description());
 

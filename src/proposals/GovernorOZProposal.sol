@@ -26,7 +26,6 @@ abstract contract GovernorOZProposal is Proposal {
     /// @notice Getter function for `IGovernor.propose()` calldata
     function getCalldata()
         public
-        view
         virtual
         override
         returns (bytes memory data)
@@ -50,7 +49,6 @@ abstract contract GovernorOZProposal is Proposal {
     /// proposal calldata
     function checkOnChainCalldata()
         public
-        view
         override
         returns (bool calldataExist)
     {

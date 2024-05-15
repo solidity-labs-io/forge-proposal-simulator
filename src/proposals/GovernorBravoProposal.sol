@@ -24,7 +24,6 @@ abstract contract GovernorBravoProposal is Proposal {
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
     function getCalldata()
         public
-        view
         virtual
         override
         returns (bytes memory data)
@@ -50,7 +49,6 @@ abstract contract GovernorBravoProposal is Proposal {
     /// proposal calldata
     function checkOnChainCalldata()
         public
-        view
         override
         returns (bool calldataExist)
     {
