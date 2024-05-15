@@ -23,20 +23,11 @@ FPS accommodates different Governance types (e.g., Timelock, Multisig) through s
 
 ## Proposal Specific Contract
 
-Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `_afterDeployMock()` for proposals involving new contract deployments. For more details, refer to [internal functions](internal-functions.md).
-
-## Test Suite
-
-An integral part of FPS, the Test Suite includes a `testProposals()`
-method. This contract interacts with the `Addresses` object, holding key addresses for the proposal process.
+Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `afterDeployMock()` for proposals involving new contract deployments. For more details, refer to [internal functions](internal-functions.md).
 
 ## Post Proposal Check
 
-Protocols must implement a `Post Proposal Check` contract. This contract is tasked with deploying Proposal instances and invoking `TestSuite.testProposals()` for simulation purposes. Integration tests should inherit from `Post Proposal Check`.
-
-## Script Suite
-
-Serves as a multipurpose tool. Primarily used for proposal simulation, it can also execute proposals on-chain when used with the `--broadcast` flag. The Script Suite works alongside the `Addresses` object to manage proposal address references.
+Protocols should implement a [Post Proposal Check](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/test/bravo/BravoPostProposalCheck.sol) contract. This contract is tasked with deploying Proposal instances and invoking `proposal.run()` for simulation purposes. Integration tests should inherit from `Post Proposal Check`.
 
 {% content-ref url="external-functions.md" %}
 [external-functions.md](external-functions.md)
