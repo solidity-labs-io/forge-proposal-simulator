@@ -130,7 +130,7 @@ Let's go through each of the functions that are overridden.
     simulate the proposal actions and broadcast if any contract deployment is required.
 -   `build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will actions in `build`, that is multisig in this example.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is multisig in this example.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.

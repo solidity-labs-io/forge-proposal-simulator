@@ -129,7 +129,7 @@ Let's go through each of the functions that are overridden.
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will actions in `build`, that is timelock controller in this example.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is timelock controller in this example.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.

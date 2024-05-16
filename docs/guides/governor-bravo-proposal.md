@@ -128,7 +128,7 @@ Let's go through each of the functions that are overridden.
     they are added to the `Addresses` contract by calling `addAddress()`.
 -   `build()`: Set the necessary actions for your proposal. In this example, ERC20 token is
     whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will actions in `build`, that is governor bravo's timelock in this example.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is governor bravo's timelock in this example.
 -   `validate()`: This final step is crucial for validating the post-execution state. It
     ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
