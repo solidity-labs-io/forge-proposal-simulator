@@ -7,6 +7,7 @@ import {IGovernor, IGovernorTimelockControl, IGovernorVotes} from "@interface/IG
 import {IVotes} from "@interface/IVotes.sol";
 import {ITimelockController } from "@interface/ITimelockController.sol";
 
+// TODO move utils to inside src
 import {Address} from "@utils/Address.sol";
 
 import {Proposal} from "./Proposal.sol";
@@ -49,6 +50,7 @@ abstract contract GovernorOZProposal is Proposal {
     /// proposal calldata
     function checkOnChainCalldata()
         public
+        view
         override
         returns (bool calldataExist)
     {

@@ -22,7 +22,7 @@ abstract contract MultisigProposal is Proposal {
     }
 
     /// @notice return calldata, log if debug is set to true
-    function getCalldata() public override returns (bytes memory data) {
+    function getCalldata() public view override returns (bytes memory data) {
         /// get proposal actions
         (
             address[] memory targets,
