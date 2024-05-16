@@ -38,6 +38,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice primary fork id
     uint256 public primaryForkId;
 
+    
     /// @notice buildModifier to be used by the build function to populate the
     /// actions array
     /// @param toPrank the address that will be used as the caller for the
@@ -71,8 +72,6 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev use flags to determine which actions to take
     ///      this function shoudn't be overriden.
     function run() public virtual {
-        vm.selectFork(primaryForkId);
-
         if (DO_DEPLOY) {
             /// DEPLOYER_EOA must be an unlocked account when running through forge script
             /// use cast wallet to unlock the account
