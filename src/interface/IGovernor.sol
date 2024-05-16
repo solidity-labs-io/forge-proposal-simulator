@@ -90,7 +90,7 @@ interface IGovernor {
      * {proposalDeadline}, this doesn't use the governor clock, and instead relies on the executor's clock which may be
      * different. In most cases this will be a timestamp.
      */
-    function proposalEta(uint256 proposalId) external view returns (uint256);
+    function proposaleta(uint256 proposalId) external view returns (uint256);
 
     /**
      * @notice module:core
