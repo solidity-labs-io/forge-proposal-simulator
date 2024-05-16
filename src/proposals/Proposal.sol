@@ -141,8 +141,13 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------------------------------------------------
 
     /// @notice set the Addresses contract
-    function setAddresses(Addresses _addresses) public {
+    function setAddresses(Addresses _addresses) public override {
         addresses = _addresses;
+    }
+
+    /// @notice set the primary fork id
+    function setPrimaryForkId(uint256 _primaryForkId) public override {
+        primaryForkId = _primaryForkId;
     }
 
     /// @notice deploy any contracts needed for the proposal.
