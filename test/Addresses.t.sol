@@ -31,13 +31,13 @@ contract TestAddresses is Test {
         parsedJson = vm.parseJson(addressesData);
     }
 
-    function test_getAddress() public {
+    function test_getAddress() public view {
         address addr = addresses.getAddress("DEPLOYER_EOA");
 
         assertEq(addr, 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739);
     }
 
-    function test_getAddressChainId() public {
+    function test_getAddressChainId() public view {
         address addr = addresses.getAddress("DEPLOYER_EOA", block.chainid);
 
         assertEq(addr, 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739);
@@ -261,7 +261,7 @@ contract TestAddresses is Test {
         addresses.changeAddress("DEPLOYER_EOA", vm.addr(1), 0, false);
     }
 
-    function test_isContractFalse() public {
+    function test_isContractFalse() public view {
         assertEq(addresses.isAddressContract("DEPLOYER_EOA"), false);
     }
 
@@ -283,7 +283,7 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressSet("TEST"), true);
     }
 
-    function addressIsNotPresent() public {
+    function addressIsNotPresent() public view {
         assertEq(addresses.isAddressSet("TEST"), false);
     }
 
@@ -295,7 +295,7 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressSet("TEST", 123), true);
     }
 
-    function addressIsNotPresentOnChain() public {
+    function addressIsNotPresentOnChain() public view {
         assertEq(addresses.isAddressSet("DEPLOYER_EOA", 31337), true);
         assertEq(addresses.isAddressSet("DEPLOYER_EOA", 123), false);
     }

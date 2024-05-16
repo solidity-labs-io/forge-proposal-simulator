@@ -148,5 +148,35 @@
         "chainId": 1,
         "name": "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
         "isContract": true
+    },
+    {
+        "addr": "0xE6841D92B0C345144506576eC13ECf5103aC7f49",
+        "chainId": 1,
+        "name": "ARBITRUM_L1_TIMELOCK",
+        "isContract": true
+    },
+    {
+        "addr": "0x3ffFbAdAF827559da092217e474760E2b2c3CeDd",
+        "chainId": 1,
+        "name": "ARBITRUM_L1_UPGRADE_EXECUTOR",
+        "isContract": true
+    },
+    {
+        "addr": "0x9aD46fac0Cf7f790E5be05A0F15223935A0c0aDa",
+        "chainId": 1,
+        "name": "ARBITRUM_L1_PROXY_ADMIN",
+        "isContract": true
+    },
+    {
+        "addr": "0xd92023e9d9911199a6711321d1277285e6d4e2db",
+        "chainId": 1,
+        "name": "ARBITRUM_L1_WETH_GATEWAY_PROXY",
+        "isContract": true
+    },
+    {
+        "addr": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a",
+        "chainId": 1,
+        "name": "ARBITRUM_BRIDGE",
+        "isContract": true
     }
 ]
