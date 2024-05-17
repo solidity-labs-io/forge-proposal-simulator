@@ -20,7 +20,7 @@ echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
 
 Create a JSON file following the standard on
 [Addresses](../overview/architecture/addresses.md). We recommend to keep the
-addresses file in a separate folder, for example `./addresses/addresses.json`.
+addresses file in a separate folder, for example `./addresses/Addresses.json`.
 Once you have the file, you should allow read access on `foundry.toml`.
 
 ```toml
@@ -39,6 +39,4 @@ Create a proposal. Choose a model that fits your needs:
 
 ## Step 5: Run proposal and Tests
 
-For guidance and best practices on how to create and simulate a proposal, refer to the [Guides](../guides/introduction.md) and [Integration Tests](../testing/integration-tests.md) sections.
-
-Additionally, the [FPS example repo](https://github.com/solidity-labs-io/fps-example-repo) can be consulted for practical examples and further insights.
+For guidance and best practices on how to create and simulate a proposal, refer to the [Guides](../guides/introduction.md) and [Integration Tests](../testing/integration-tests.md) sections. These guides explain the [BravoProposal_01](https://github.com/solidity-labs-io/fps-example-repo/src/proposals/BravoProposal_01.sol), [MultisigProposal_01](https://github.com/solidity-labs-io/fps-example-repo/src/proposals/MultisigProposal_01.sol), [TimelockProposal_01](https://github.com/solidity-labs-io/fps-example-repo/src/proposals/TimelockProposal_01.sol) contracts from the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo). Additionally, there are more examples for each of the proposal types on the repo.

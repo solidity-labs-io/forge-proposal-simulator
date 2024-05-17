@@ -5,10 +5,13 @@
 After adding FPS into project dependencies, the next step is the creation of the
 first Proposal contract. This example provides guidance on writing a proposal
 for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/tree/feat/test-cleanup/src/mocks). Copy each file used in this tutorial into your project for running examples or clone [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo and you have everything setup there. Please remove all addresses in `Addresses.json` before running through the tutorial `fps-example-repo`.
-The proposal includes the transfer of ownership of both contracts to timelock controller, along with the whitelisting of the token, minting of tokens to the timelock controller and timelock controller depositing tokens into the vault.
+located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file used in this tutorial into your project for running examples or clone [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo and you have everything setup there. For this tutorial it's assumed that you have cloned the fps-example-repo.
 
-The following contract is present in the [src/proposals/](https://github.com/solidity-labs-io/fps-example-repo/tree/feat/test-cleanup/src/proposals) folder. We will use this contract as a reference for the tutorial.
+This proposal includes the transfer of ownership of both contracts to timelock, along with the whitelisting of the token, minting of tokens to the timelock and timelock depositing tokens into the vault.
+
+## Proposal contract
+
+The following contract is present in the [src/proposals/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/proposals) folder. We will use this contract as a reference for the tutorial.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -121,35 +124,34 @@ Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
--   `run()`: Sets environment for running the proposal. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to
-    simulate the proposal actions and broadcast if any contract deployment is required.`timelock` is the address of the timelock controller contract.
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the
-    deployment of Vault and an ERC20 token. Once the contracts are deployed,
-    they are added to the `Addresses` contract by calling `addAddress()`.
+-   `run()`: Sets environment for running the proposal. It sets `addresses`, `primaryForkId` and `timelock`. `addresses` is address object
+    containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.`timelock` is the address of the timelock controller contract.
+-   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts
+    are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 -   `build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is timelock controller in this example.
+    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the timelock controller for this example.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `validate()`: This final step is crucial for validating the post-execution state. It
     ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
 
-With the proposal contract prepared, it can now be executed. There are two options available:
 
-1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
+## Proposal simulation
+
+First of all, please remove all addresses in `Addresses.json` before running through the tutorial. Now it's time to proceed with execution. There are two options available:
+
+1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This is the chosen method for this tutorial.
 
 ## Running the Proposal with `forge script`
 
 ### Setting Up Your Deployer Address
 
-The deployer address is the the one you'll use to broadcast the transactions
-deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
+The deployer address is the the one you'll use to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
 
-We prioritize security when it comes to private key management. To avoid storing
-the private key as an environment variable, we use Foundry's cast tool.
+We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool.
 
 If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
 
@@ -161,7 +163,7 @@ cast wallet import ${wallet_name} --interactive
 
 You'll need a Timelock Controller contract set up on the testnet before running the proposal.
 
-We have a script in [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/feat/test-cleanup/script) folder called `DeployTimelock.s.sol` to facilitate this process.
+We have a script in [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder called `DeployTimelock.s.sol` to facilitate this process.
 
 Before running the script, you must add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
@@ -188,7 +190,7 @@ Double-check that the ${wallet_name} and ${wallet_address} accurately match the 
 
 ### Setting Up the Addresses JSON
 
-Add the Timelock Controller address and deployer address to it. The file should look like this:
+Add the Timelock Controller address to the json file. The file should look like this:
 
 ```json
 [
@@ -213,51 +215,61 @@ Add the Timelock Controller address and deployer address to it. The file should 
 forge script src/proposals/TimelockProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
-Before you execute the proposal script, double-check that the ${wallet_name} and
-${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly
-listed as the deployer address in the Addresses.json file. If these don't align,
-the script execution will fail.
+Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 
 ```sh
+Timelock output:
 == Logs ==
+  
 
---------- Addresses added after running proposal ---------
+--------- Addresses added ---------
   {
-          'addr': '0x61A7A6F1553cbB39c87959623bb23833838406D7',
+          'addr': '0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c', 
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'VAULT'
+          'name': 'TIMELOCK_VAULT'
 },
   {
-          'addr': '0x7E1bF35E2B30Ae6b62B59a93C49F9cf32b273931',
+          'addr': '0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465', 
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'TOKEN_1'
+          'name': 'TIMELOCK_TOKEN'
 }
-
-
+  
 ---------------- Proposal Description ----------------
   Timelock proposal mock
-
-
+  
 ------------------ Proposal Actions ------------------
-  1). calling 0x61a7a6f1553cbb39c87959623bb23833838406d7 with 0 eth and 0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001 data.
-  target: 0x61A7A6F1553cbB39c87959623bb23833838406D7
+  1). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001 data.
+  target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
 payload
-  0x0ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b2739310000000000000000000000000000000000000000000000000000000000000001
+  0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001
+  
 
+  2). calling 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465 with 0 eth and 0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000 data.
+  target: 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465
+payload
+  0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000
+  
 
+  3). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000 data.
+  target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
+payload
+  0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000
+  
 
+  
 
 ------------------ Schedule Calldata ------------------
-  0x8f2a0bb000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000003c000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
-
+  0x8f2a0bb000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000000eff0dbf88af0664ed6d8db81251aaaeac77a977f015bb9bf3d34c91b1bf988a6000000000000000000000000000000000000000000000000000000000000003c0000000000000000000000000000000000000000000000000000000000000003000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
+  
 
 ------------------ Execute Calldata ------------------
-  0xe38335e500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000000b35b0f64616e9b2247498c7c78dbbce9cdcf25dbb3ad7c086d567166535d9b42000000000000000000000000000000000000000000000000000000000000000100000000000000000000000061a7a6f1553cbb39c87959623bb23833838406d7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000007e1bf35e2b30ae6b62b59a93c49f9cf32b273931000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000
+  0xe38335e500000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000000eff0dbf88af0664ed6d8db81251aaaeac77a977f015bb9bf3d34c91b1bf988a60000000000000000000000000000000000000000000000000000000000000003000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
 
-As the Timelock executor, you have the ability to run the script to execute the proposal. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+
+The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with schedule and execute calldatas for the proposal. The proposal can be scheduled and executed manually using the cast send along with the calldata generated above.

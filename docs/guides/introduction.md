@@ -16,12 +16,11 @@ models. FPS has been tested and confirmed to be compatible with:
 
 ## Example Contracts
 
-The [Mocks folder](https://github.com/solidity-labs-io/fps-example-repo/tree/feat/test-cleanup/src/mocks) includes contracts used in the guides mentioned
+The [Mocks folder](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks) includes contracts used in the guides mentioned
 above for demonstration purposes. Examples include [Vault](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/src/mocks/Vault.sol)
-and [Token](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/src/mocks/Token.sol). It is important to understand that
-these contracts are intended solely for demonstration and are not recommended for production use due to their lack of validation and audit processes. Their primary purpose is to illustrate the deployment process and the setup of protocol parameters within proposals.
+and [Token](https://github.com/solidity-labs-io/fps-example-repo/blob/feat/test-cleanup/src/mocks/Token.sol). It is important to understand that these contracts are intended solely for demonstration and are not recommended for production use due to their lack of validation and audit processes. Their primary purpose is to illustrate the deployment process and the setup of protocol parameters within proposals.
 
-## Know issues
+## Known issues
 
 Be aware of the following issues:
 
