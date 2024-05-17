@@ -1,15 +1,10 @@
 # Integration Tests
 
-FPS enables the simulation of proposals within integration tests. This
-capability is essential for verifying the functionality of your proposals and
-ensuring they don't break existing features. Additionally, it allows testing of
-the entire proposal lifecycle, including governance proposals, and deployment scripts.
+FPS enables the simulation of proposals within integration tests. This capability is essential for verifying the functionality of your proposals and ensuring they don't break existing features. Additionally, it allows testing of the entire proposal lifecycle, including governance proposals, and deployment scripts. This guide illustrates writing integration tests with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md). These integration tests have already been implemented in the fps-example repo [here](https://github.com/solidity-labs-io/fps-example-repo/tree/main/test/multisig).
 
 ## Setting Up PostProposalCheck.sol
 
-The first step is to create a `PostProposalCheck.sol` contract, which serves as
-a base for your integration test contracts. This contract is responsible for
-deploying proposal contracts, executing them, and updating the addresses object. We'll illustrate this with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md).
+The first step is to create a `PostProposalCheck.sol` contract, which serves as a base for your integration test contracts. This contract is responsible for deploying proposal contracts, executing them, and updating the addresses object.
 
 ```solidity
 pragma solidity ^0.8.0;
