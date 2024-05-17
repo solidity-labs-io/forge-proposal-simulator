@@ -2,8 +2,7 @@
 
 ## Overview
 
-This is an mainnet example of FPS where FPS is used to make proposals for arbitrum timelock.
-This example upgrades the weth gateway. This proposal deploys new `ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION` and `ARBITRUM_GAC_UPGRADE_WETH_GATEWAY`. Then timelock uses `upgradeExecutor` to upgrade Weth gateway. Proposer for the timelock should always be `arbitrum bridge`.
+This is an mainnet example of FPS where FPS is used to simulate proposals for arbitrum timelock on L1. This example upgrades the weth gateway on L1. This proposal deploys new implementation contract `ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION` and the governance action contract `ARBITRUM_GAC_UPGRADE_WETH_GATEWAY`. Then timelock uses `upgradeExecutor` to upgrade the Weth gateway. Proposer for the L1 timelock should always be `arbitrum bridge`.
 
 The following contract is present in the [mocks/](../../mocks/) folder.
 
@@ -152,10 +151,10 @@ Let's go through each of the functions that are overridden.
 -   `description()`: Provide a detailed description of your proposal.
 -   `deploy()`: This example demonstrates the deployment of new MockUpgrade which will be
     used as new implementation to Weth Gateway Proxy and new GAC contract for the upgrade.
--   `run()`: Sets environment for running the proposal. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`.
+-   `run()`: Sets environment for running the proposal. It sets `addresses` and `timelock`. `addresses` is address object
+    containing addresses to be used in proposal that are fetched from `Addresses.json`. `timelock` is the address of the timelock controller contract.
 -   `build()`: In this example, `ARBITRUM_L1_WETH_GATEWAY_PROXY` is upgraded to new  
-    implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is arbitrum timelock in this example.
+    implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier`, it will call the actions in `build`. Caller is the arbitrum timelock in this example.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `_simulateActions` from the inherited
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
@@ -167,8 +166,7 @@ Let's go through each of the functions that are overridden.
 forge script mocks/MockTimelockProposal.sol:MockTimelockProposal --fork-url mainnet
 ```
 
-It's crucial to ensure all required address is correctly listed in the Addresses.json file. If
-these don't align, the script execution will fail.
+It's crucial to ensure all required address is correctly listed in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 

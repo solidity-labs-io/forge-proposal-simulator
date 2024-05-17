@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is an mainnet example of FPS where FPS is used to make proposals for optimism multisig on mainnet. This example upgrades L1 NFT Bridge contract. Optimism multisig calls `upgrade` on proxy contract to upgrade implementation to a new `MockUpgrafe`.
+This is an mainnet example of FPS where FPS is used to make proposals for optimism multisig on mainnet. This example upgrades L1 NFT Bridge contract. Optimism multisig calls `upgrade` on proxy contract to upgrade implementation to a new `MockUpgrade`.
 
 The following contract is present in the [mocks/](../../mocks/) folder.
 
@@ -93,10 +93,10 @@ Let's go through each of the functions that are overridden.
 -   `description()`: Provide a detailed description of your proposal.
 -   `deploy()`: This example demonstrates the deployment of new MockUpgrade which will be
     used as new implementation to proxy.
--   `run()`: Sets environment for running the proposal. `addresses` is address object
+-   `run()`: Sets environment for running the proposal. It sets `addresses`. `addresses` is address object
     containing addresses to be used in proposal that are fetched from `Addresses.json`.
 -   `build()`: In this example, L1 NFT Bridge is upgraded to new implementation. The actions
-    should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`, that is optimism multisig in this example.
+    should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`. Caller is optimism multisig for this example.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `_simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
@@ -108,8 +108,7 @@ Let's go through each of the functions that are overridden.
 forge script mocks/MockMultisigProposal.sol --fork-url mainnet
 ```
 
-It's crucial to ensure all required address is correctly listed in the Addresses.json file. If
-these don't align, the script execution will fail.
+It's crucial to ensure all required address is correctly listed in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 

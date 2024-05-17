@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is an mainnet example of FPS where FPS is used to make proposals for compound governor bravo. This example sets comet's borrow and supply kink to 0.75 \* 1e18 through compound configurator.
+This is an mainnet example of FPS where FPS is used to make proposals for compound governor bravo. No deployments in this example. This example sets comet's borrow and supply kink to 0.75 \* 1e18 through compound configurator.
 
 The following contract is present in the [mocks/](../../mocks/) folder.
 
@@ -77,15 +77,14 @@ Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
 -   `description()`: Provide a detailed description of your proposal.
--   `run()`: Sets environment for running the proposal. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`
-    `governor` is the address of the governor contract.
+-   `run()`: Sets environment for running the proposal. It sets `addresses` and `governor`. `addresses` is address object
+    containing addresses to be used in proposal that are fetched from `Addresses.json`. `governor` is the address of the compound governor bravo contract.
 -   `build()`: Set the necessary actions for your proposal. In this example, borrow and
     supply kink is set through configurator by timelock bravo. The actions should be
     written in solidity code and in the order they should be executed. Any calls (except to
     the Addresses object) will be recorded and stored as actions to execute in the run
     function. `caller` address is passed into `buildModifier` that will call actions in
-    `build`, that is governor bravo's timelock in this example.
+    `build`. Caller is governor's timelock in this example.
 -   `validate()`: It validates that supply and borrow kink is set correctly.
 
 ## Running the Proposal
@@ -94,8 +93,7 @@ Let's go through each of the functions that are overridden.
 forge script mocks/MockBravoProposal.sol --fork-url mainnet
 ```
 
-It's crucial to ensure all required address is correctly listed in the Addresses.json file. If
-these don't align, the script execution will fail.
+It's crucial to ensure all required address is correctly listed in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 
