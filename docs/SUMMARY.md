@@ -22,6 +22,12 @@
 -   [Timelock Proposal](guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
 
+## Mainnet examples
+
+-   [Arbitrum Timelock](mainnet-examples/ArbitrumTimelock.md)
+-   [Compound Governor Bravo](mainnet-examples/CompoundGovernorBravo.md)
+-   [Optimism Multisig](mainnet-examples/OptimismMultisig.md)
+
 ## Testing
 
 -   [Integration Tests](testing/integration-tests.md)
