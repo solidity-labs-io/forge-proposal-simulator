@@ -1,6 +1,6 @@
-The `Proposal.sol` file contains a set of functions that all governance models inherit. There are three governance models bravo, multisig, timelock already implemented in the repo. To create a Proposal compatible with FPS, you can inherit one of the governance models, such as `MultisigProposal.sol,` and override the needed functions, or you can create a new governance model in your repository that inherits the `Proposal` contract and then a proposal can be created using this new governance model. Following is the list of functions:
+The `Proposal.sol` file contains a set of functions that all governance models inherit. There are three governance models: Bravo, Multisig and Timelock already implemented in the example repository. To create a Proposal with FPS, you can inherit one of the governance types, such as `MultisigProposal.sol,` and override the needed functions. Alternatively, you can create a new governance model in your repository that inherits the `Proposal` contract and then a proposal can be created using a newly formed governance model not already inside the repo. The following is a list of functions all proposals must implement:
 
--   `function description() public` Override this function to define the proposal description. This function should be overriden at the final proposal level.
+-   `function description() public` Override this function to define the proposal description. This function should be overridden at the final proposal level.
 
 -   `function getCalldata() public`: Retrieves any generated governance proposal calldata. This function should be overriden at the final proposal level.
 
@@ -19,9 +19,9 @@ The following functions allow for a significant level of customization and can b
 
 -   `function build() public`: Creates the proposal actions and saves them to storage in the proposal contract.
 
--   `function simulate() public`: Executes the actions that were previously saved during the `build` step. It's dependent on the successful execution of the `build` function. Without calling `build` first, the `_run` function becomes ineffectual as there would be no predefined actions to execute.
+-   `function simulate() public`: Executes the actions that were previously saved during the `build` step. This function's execution is dependent on the successful execution of the `build` function. Without calling `build` first, the `run()` function becomes ineffectual as there would be no predefined actions to execute.
 
--   `function validate() public`: Validates the state post-execution. It ensures that the contracts variables and proposal targets are set up correctly.
+-   `function validate() public`: Validates system state post-execution. This allows checking that contract's variables and newly deployed contracts are set up correctly.
 
 -   `function print() public`: Print proposal description, actions and calldata
 

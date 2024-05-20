@@ -5,7 +5,7 @@
 After adding FPS into project dependencies, the next step is the creation of the
 first Proposal contract. This example provides guidance on writing a proposal
 for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file used in this tutorial into your project for running examples or clone [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo and you have everything setup there. For this tutorial it's assumed that you have cloned the fps-example-repo.
+located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
 
 This proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token, minting of tokens to the timelock and timelock depositing tokens into the vault.
 
@@ -130,12 +130,12 @@ Let's go through each of the functions that are overridden.
 -   `build()`: Set the necessary actions for your proposal. In this example,
     ERC20 token is whitelisted on the Vault contract. The actions should be
     written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the governor bravo's timelock for this example.
--   `validate()`: This final step is crucial for validating the post-execution state. It
+-   `validate()`: This final step validates the system in its post-execution state. It
     ensures that the governor bravo's timelock is the new owner of Vault and token, the tokens were transferred to governor bravo's timelock and the token was whitelisted on the Vault contract
 
 ## Proposal simulation
 
-First of all, please remove all addresses in `Addresses.json` before running through the tutorial. Now it's time to proceed with execution. There are two options available:
+First of all, remove all addresses in `Addresses.json` before running through the tutorial. To proceed with execution, there are two options available:
 
 1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This is the chosen method for this tutorial.
@@ -144,7 +144,7 @@ First of all, please remove all addresses in `Addresses.json` before running thr
 
 ### Setting Up Your Deployer Address
 
-The deployer address is the the one you'll use to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
+The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
 
 We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool.
 
@@ -173,7 +173,7 @@ Before running the script, you must add the `DEPLOYER_EOA` address to the `Addre
 ]
 ```
 
-After adding the addresses, run the script:
+After adding the address, run the script:
 
 ```sh
 forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
@@ -331,6 +331,6 @@ payload
 
 If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.

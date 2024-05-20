@@ -5,6 +5,7 @@ FPS enables the simulation of proposals within integration tests. This capabilit
 ## Setting Up PostProposalCheck.sol
 
 The first step is to create a `PostProposalCheck.sol` contract, which serves as a base for your integration test contracts. This contract is responsible for deploying proposal contracts, executing them, and updating the addresses object.
+This allows integration tests to run against the newly updated state after all changes from the governance proposal go into effect.
 
 ```solidity
 pragma solidity ^0.8.0;
