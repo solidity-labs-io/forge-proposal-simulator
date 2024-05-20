@@ -160,13 +160,23 @@ Let's go through each of the functions that are overridden.
     `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `validate()`: It validates implementation is upgraded correctly.
 
+## Setting Up Your Deployer Address
+
+The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+
+If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+
+```sh
+cast wallet import ${wallet_name} --interactive
+```
+
 ## Running the Proposal
 
 ```sh
 forge script mocks/MockTimelockProposal.sol:MockTimelockProposal --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file including `DEPLOYER_EOA` address which will deploy the new contracts. If these don't align, the script execution will fail.
 
 The script will output the following:
 
