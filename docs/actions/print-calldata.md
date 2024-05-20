@@ -12,18 +12,14 @@ proposal that the "Get Changed Files" step finds.
 ## Creating the Workflow
 
 ```yaml
-name: "CI"
+name: "Run Latest Proposal"
 
 env:
     FOUNDRY_PROFILE: "ci"
 
-on:
-    workflow_dispatch:
-    pull_request:
-    push:
-        branches:
-            - "main"
+on: [pull_request]
 
+jobs:
     run-proposal:
         permissions:
             pull-requests: write
@@ -50,33 +46,49 @@ on:
               run: echo "DEBUG=true" >> $GITHUB_ENV
 
             - name: Set PROPOSALS_FOLDER
-              run: echo "PROPOSALS_FOLDER=examples" >> $GITHUB_ENV
+              run: echo "PROPOSALS_FOLDER=src/proposals" >> $GITHUB_ENV
 
-            - name: Run Proposals
-              id: run_proposals
-              run: |
-                  output=$(./run-proposal.sh)
-                  echo "result=${output}" >> $GITHUB_ENV
+            - name: List and Delete Previous Comments
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const issue_number = context.payload.pull_request.number;
+                      const comments = await github.rest.issues.listComments({
+                        ...context.repo,
+                        issue_number: issue_number
+                      });
 
-            - name: Decode and Comment PR with Proposal Output
-              if: env.result
-              run: |
-                  echo "${{ env.result }}" | base64 -d > decoded_output.json
-              shell: bash
+                      const actionComments = comments.data.filter(comment => comment.user.login === 'github-actions[bot]');
 
-            - name: Use Decoded Output
+                      if (actionComments.length === 0) {
+                        return;
+                      }
+                      for (const comment of actionComments) {
+                        await github.rest.issues.deleteComment({
+                          ...context.repo,
+                          comment_id: comment.id,
+                        });
+                      }
+
+            - name: Run Proposal
+              run: ./run-proposal.sh
+
+            - name: Comment PR with Proposal Output
               uses: actions/github-script@v6
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
                       const fs = require('fs');
-                      const output = JSON.parse(fs.readFileSync('decoded_output.json', 'utf8'));
-                      const prNumber = context.payload.pull_request.number;
-                      github.rest.issues.createComment({
-                        ...context.repo,
-                        issue_number: prNumber,
-                        body: `### Proposal output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
-                      });
+                      if (fs.existsSync('output.json')) {
+                          const output = JSON.parse(fs.readFileSync('output.json', 'utf8'));
+                          const prNumber = context.payload.pull_request.number;
+                          github.rest.issues.createComment({
+                             ...context.repo,
+                             issue_number: prNumber,
+                             body: `### Proposal output for ${output.file}:\n\`\`\`\n${output.output}\n\`\`\``
+                             });
+                       }
 ```
 
 To create the workflow, follow these steps:

@@ -93,7 +93,7 @@ Let's go through each of the functions that are overridden.
 forge script mocks/MockBravoProposal.sol --fork-url mainnet
 ```
 
-It's crucial to ensure all required address is correctly listed in the Addresses.json file. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 

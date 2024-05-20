@@ -5,13 +5,13 @@
 After adding FPS into project dependencies, the next step is the creation of the
 first Proposal contract. This example provides guidance on writing a proposal
 for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file used in this tutorial into your project for running examples or clone [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo and you have everything setup there. For this tutorial it's assumed that you have cloned the fps-example-repo.
+located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
 
 This proposal includes the transfer of ownership of both contracts to multisig, along with the whitelisting of the token, minting of tokens to the multisig and multisig depositing tokens into the vault.
 
 ## Proposal contract
 
-The following contract is present in the [src/proposals/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/proposals) folder. We will use this contract as a reference for the tutorial.
+The following contract is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -136,12 +136,11 @@ Let's go through each of the functions that are overridden.
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
     function performs a call to `simulateActions()` from the inherited
     `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
--   `validate()`: This final step is crucial for validating the post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
-
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
 
 ## Proposal simulation
 
-First of all, please remove all addresses in `Addresses.json` before running through the tutorial. Now it's time to proceed with execution. There are two options available:
+First of all, remove all addresses in `Addresses.json` before running through the tutorial. To proceed with execution, there are two options available:
 
 1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This is the chosen method for this tutorial.
@@ -160,9 +159,7 @@ To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on
 
 ### Setting Up Your Deployer Address
 
-The deployer address is the the one you'll use to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
-
-We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool.
+The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
 
 If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
 
@@ -206,45 +203,45 @@ The script will output the following:
 ```sh
 Multisig output:
 == Logs ==
-  
+
 
 --------- Addresses added ---------
   {
-          'addr': '0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c', 
+          'addr': '0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'MULTISIG_VAULT'
 },
   {
-          'addr': '0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465', 
+          'addr': '0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465',
           'chainId': 11155111,
           'isContract': true ,
           'name': 'MULTISIG_TOKEN'
 }
-  
+
 ---------------- Proposal Description ----------------
   Multisig proposal mock
-  
+
 ------------------ Proposal Actions ------------------
   1). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001 data.
   target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
 payload
   0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001
-  
+
 
   2). calling 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465 with 0 eth and 0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000 data.
   target: 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465
 payload
   0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000
-  
+
 
   3). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000 data.
   target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
 payload
   0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000
-  
 
-  
+
+
 
 ------------------ Proposal Calldata ------------------
   0x174dea7100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000260000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
@@ -254,4 +251,4 @@ If a password was provide to the wallet, the script will prompt for the password
 
 A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send along with the calldata generated above. 
+The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send along with the calldata generated above.

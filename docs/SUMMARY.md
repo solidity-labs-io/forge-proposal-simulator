@@ -6,8 +6,7 @@
 
 -   [Use cases](overview/use-cases.md)
 -   [Architecture](overview/architecture/README.md)
-    -   [External Functions](overview/architecture/external-functions.md)
-    -   [Internal Functions](overview/architecture/internal-functions.md)
+    -   [Proposal Functions](overview/architecture/proposal-functions.md)
     -   [Addresses](overview/architecture/addresses.md)
 
 ## Fundamentals

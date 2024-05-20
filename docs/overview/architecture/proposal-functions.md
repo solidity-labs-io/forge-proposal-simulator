@@ -10,7 +10,6 @@ The `Proposal.sol` file contains a set of functions that all governance models i
 
 -   `function getProposalActions() public`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most of the cases.
 
-
 The following functions allow for a significant level of customization and can be overridden in your proposal contract as needed.
 
 -   `function deploy() public`: Defines new contract deployments. Newly deployed contracts must be added to the `Addresses` contract instance through the setters methods. This function should be overridden only when there are deployments to be made in the proposal.
@@ -25,7 +24,6 @@ The following functions allow for a significant level of customization and can b
 
 -   `function print() public`: Print proposal description, actions and calldata
 
-
 The actions in FPS are designed to be loosely coupled for flexible
 implementation, with the exception of the build and run functions, which require
 sequential execution. This design choice offers developers significant
@@ -36,5 +34,4 @@ initial deployment and final validation are necessary, without the need for
 intermediate steps. Alternatively, a developer might opt to simulate a proposal
 by executing only the build and run functions, omitting the deploy step if there
 is no need to deploy new contracts. FPS empowers developers
-with the ability to selectively execute functions based on their unique
-requirements.
+with the ability to pick and choose speeds integration tests, deployment scripts, and governance proposal creation as it becomes easy to access whichever part of a governance proposal that is needed
