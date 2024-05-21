@@ -20,6 +20,10 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function run() public override {
+        setPrimaryForkId(vm.createFork("mainnet"));
+
+        vm.selectFork(primaryForkId);
+
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );

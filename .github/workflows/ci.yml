@@ -69,7 +69,7 @@ jobs:
               run: "forge build --sizes"
 
             - name: "Proposal Simulator Integration Tests"
-              run: "forge test --mc IntegrationTest --fork-url mainnet"
+              run: "forge test --mc IntegrationTest"
 
             - name: "Add test summary"
               run: |

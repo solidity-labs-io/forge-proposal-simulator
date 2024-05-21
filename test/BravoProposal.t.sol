@@ -19,6 +19,10 @@ contract BravoProposalIntegrationTest is Test {
         // Instantiate the BravoProposal contract
         proposal = GovernorBravoProposal(new MockBravoProposal());
 
+        proposal.setPrimaryForkId(vm.createFork("mainnet"));
+
+        vm.selectFork(proposal.primaryForkId());
+
         // Set the addresses contract
         proposal.setAddresses(addresses);
 
