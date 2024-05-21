@@ -11,6 +11,8 @@ import {MockUpgrade} from "@mocks/MockUpgrade.sol";
 
 interface IControllable {
     function setController(address controller, bool enabled) external;
+
+    function controllers(address) external view returns (bool);
 }
 
 // This is a mock proposal that uses ENS to demostrate OZ Governor proposal
@@ -27,6 +29,10 @@ contract MockOZGovernorProposal is GovernorOZProposal {
     }
 
     function run() public override {
+        setPrimaryForkId(vm.createFork("mainnet"));
+
+        vm.selectFork(primaryForkId);
+
         setAddresses(
             new Addresses(
                 vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
