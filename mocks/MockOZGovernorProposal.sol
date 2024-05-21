@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import {GovernorOZProposal} from "@proposals/GovernorOZProposal.sol";
 
-import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
-
 import {Addresses} from "@addresses/Addresses.sol";
 
 import {MockUpgrade} from "@mocks/MockUpgrade.sol";
