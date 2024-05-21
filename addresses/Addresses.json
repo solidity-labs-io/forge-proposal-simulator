@@ -12,22 +12,10 @@
         "isContract": false
     },
     {
-        "addr": "0xA454F330A728389b87A255b3D59aB10aEABa0C84",
-        "name": "DEV_MULTISIG",
-        "chainId": 11155111,
-        "isContract": true
-    },
-    {
         "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
-    },
-    {
-        "addr": "0x2EE28b12156fCaa13Bb188347cE6635C18bc94ef",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "GOVERNOR_BRAVO"
     },
     {
         "addr": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
@@ -82,12 +70,6 @@
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_TIMELOCK"
-    },
-    {
-        "addr": "0x35e292eA59C71caC368ecdf9046eF7C3ED0DF79E",
-        "chainId": 11155111,
-        "isContract": true,
-        "name": "GOVERNOR_BRAVO_ALPHA"
     },
     {
         "addr": "0x7D26D5978cD4617C6c7a02C75a42927eF52f405C",
@@ -177,6 +159,24 @@
         "addr": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a",
         "chainId": 1,
         "name": "ARBITRUM_BRIDGE",
+        "isContract": true
+    },
+    {
+        "addr": "0x323a76393544d5ecca80cd6ef2a560c6a395b7e3",
+        "chainId": 1,
+        "name": "ENS_GOVERNOR",
+        "isContract": true
+    },
+    {
+        "addr": "0x323a76393544d5ecca80cd6ef2a560c6a395b7e3",
+        "chainId": 1,
+        "name": "ENS_TIMELOCK",
+        "isContract": true
+    },
+    {
+        "addr": "0xaB528d626EC275E3faD363fF1393A41F581c5897",
+        "chainId": 1,
+        "name": "ENS_ROOT",
         "isContract": true
     }
 ]
