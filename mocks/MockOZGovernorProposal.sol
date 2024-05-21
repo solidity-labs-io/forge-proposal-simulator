@@ -7,6 +7,8 @@ import {ICompoundConfigurator} from "@interface/ICompoundConfigurator.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
+import {MockUpgrade} from "@mocks/MockUpgrade.sol";
+
 interface IControllable {
     function setController(address controller, bool enabled) external;
 }
@@ -40,6 +42,8 @@ contract MockOZGovernorProposal is GovernorOZProposal {
 
     function deploy() public override {
         if (!addresses.isAddressSet("ENS_DNSSEC")) {
+            // In a real case, this function would be responsable for
+            // deployig the DNSSEC contract instead of using a mock
             address dnsSec = address(new MockUpgrade());
 
             addresses.addAddress("ENS_DNSSEC", dnsSec, true);
