@@ -7,6 +7,7 @@ import {IGovernor, IGovernorTimelockControl, IGovernorVotes} from "@interface/IG
 import {IVotes} from "@interface/IVotes.sol";
 import {ITimelockController } from "@interface/ITimelockController.sol";
 
+// TODO move utils to inside src
 import {Address} from "@utils/Address.sol";
 
 import {Proposal} from "./Proposal.sol";
@@ -26,7 +27,6 @@ abstract contract GovernorOZProposal is Proposal {
     /// @notice Getter function for `IGovernor.propose()` calldata
     function getCalldata()
         public
-        view
         virtual
         override
         returns (bytes memory data)
@@ -76,21 +76,22 @@ abstract contract GovernorOZProposal is Proposal {
     }
 
     /// @notice Simulate governance proposal
-    function simulate() public override {
+    function simulate() public virtual override {
         address proposerAddress = address(1);
         IVotes governanceToken = IVotes(IGovernorVotes(address(governor)).token());
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
-            uint256 quorumVotes = governor.quorum(block.timestamp);
+            uint256 quorumVotes = governor.quorum(block.number - 1);
             uint256 proposalThreshold = governor.proposalThreshold();
             uint256 votingPower = quorumVotes > proposalThreshold
                 ? quorumVotes
                 : proposalThreshold;
             deal(address(governanceToken), proposerAddress, votingPower);
+            vm.roll(block.number - 1);
             // Delegate proposer's votes to itself
             vm.prank(proposerAddress);
             IVotes(governanceToken).delegate(proposerAddress);
-            vm.roll(block.number + 1);
+            vm.roll(block.number + 2);
         }
 
         bytes memory proposeCalldata = getCalldata();
@@ -98,7 +99,24 @@ abstract contract GovernorOZProposal is Proposal {
         // Register the proposal
         vm.prank(proposerAddress);
         bytes memory data = address(governor).functionCall(proposeCalldata);
-        uint256 proposalId = abi.decode(data, (uint256));
+
+        uint256 returnedProposalId = abi.decode(data, (uint256));
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
+
+        // Check that the proposal was registered correctly
+        uint256 proposalId = governor.hashProposal(
+                targets,
+                values,
+                calldatas,
+                keccak256(abi.encodePacked(description()))
+            );
+
+        require(returnedProposalId == proposalId, "Proposal id mismatch");
 
         // Check proposal is in Pending state
         require(
@@ -107,6 +125,7 @@ abstract contract GovernorOZProposal is Proposal {
 
         // Roll to Active state (voting period)
         vm.roll(block.number + governor.votingDelay() + 1);
+
         require(
             governor.state(proposalId) == IGovernor.ProposalState.Active
         );
@@ -117,15 +136,13 @@ abstract contract GovernorOZProposal is Proposal {
 
         // Roll to allow proposal state transitions
         vm.roll(block.number + governor.votingPeriod());
+
         require(
             governor.state(proposalId) == IGovernor.ProposalState.Succeeded
         );
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = getProposalActions();
+
+        vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
 
         // Queue the proposal
         governor.queue(targets, values, calldatas, keccak256(abi.encodePacked(description())));
