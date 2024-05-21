@@ -11,42 +11,27 @@ This proposal includes the transfer of ownership of both contracts to timelock, 
 
 ## Proposal contract
 
-The following contract is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-timelock/TimelockProposal_01.sol). We will use this contract as a reference for the tutorial.
+Here we are using TimelockProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-timelock/TimelockProposal_01.sol). We will use this contract as a reference for the tutorial.
 
-```solidity
-pragma solidity ^0.8.0;
+Let's go through each of the functions that are overridden.
 
-import { TimelockProposal } from "@forge-proposal-simulator/src/proposals/TimelockProposal.sol";
-import { ITimelockController } from "@forge-proposal-simulator/src/interface/ITimelockController.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "src/mocks/Vault.sol";
-import { Token } from "src/mocks/Token.sol";
-
-contract TimelockProposal_01 is TimelockProposal {
+-   `name()`: Define the name of your proposal.
+    ```solidity
     function name() public pure override returns (string memory) {
         return "TIMELOCK_MOCK";
     }
-
+    ```
+-   `description()`: Provide a detailed description of your proposal.
+    ```solidity
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
+    ```
+-   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
-    function run() public override {
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-        vm.makePersistent(address(addresses));
-
-        setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
-
-        super.run();
-    }
-
+    ```solidity
     function deploy() public override {
+        // Deploy vault address if not already deployed and transfer ownership to timelock.
         if (!addresses.isAddressSet("TIMELOCK_VAULT")) {
             Vault timelockVault = new Vault();
 
@@ -59,6 +44,8 @@ contract TimelockProposal_01 is TimelockProposal {
             timelockVault.transferOwnership(address(timelock));
         }
 
+        // Deploy token address if not already deployed, transfer ownership to timelock
+        // and transfer all initial minted tokens from deployer to timelock.
         if (!addresses.isAddressSet("TIMELOCK_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("TIMELOCK_TOKEN", address(token), true);
@@ -73,69 +60,116 @@ contract TimelockProposal_01 is TimelockProposal {
             token.transfer(address(timelock), balance);
         }
     }
+    ```
 
+-   `build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the timelock controller for this example.
+
+    ```solidity
     function build() public override buildModifier(address(timelock)) {
-        /// STATICCALL -- not recorded for the run stage
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
+
+        // Get vault address
         address timelockVault = addresses.getAddress("TIMELOCK_VAULT");
+
+        // Get token address
         address token = addresses.getAddress("TIMELOCK_TOKEN");
+
+        // Get timelock's token balance.
         uint256 balance = Token(token).balanceOf(address(timelock));
 
+        /// CALLS -- mutative and recorded
+
+        // Whitelists the deployed token on the deployed vault.
         Vault(timelockVault).whitelistToken(token, true);
 
-        /// CALLS -- mutative and recorded
+        // Approve the token for the vault.
         Token(token).approve(timelockVault, balance);
+
+        // Deposit all tokens into the vault.
         Vault(timelockVault).deposit(token, balance);
     }
+    ```
 
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+
+    ```solidity
     function simulate() public override {
+        // Get dev address for simulation
         address dev = addresses.getAddress("DEPLOYER_EOA");
 
-        /// Dev is proposer and executor
+        /// Dev is proposer and executor of timelock
         _simulateActions(dev, dev);
     }
+    ```
 
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
+
+    ```solidity
     function validate() public override {
+        // Get vault address
         Vault timelockVault = Vault(addresses.getAddress("TIMELOCK_VAULT"));
+
+        // Get token address
         Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
 
+        // Ensure token total supply is 10 million
+        assertEq(token.totalSupply(), 10_000_000e18);
+
+        // Ensure timelock is owner of deployed token.
+        assertEq(token.owner(), address(timelock));
+
+        // Ensure timelock is owner of deployed vault
+        assertEq(timelockVault.owner(), address(timelock));
+
+        // Ensure vault is not paused
+        assertFalse(timelockVault.paused());
+
+        // Ensure token is whitelisted on vault
+        assertTrue(timelockVault.tokenWhitelist(address(token)));
+
+        // Get vault's token balance
         uint256 balance = token.balanceOf(address(timelockVault));
+
+        // Get timelock deposits in vault
         (uint256 amount, ) = timelockVault.deposits(
             address(token),
             address(timelock)
         );
+
+        // Ensure timelock deposit is same as vault's token balance
         assertEq(amount, balance);
 
-        assertTrue(timelockVault.tokenWhitelist(address(token)));
-
+        // Ensure all minted tokens are deposited into the vault
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
-
-        assertEq(token.totalSupply(), 10_000_000e18);
-
-        assertEq(token.owner(), address(timelock));
-
-        assertEq(timelockVault.owner(), address(timelock));
-
-        assertFalse(timelockVault.paused());
     }
-}
-```
+    ```
 
-Let's go through each of the functions that are overridden.
+-   `run()`: Sets environment for running the proposal. It sets `addresses`, `primaryForkId` and `timelock`. `addresses` is address object containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.`timelock` is the address of the timelock controller contract.
 
--   `name()`: Define the name of your proposal.
--   `description()`: Provide a detailed description of your proposal.
--   `run()`: Sets environment for running the proposal. It sets `addresses`, `primaryForkId` and `timelock`. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.`timelock` is the address of the timelock controller contract.
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts
-    are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
--   `build()`: Set the necessary actions for your proposal. In this example,
-    ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the timelock controller for this example.
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
-    function performs a call to `_simulateActions` from the inherited
-    `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
--   `validate()`: This final step validates the system in its post-execution state. It
-    ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
+    ```solidity
+    function run() public override {
+        // Create and select sepolia fork for proposal execution.
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
+
+        // Set timelock. This address is used for proposal simulation and check on
+        // chain proposal state.
+        setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
 
 ## Proposal simulation
 

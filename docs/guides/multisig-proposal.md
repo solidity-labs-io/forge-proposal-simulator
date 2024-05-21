@@ -11,40 +11,32 @@ This proposal includes the transfer of ownership of both contracts to multisig, 
 
 ## Proposal contract
 
-The following contract is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
+Here we are using MultisigProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
 
-```solidity
-pragma solidity ^0.8.0;
+Let's go through each of the functions that are overridden.
 
-import { MultisigProposal } from "@forge-proposal-simulator/src/proposals/MultisigProposal.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "src/mocks/Vault.sol";
-import { Token } from "src/mocks/Token.sol";
-
-contract MultisigProposal_01 is MultisigProposal {
+-   `name()`: Define the name of your proposal.
+    ```solidity
     function name() public pure override returns (string memory) {
         return "MULTISIG_MOCK";
     }
-
+    ```
+-   `description()`: Provide a detailed description of your proposal.
+    ```solidity
     function description() public pure override returns (string memory) {
         return "Multisig proposal mock";
     }
+    ```
+-   `deploy()`: Deploy any necessary contracts. This example demonstrates the
+    deployment of Vault and an ERC20 token. Once the contracts are deployed,
+    they are added to the `Addresses` contract by calling `addAddress()`.
 
-    function run() public override {
-        primaryForkId = vm.createFork("sepolia");
-
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-        vm.makePersistent(address(addresses));
-
-        super.run();
-    }
-
+    ```solidity
     function deploy() public override {
+        // get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
+
+        // Deploy vault address if not already deployed and transfer ownership to multisig.
         if (!addresses.isAddressSet("MULTISIG_VAULT")) {
             Vault multisigVault = new Vault();
 
@@ -53,10 +45,11 @@ contract MultisigProposal_01 is MultisigProposal {
                 address(multisigVault),
                 true
             );
-
             multisigVault.transferOwnership(multisig);
         }
 
+        // Deploy token address if not already deployed, transfer ownership to multisig
+        // and transfer all initial minted tokens from deployer to multisig.
         if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("MULTISIG_TOKEN", address(token), true);
@@ -71,72 +64,118 @@ contract MultisigProposal_01 is MultisigProposal {
             token.transfer(multisig, balance);
         }
     }
+    ```
 
+-   `build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example.
+
+    ```solidity
     function build()
         public
         override
         buildModifier(addresses.getAddress("DEV_MULTISIG"))
     {
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
+
+        // Get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        /// STATICCALL -- not recorded for the run stage
+        // Get vault address
         address multisigVault = addresses.getAddress("MULTISIG_VAULT");
+
+        // Get token address
         address token = addresses.getAddress("MULTISIG_TOKEN");
+
+        // Get multisig's token balance
         uint256 balance = Token(token).balanceOf(address(multisig));
 
+        /// CALLS -- mutative and recorded
+
+        // Whitelists the deployed token on the deployed vault.
         Vault(multisigVault).whitelistToken(token, true);
 
-        /// CALLS -- mutative and recorded
+        // Approve the token for the vault.
         Token(token).approve(multisigVault, balance);
+
+        // Deposit all tokens into the vault.
         Vault(multisigVault).deposit(token, balance);
     }
+    ```
 
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
+
+    ```solidity
     function simulate() public override {
+        // Get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
+        // multisig is the caller for all the proposal actions
         _simulateActions(multisig);
     }
+    ```
 
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
+
+    ```solidity
     function validate() public override {
+        // Get vault address
         Vault multisigVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
+
+        // Get token address
         Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
+
+        // Get multisig address
         address multisig = addresses.getAddress("DEV_MULTISIG");
 
-        uint256 balance = token.balanceOf(address(multisigVault));
-        (uint256 amount, ) = multisigVault.deposits(address(token), multisig);
-        assertEq(amount, balance);
-
-        assertTrue(multisigVault.tokenWhitelist(address(token)));
-
-        assertEq(token.balanceOf(address(multisigVault)), token.totalSupply());
-
+        // Ensure token total supply is 10 million
         assertEq(token.totalSupply(), 10_000_000e18);
 
+        // Ensure multisig is owner of deployed token.
         assertEq(token.owner(), multisig);
 
+        // Ensure multisig is owner of deployed vault
         assertEq(multisigVault.owner(), multisig);
 
+        // Ensure vault is not paused
         assertFalse(multisigVault.paused());
+
+        // Ensure token is whitelisted on vault
+        assertTrue(multisigVault.tokenWhitelist(address(token)));
+
+        // Get vault's token balance
+        uint256 balance = token.balanceOf(address(multisigVault));
+
+        // Get multisig deposits in vault
+        (uint256 amount, ) = multisigVault.deposits(address(token), multisig);
+
+        // Ensure multisig deposit is same as vault's token balance
+        assertEq(amount, balance);
+
+        // Ensure all minted tokens are deposited into the vault
+        assertEq(token.balanceOf(address(multisigVault)), token.totalSupply());
     }
-}
-```
+    ```
 
-Let's go through each of the functions that are overridden.
+-   `run()`: Sets environment for running the proposal. It sets `addresses` and `primaryForkId`. `addresses` is address object containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.
 
--   `name()`: Define the name of your proposal.
--   `description()`: Provide a detailed description of your proposal.
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the
-    deployment of Vault and an ERC20 token. Once the contracts are deployed,
-    they are added to the `Addresses` contract by calling `addAddress()`.
--   `run()`: Sets environment for running the proposal. It sets `addresses` and `primaryForkId`. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.
--   `build()`: Set the necessary actions for your proposal. In this example,
-    ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example.
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
-    function performs a call to `simulateActions()` from the inherited
-    `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
+    ```solidity
+    function run() public override {
+        // Create sepolia fork for proposal execution. This fork will be selected while running proposal in super.run().
+        primaryForkId = vm.createFork("sepolia");
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
 
 ## Proposal simulation
 

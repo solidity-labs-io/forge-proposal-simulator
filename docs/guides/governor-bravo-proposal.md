@@ -11,45 +11,64 @@ This proposal includes the transfer of ownership of both contracts to Governor B
 
 ## Proposal contract
 
-The following contract is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We will use this contract as a reference for the tutorial.
+Here we are using BravoProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We will use this contract as a reference for the tutorial.
 
-```solidity
-// SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+Let's go through each of the functions that are overridden.
 
-import { GovernorBravoProposal } from "@forge-proposal-simulator/src/proposals/GovernorBravoProposal.sol";
-import { IGovernorBravo } from "@forge-proposal-simulator/src/interface/IGovernorBravo.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { Vault } from "src/mocks/Vault.sol";
-import { Token } from "src/mocks/Token.sol";
-
-contract BravoProposal_01 is GovernorBravoProposal {
+-   `name()`: Define the name of your proposal.
+    ```solidity
     function name() public pure override returns (string memory) {
         return "BRAVO_MOCK";
     }
-
+    ```
+-   `description()`: Provide a detailed description of your proposal.
+    ```solidity
     function description() public pure override returns (string memory) {
         return "Bravo proposal mock";
     }
+    ```
+-   `build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the governor bravo's timelock for this example.
 
-    function run() public override {
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
+    ```solidity
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"))
+    {
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
 
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
+        // Get vault address
+        address bravoVault = addresses.getAddress("BRAVO_VAULT");
+
+        // Get token address
+        address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
+
+        // Get timelock bravo's token balance.
+        uint256 balance = Token(token).balanceOf(
+            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
         );
-        vm.makePersistent(address(addresses));
 
-        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
+        /// CALLS -- mutative and recorded
 
-        super.run();
+        // Whitelists the deployed token on the deployed vault.
+        Vault(bravoVault).whitelistToken(token, true);
+
+        // Approve the token for the vault.
+        Token(token).approve(bravoVault, balance);
+
+        // Deposit all tokens into the vault.
+        Vault(bravoVault).deposit(token, balance);
     }
+    ```
 
+-   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
+
+    ```solidity
     function deploy() public override {
+        // Set governor bravo's timelock as owner for vault and token.
         address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+
+        // Deploy vault address if not already deployed and transfer ownership to timelock.
         if (!addresses.isAddressSet("BRAVO_VAULT")) {
             Vault bravoVault = new Vault();
 
@@ -57,6 +76,8 @@ contract BravoProposal_01 is GovernorBravoProposal {
             bravoVault.transferOwnership(owner);
         }
 
+        // Deploy token address if not already deployed, transfer ownership to timelock
+        // and transfer all initial minted tokens from deployer to timelock.
         if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
@@ -71,67 +92,79 @@ contract BravoProposal_01 is GovernorBravoProposal {
             token.transfer(address(owner), balance);
         }
     }
+    ```
 
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"))
-    {
-        /// STATICCALL -- not recorded for the run stage
-        address bravoVault = addresses.getAddress("BRAVO_VAULT");
-        address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
-        uint256 balance = Token(token).balanceOf(
-            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
-        );
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the governor bravo's timelock is the new owner of Vault and token, the tokens were transferred to governor bravo's timelock and the token was whitelisted on the Vault contract
 
-        Vault(bravoVault).whitelistToken(token, true);
-
-        /// CALLS -- mutative and recorded
-        Token(token).approve(bravoVault, balance);
-        Vault(bravoVault).deposit(token, balance);
-    }
-
+    ```solidity
     function validate() public override {
+        // Get vault address
         Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
+
+        // Get token address
         Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
 
+        // Get governor bravo's timelock address
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
+        // Ensure token total supply is 10 million
+        assertEq(token.totalSupply(), 10_000_000e18);
+
+        // Ensure timelock is owner of deployed token.
+        assertEq(token.owner(), address(timelock));
+
+        // Ensure timelock is owner of deployed vault
+        assertEq(bravoVault.owner(), address(timelock));
+
+        // Ensure vault is not paused
+        assertFalse(bravoVault.paused());
+
+        // Ensure token is whitelisted on vault
+        assertTrue(bravoVault.tokenWhitelist(address(token)));
+
+        // Get vault's token balance
         uint256 balance = token.balanceOf(address(bravoVault));
+
+        // Get timelock deposits in vault
         (uint256 amount, ) = bravoVault.deposits(
             address(token),
             address(timelock)
         );
+
+        // Ensure timelock deposit is same as vault's token balance
         assertEq(amount, balance);
 
-        assertTrue(bravoVault.tokenWhitelist(address(token)));
-
+        // Ensure all minted tokens are deposited into the vault
         assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
-
-        assertEq(token.totalSupply(), 10_000_000e18);
-
-        assertEq(token.owner(), address(timelock));
-
-        assertEq(bravoVault.owner(), address(timelock));
-
-        assertFalse(bravoVault.paused());
     }
-}
-```
+    ```
 
-Let's go through each of the functions that are overridden.
+-   `run()`: Sets environment for running the proposal. It sets `addresses`, `primaryForkId` and `governor`. `addresses` is address object containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.`governor` is the address of the governor bravo contract.
 
--   `name()`: Define the name of your proposal.
--   `description()`: Provide a detailed description of your proposal.
--   `run()`: Sets environment for running the proposal. It sets `addresses`, `primaryForkId` and `governor`. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.`governor` is the address of the governor bravo contract.
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts
-    are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
--   `build()`: Set the necessary actions for your proposal. In this example,
-    ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the governor bravo's timelock for this example.
--   `validate()`: This final step validates the system in its post-execution state. It
-    ensures that the governor bravo's timelock is the new owner of Vault and token, the tokens were transferred to governor bravo's timelock and the token was whitelisted on the Vault contract
+    ```solidity
+    function run() public override {
+        // Create and select sepolia fork for proposal execution.
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
+
+        // Set governor bravo. This address is used for proposal simulation and check on
+        // chain proposal state.
+        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
 
 ## Proposal simulation
 

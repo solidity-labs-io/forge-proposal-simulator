@@ -54,10 +54,12 @@ contract MockMultisigProposal is MultisigProposal {
         override
         buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
     {
+        /// STATICCALL -- not recorded for the run stage
         IProxyAdmin proxy = IProxyAdmin(
             addresses.getAddress("OPTIMISM_PROXY_ADMIN")
         );
 
+        /// CALLS -- mutative and recorded
         proxy.upgrade(
             addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
             addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")

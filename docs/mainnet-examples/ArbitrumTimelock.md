@@ -103,10 +103,12 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function build() public override buildModifier(address(timelock)) {
+        /// STATICCALL -- not recorded for the run stage
         IUpgradeExecutor upgradeExecutor = IUpgradeExecutor(
             addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR")
         );
 
+        /// CALLS -- mutative and recorded
         upgradeExecutor.execute(
             addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"),
             abi.encodeWithSelector(
@@ -151,13 +153,9 @@ Let's go through each of the functions that are overridden.
 -   `description()`: Provide a detailed description of your proposal.
 -   `deploy()`: This example demonstrates the deployment of new MockUpgrade which will be
     used as new implementation to Weth Gateway Proxy and new GAC contract for the upgrade.
--   `run()`: Sets environment for running the proposal. It sets `addresses` and `timelock`. `addresses` is address object
-    containing addresses to be used in proposal that are fetched from `Addresses.json`. `timelock` is the address of the timelock controller contract.
--   `build()`: In this example, `ARBITRUM_L1_WETH_GATEWAY_PROXY` is upgraded to new  
-    implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier`, it will call the actions in `build`. Caller is the arbitrum timelock in this example.
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This
-    function performs a call to `_simulateActions` from the inherited
-    `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+-   `run()`: Sets environment for running the proposal. It sets `addresses` and `timelock`. `addresses` is address object containing addresses to be used in proposal that are fetched from `Addresses.json`. `timelock` is the address of the timelock controller contract.
+-   `build()`: In this example, `ARBITRUM_L1_WETH_GATEWAY_PROXY` is upgraded to new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier`, it will call the actions in `build`. Caller is the arbitrum timelock in this example.
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 -   `validate()`: It validates implementation is upgraded correctly.
 
 ## Setting Up Your Deployer Address
