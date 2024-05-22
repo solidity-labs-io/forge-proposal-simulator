@@ -67,6 +67,8 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 -   `function afterDeployMock() public`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
 
+<a id="#build-function"></a>
+
 -   `function build() public`: Besides deployments a proposal will have some actions to be made, for eg: transferring of ownership rights of a deployed contract. This function helps create and store these actions, each of these actions stores a target contract and calldata for making that action. In Proposal contract it is an empty function. This function should always be overridden in the proposal specific contract as every proposal must have atleast a single action to be made.
 
     ```solidity
@@ -271,54 +273,56 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 -   `function validate() public`: Validates system state post proposal simulation. This allows checking that contract's variables and newly deployed contracts are set up correctly and the actions in the build were simulated correctly. In `Proposal` contract this function is empty.
 
-    ```solidity
-    function validate() public virtual {}
-    ```
+        ```solidity
+        function validate() public virtual {}
+        ```
 
-    This function is overridden at the proposal specefic contract. For eg: we can have a look at governor bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and bravo timelock is the owner of deployed token and vault as the ownersip of these contracts was transferred from deployer eoa to the bravo timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that token was successfully whitelisted on the vault and the vault's token balance is equal to the bravo timelock's deposit in the vault.
+        This function is overridden at the proposal specefic contract. For eg: we can have a look at governor bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and bravo timelock is the owner of deployed token and vault as the ownersip of these contracts was transferred from deployer eoa to the bravo timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that token was successfully whitelisted on the vault and the vault's token balance is equal to the bravo timelock's deposit in the vault.
 
-    ```solidity
-    function validate() public override {
-        // Get vault address
-        Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
+        ```solidity
+        function validate() public override {
+            // Get vault address
+            Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
 
-        // Get token address
-        Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
+            // Get token address
+            Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
 
-        // Get governor bravo's timelock address
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+            // Get governor bravo's timelock address
+            address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
-        // Ensure token total supply is 10 million
-        assertEq(token.totalSupply(), 10_000_000e18);
+            // Ensure token total supply is 10 million
+            assertEq(token.totalSupply(), 10_000_000e18);
 
-        // Ensure timelock is owner of deployed token.
-        assertEq(token.owner(), address(timelock));
+            // Ensure timelock is owner of deployed token.
+            assertEq(token.owner(), address(timelock));
 
-        // Ensure timelock is owner of deployed vault
-        assertEq(bravoVault.owner(), address(timelock));
+            // Ensure timelock is owner of deployed vault
+            assertEq(bravoVault.owner(), address(timelock));
 
-        // Ensure vault is not paused
-        assertFalse(bravoVault.paused());
+            // Ensure vault is not paused
+            assertFalse(bravoVault.paused());
 
-        // Ensure token is whitelisted on vault
-        assertTrue(bravoVault.tokenWhitelist(address(token)));
+            // Ensure token is whitelisted on vault
+            assertTrue(bravoVault.tokenWhitelist(address(token)));
 
-        // Get vault's token balance
-        uint256 balance = token.balanceOf(address(bravoVault));
+            // Get vault's token balance
+            uint256 balance = token.balanceOf(address(bravoVault));
 
-        // Get timelock deposits in vault
-        (uint256 amount, ) = bravoVault.deposits(
-            address(token),
-            address(timelock)
-        );
+            // Get timelock deposits in vault
+            (uint256 amount, ) = bravoVault.deposits(
+                address(token),
+                address(timelock)
+            );
 
-        // Ensure timelock deposit is same as vault's token balance
-        assertEq(amount, balance);
+            // Ensure timelock deposit is same as vault's token balance
+            assertEq(amount, balance);
 
-        // Ensure all minted tokens are deposited into the vault
-        assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
-    }
-    ```
+            // Ensure all minted tokens are deposited into the vault
+            assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
+        }
+        ```
+
+    <a id="#run-function"></a>
 
 -   `function run() public`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()` and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast, this is done so that contracts can be deployed on chain.
 
