@@ -13,20 +13,16 @@ execute and test governance proposals.
 
 ## Proposal Generic Contract
 
-At its core, the FPS features a **Proposal Contract**. This contract defines
-[proposal-functions](proposal-functions.md), customizable by the protocol utilizing FPS. The `run` function serve as the entry point to execute a proposal.
+At its core, the FPS features a [Proposal.sol](../../../src/proposals/Proposal.sol) This contract defines
+[functions](proposal-functions.md) that can be overridden to adapt to specific governance architectures. The `run` function serves as the entry point to execute a proposal using `forge script`.
 
 ## Governance Specific Contracts
 
-FPS accommodates different Governance types (e.g., Timelock, Multisig, Governor Bravo) through specialized contracts. These Governance Specific Contracts inherit from the Proposal Contract, tailoring their functions to unique governance requirements.
+FPS supports different Governance types (e.g., Timelock, Multisig, Governor Bravo, Governor OZ), through proposal contracts types inheriting from [Proposal.sol](../../../src/proposals/Proposal.sol), customizing their functions to unique governance requirements. New proposal types can be included to support different governance contracts.
 
 ## Proposal Specific Contract
 
 Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `afterDeployMock()` for proposals involving new contract deployments. For more details, refer to [proposal functions](proposal-functions.md).
-
-## Post Proposal Check
-
-Protocols should implement a [Post Proposal Check](https://github.com/solidity-labs-io/fps-example-repo/tree/main/test/bravo/BravoPostProposalCheck.sol) contract. This contract is tasked with deploying Proposal instances and invoking `proposal.run()` for simulation purposes. Integration tests should inherit from `Post Proposal Check`.
 
 {% content-ref url="proposal-functions.md" %}
 [proposal-functions.md](proposal-functions.md)
