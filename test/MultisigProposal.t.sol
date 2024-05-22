@@ -27,6 +27,7 @@ contract MultisigProposalIntegrationTest is Test {
         proposal = MultisigProposal(new MockMultisigProposal());
 
         proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
+
         // Set the addresses contract
         proposal.setAddresses(addresses);
     }

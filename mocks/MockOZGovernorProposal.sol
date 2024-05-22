@@ -13,8 +13,7 @@ interface IControllable {
     function controllers(address) external view returns (bool);
 }
 
-// This is a mock proposal that uses ENS to demostrate OZ Governor proposal
-// type.
+// @notice This is a mock proposal that uses ENS to demostrate OZ Governor proposal type.
 // Inspired on https://www.tally.xyz/gov/ens/proposal/4208408830555077285685632645423534041634535116286721240943655761928631543220
 contract MockOZGovernorProposal is GovernorOZProposal {
     function name() public pure override returns (string memory) {
