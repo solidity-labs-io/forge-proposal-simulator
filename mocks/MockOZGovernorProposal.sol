@@ -27,9 +27,7 @@ contract MockOZGovernorProposal is GovernorOZProposal {
     }
 
     function run() public override {
-        setPrimaryForkId(vm.createFork("mainnet"));
-
-        vm.selectFork(primaryForkId);
+        setPrimaryForkId(vm.createSelectFork("mainnet"));
 
         setAddresses(
             new Addresses(
@@ -71,6 +69,6 @@ contract MockOZGovernorProposal is GovernorOZProposal {
         IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
         address dnsSec = addresses.getAddress("ENS_DNSSEC");
 
-        assertEq(control.controllers(dnsSec), true);
+        assertTrue(control.controllers(dnsSec));
     }
 }

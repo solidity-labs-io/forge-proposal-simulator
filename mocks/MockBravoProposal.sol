@@ -21,9 +21,7 @@ contract MockBravoProposal is GovernorBravoProposal {
     }
 
     function run() public override {
-        setPrimaryForkId(vm.createFork("mainnet"));
-
-        vm.selectFork(primaryForkId);
+        setPrimaryForkId(vm.createSelectFork("mainnet"));
 
         setAddresses(
             new Addresses(

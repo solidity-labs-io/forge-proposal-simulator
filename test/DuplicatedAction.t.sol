@@ -19,10 +19,7 @@ contract DuplicatedActionProposalIntegrationTest is Test {
         // Instantiate the BravoProposal contract
         proposal = GovernorBravoProposal(new MockDuplicatedActionProposal());
 
-        proposal.setPrimaryForkId(vm.createFork("mainnet"));
-
-        vm.selectFork(proposal.primaryForkId());
-
+        proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
         // Set the addresses contract
         proposal.setAddresses(addresses);
 

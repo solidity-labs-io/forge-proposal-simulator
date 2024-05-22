@@ -26,10 +26,7 @@ contract MultisigProposalIntegrationTest is Test {
         // Instantiate the MultisigProposal contract
         proposal = MultisigProposal(new MockMultisigProposal());
 
-        proposal.setPrimaryForkId(vm.createFork("mainnet"));
-
-        vm.selectFork(proposal.primaryForkId());
-
+        proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
         // Set the addresses contract
         proposal.setAddresses(addresses);
     }

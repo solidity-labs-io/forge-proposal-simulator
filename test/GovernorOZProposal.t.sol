@@ -21,9 +21,7 @@ contract GovernorOZProposalIntegrationTest is Test {
 
         // Select the primary fork
         // ENS Governor is not cross chain so there is only a fork and should be mainnet
-        proposal.setPrimaryForkId(vm.createFork("mainnet"));
-
-        vm.selectFork(proposal.primaryForkId());
+        proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
 
         // Set the addresses contract
         proposal.setAddresses(addresses);
