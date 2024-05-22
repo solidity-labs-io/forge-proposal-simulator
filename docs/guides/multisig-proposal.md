@@ -11,7 +11,7 @@ This proposal includes the transfer of ownership of both contracts to multisig, 
 
 ## Proposal contract
 
-Here we are using MultisigProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
+Here we are using the MultisigProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
 
 Let's go through each of the functions that are overridden.
 
@@ -66,7 +66,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example.
+-   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, ERC20 token is whitelisted on the Vault contract. Then multisig approves token for vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -155,12 +155,13 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets environment for running the proposal. It sets `addresses` and `primaryForkId`. `addresses` is address object containing addresses to be used in proposal that are fetched from `Addresses.json`. `primaryForkId` is the RPC URL or alias of the blockchain that will be used to simulate the proposal actions and broadcast if any contract deployment is required.
+-   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`.
 
     ```solidity
     function run() public override {
-        // Create sepolia fork for proposal execution. This fork will be selected while running proposal in super.run().
+        // Create and select sepolia fork for proposal execution
         primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
 
         // Set addresses object reading addresses from json file.
         setAddresses(
@@ -179,7 +180,7 @@ Let's go through each of the functions that are overridden.
 
 ## Proposal simulation
 
-First of all, remove all addresses in `Addresses.json` before running through the tutorial. To proceed with execution, there are two options available:
+First, remove all addresses in `Addresses.json` before running through the tutorial. There are two ways to execute proposals:
 
 1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This is the chosen method for this tutorial.
