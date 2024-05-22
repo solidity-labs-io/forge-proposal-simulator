@@ -68,11 +68,11 @@ contract MockTimelockProposal is TimelockProposal {
         if (
             !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
         ) {
-            address l1NFTBridgeImplementation = address(new MockUpgrade());
+            address mockUpgrade = address(new MockUpgrade());
 
             addresses.addAddress(
                 "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
-                l1NFTBridgeImplementation,
+                mockUpgrade,
                 true
             );
         }

@@ -38,7 +38,6 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice primary fork id
     uint256 public primaryForkId;
 
-    
     /// @notice buildModifier to be used by the build function to populate the
     /// actions array
     /// @param toPrank the address that will be used as the caller for the
@@ -98,7 +97,6 @@ abstract contract Proposal is Test, Script, IProposal {
     function checkOnChainCalldata() public view virtual returns (bool matches);
 
     /// @notice get proposal actions
-    /// @dev do not override
     function getProposalActions()
         public
         view
