@@ -48,6 +48,8 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function run() public override {
+        setPrimaryForkId(vm.createSelectFork("mainnet"));
+
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
@@ -64,11 +66,11 @@ contract MockTimelockProposal is TimelockProposal {
         if (
             !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
         ) {
-            address l1NFTBridgeImplementation = address(new MockUpgrade());
+            address mockUpgrade = address(new MockUpgrade());
 
             addresses.addAddress(
                 "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
-                l1NFTBridgeImplementation,
+                mockUpgrade,
                 true
             );
         }

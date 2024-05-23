@@ -71,8 +71,6 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev use flags to determine which actions to take
     ///      this function shoudn't be overriden.
     function run() public virtual {
-        vm.selectFork(primaryForkId);
-
         if (DO_DEPLOY) {
             /// DEPLOYER_EOA must be an unlocked account when running through forge script
             /// use cast wallet to unlock the account
@@ -99,7 +97,6 @@ abstract contract Proposal is Test, Script, IProposal {
     function checkOnChainCalldata() public view virtual returns (bool matches);
 
     /// @notice get proposal actions
-    /// @dev do not override
     function getProposalActions()
         public
         view
@@ -142,8 +139,13 @@ abstract contract Proposal is Test, Script, IProposal {
     /// --------------------------------------------------------------------
 
     /// @notice set the Addresses contract
-    function setAddresses(Addresses _addresses) public {
+    function setAddresses(Addresses _addresses) public override {
         addresses = _addresses;
+    }
+
+    /// @notice set the primary fork id
+    function setPrimaryForkId(uint256 _primaryForkId) public override {
+        primaryForkId = _primaryForkId;
     }
 
     /// @notice deploy any contracts needed for the proposal.
@@ -297,8 +299,8 @@ abstract contract Proposal is Test, Script, IProposal {
                     })
                 );
             }
-
-            _validateActions();
         }
+
+        _validateActions();
     }
 }

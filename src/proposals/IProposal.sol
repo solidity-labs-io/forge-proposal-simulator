@@ -31,7 +31,7 @@ interface IProposal {
 
     /// @notice check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata() external view returns (bool);
+    function checkOnChainCalldata() external returns (bool);
 
     /// @notice return Addresses object
     function addresses() external view returns (Addresses);
@@ -66,4 +66,7 @@ interface IProposal {
 
     /// @notice set the Addresses contract
     function setAddresses(Addresses _addresses) external;
+
+    /// @notice set the primary fork id
+    function setPrimaryForkId(uint256 _forkId) external;
 }

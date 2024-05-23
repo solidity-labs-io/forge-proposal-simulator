@@ -151,7 +151,7 @@ abstract contract TimelockProposal is Proposal {
             );
 
             if (DEBUG && returndata.length > 0) {
-                console.log("returndata");
+                console.log("schedule calldata return data:");
                 console.logBytes(returndata);
             }
         } else if (DEBUG) {

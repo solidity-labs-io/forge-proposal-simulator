@@ -4,44 +4,49 @@ pragma solidity ^0.8.0;
 import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
-import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {MockMultisigProposal} from "@mocks/MockMultisigProposal.sol";
+import {GovernorOZProposal} from "@proposals/GovernorOZProposal.sol";
+import {MockOZGovernorProposal} from "@mocks/MockOZGovernorProposal.sol";
 
-contract MultisigProposalIntegrationTest is Test {
+contract GovernorOZProposalIntegrationTest is Test {
     Addresses public addresses;
-    MultisigProposal public proposal;
-
-    struct Call3Value {
-        address target;
-        bool allowFailure;
-        uint256 value;
-        bytes callData;
-    }
+    GovernorOZProposal public proposal;
 
     function setUp() public {
         // Instantiate the Addresses contract
         addresses = new Addresses("./addresses/Addresses.json");
         vm.makePersistent(address(addresses));
 
-        // Instantiate the MultisigProposal contract
-        proposal = MultisigProposal(new MockMultisigProposal());
+        // Instantiate the OZ Proposal contract
+        proposal = GovernorOZProposal(new MockOZGovernorProposal());
 
+        // Select the primary fork
+        // ENS Governor is not cross chain so there is only a fork and should be mainnet
         proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
 
         // Set the addresses contract
         proposal.setAddresses(addresses);
+
+        // Set the bravo address
+        proposal.setGovernor(addresses.getAddress("ENS_GOVERNOR"));
     }
 
     function test_setUp() public view {
         assertEq(
             proposal.name(),
-            string("OPTMISM_MULTISIG_MOCK"),
+            string("UPGRADE_DNSSEC_SUPPORT"),
             "Wrong proposal name"
         );
         assertEq(
             proposal.description(),
-            string("Mock proposal that upgrade the L1 NFT Bridge"),
+            string(
+                "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar"
+            ),
             "Wrong proposal description"
+        );
+        assertEq(
+            address(proposal.governor()),
+            addresses.getAddress("ENS_GOVERNOR"),
+            "Wrong governor address"
         );
     }
 
@@ -50,9 +55,7 @@ contract MultisigProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        assertTrue(
-            addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
-        );
+        assertTrue(addresses.isAddressSet("ENS_DNSSEC"));
     }
 
     function test_build() public {
@@ -69,26 +72,23 @@ contract MultisigProposalIntegrationTest is Test {
             bytes[] memory calldatas
         ) = proposal.getProposalActions();
 
-        // check that the proposal targets are correct
+        address target = addresses.getAddress("ENS_ROOT");
         assertEq(targets.length, 1, "Wrong targets length");
-        assertEq(
-            targets[0],
-            addresses.getAddress("OPTIMISM_PROXY_ADMIN"),
-            "Wrong target at index 0"
-        );
+        assertEq(targets[0], target, "Wrong target at index 0");
+        assertEq(targets[0], target, "Wrong target at index 1");
 
-        // check that the proposal values are correct
+        uint256 expectedValue = 0;
         assertEq(values.length, 1, "Wrong values length");
-        assertEq(values[0], 0, "Wrong value at index 0");
+        assertEq(values[0], expectedValue, "Wrong value at index 0");
+        assertEq(values[0], expectedValue, "Wrong value at index 1");
 
-        // check that the proposal calldatas are correct
         assertEq(calldatas.length, 1);
         assertEq(
             calldatas[0],
             abi.encodeWithSignature(
-                "upgrade(address,address)",
-                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
-                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
+                "setController(address,bool)",
+                addresses.getAddress("ENS_DNSSEC"),
+                true
             ),
             "Wrong calldata at index 0"
         );
@@ -98,6 +98,9 @@ contract MultisigProposalIntegrationTest is Test {
         test_build();
 
         proposal.simulate();
+
+        // check that proposal exists
+        assertTrue(proposal.checkOnChainCalldata());
 
         proposal.validate();
     }
@@ -111,29 +114,16 @@ contract MultisigProposalIntegrationTest is Test {
             bytes[] memory calldatas
         ) = proposal.getProposalActions();
 
-        Call3Value[] memory calls = new Call3Value[](targets.length);
-
-        for (uint256 i; i < calls.length; i++) {
-            calls[i] = Call3Value({
-                target: targets[i],
-                allowFailure: false,
-                value: values[i],
-                callData: calldatas[i]
-            });
-        }
-
         bytes memory expectedData = abi.encodeWithSignature(
-            "aggregate3Value((address,bool,uint256,bytes)[])",
-            calls
+            "propose(address[],uint256[],bytes[],string)",
+            targets,
+            values,
+            calldatas,
+            proposal.description()
         );
 
         bytes memory data = proposal.getCalldata();
 
-        assertEq(data, expectedData, "Wrong aggregate calldata");
-    }
-
-    function test_checkOnChainCalldata() public {
-        vm.expectRevert("Not implemented");
-        proposal.checkOnChainCalldata();
+        assertEq(data, expectedData, "Wrong propose calldata");
     }
 }
