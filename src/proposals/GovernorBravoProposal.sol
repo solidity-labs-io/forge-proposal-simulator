@@ -24,8 +24,8 @@ abstract contract GovernorBravoProposal is Proposal {
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
     function getCalldata()
         public
-        view
         virtual
+        view
         override
         returns (bytes memory data)
     {

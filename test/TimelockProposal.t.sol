@@ -20,6 +20,8 @@ contract TimelockProposalIntegrationTest is Test {
         // Instantiate the TimelockProposal contract
         proposal = TimelockProposal(new MockTimelockProposal());
 
+        proposal.setPrimaryForkId(vm.createSelectFork("mainnet"));
+
         // Set the addresses contract
         proposal.setAddresses(addresses);
 

@@ -20,6 +20,8 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function run() public override {
+        setPrimaryForkId(vm.createSelectFork("mainnet"));
+
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
@@ -30,11 +32,11 @@ contract MockMultisigProposal is MultisigProposal {
 
     function deploy() public override {
         if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
-            address l1NFTBridgeImplementation = address(new MockUpgrade());
+            address mockUpgrade = address(new MockUpgrade());
 
             addresses.addAddress(
                 "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
-                l1NFTBridgeImplementation,
+                mockUpgrade,
                 true
             );
         }
