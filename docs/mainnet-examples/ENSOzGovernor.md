@@ -92,7 +92,7 @@ Let's go through each of the functions that are overridden.
         // Make 'addresses' state persist across selected fork.
         vm.makePersistent(address(addresses));
 
-        // Set governor bravo. This address is used for proposal simulation and check on
+        // Set oz governor. This address is used for proposal simulation and check on
         // chain proposal state.
         setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
