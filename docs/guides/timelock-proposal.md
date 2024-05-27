@@ -2,32 +2,29 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the
-first Proposal contract. This example provides guidance on writing a proposal
-for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
+After integrating FPS into the project dependencies, the next step involves creating the first Proposal contract. This example provides guidance on drafting a proposal to deploy new instances of `Vault.sol` and `Token`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/mocks). You can either copy each file in this tutorial into your project or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repository. This tutorial assumes that you have cloned the fps-example-repo.
 
-This proposal includes the transfer of ownership of both contracts to timelock, along with the whitelisting of the token, minting of tokens to the timelock and timelock depositing tokens into the vault.
+This proposal entails transferring ownership of both contracts to a timelock, along with whitelisting the token, minting tokens to the timelock, and having the timelock deposit tokens into the vault.
 
-## Proposal contract
+## Proposal Contract
 
-Here we are using the TimelockProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-timelock/TimelockProposal_01.sol). We will use this contract as a reference for the tutorial.
+In this example, we are using the TimelockProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-timelock/TimelockProposal_01.sol). We will use this contract as a reference for the tutorial.
 
-Let's go through each of the functions that are overridden.
+Let's review each of the functions that are overridden.
 
--   `name()`: Define the name of your proposal.
+-   `name()`: This function defines the name of your proposal.
     ```solidity
     function name() public pure override returns (string memory) {
         return "TIMELOCK_MOCK";
     }
     ```
--   `description()`: Provide a detailed description of your proposal.
+-   `description()`: It provides a detailed description of your proposal.
     ```solidity
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
     ```
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
+-   `deploy()`: This function deploys any necessary contracts. In this example, it demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
     ```solidity
     function deploy() public override {
@@ -62,7 +59,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, ERC20 token is whitelisted on the Vault contract. Then timelock approves token for vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the timelock for this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
+-   `build()`: This function sets the necessary actions for your proposal. In this example, it whitelists the ERC20 token on the Vault contract, approves the token for the vault, and deposits all tokens into the vault. The actions should be written in Solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build() public override buildModifier(address(timelock)) {
@@ -90,7 +87,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+-   `simulate()`: This function executes the proposal actions outlined in the `build()` step. It performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 
     ```solidity
     function simulate() public override {
@@ -102,7 +99,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the timelock is the new owner of the Vault and token, the tokens were transferred to the timelock, and the token was whitelisted on the Vault contract.
 
     ```solidity
     function validate() public override {
@@ -112,31 +109,31 @@ Let's go through each of the functions that are overridden.
         // Get token address
         Token token = Token(addresses.getAddress("TIMELOCK_TOKEN"));
 
-        // Ensure token total supply is 10 million
+        // Ensure the total supply of tokens is 10 million
         assertEq(token.totalSupply(), 10_000_000e18);
 
-        // Ensure timelock is owner of deployed token.
+        // Ensure the timelock is the owner of the deployed token
         assertEq(token.owner(), address(timelock));
 
-        // Ensure timelock is owner of deployed vault
+        // Ensure the timelock is the owner of the deployed vault
         assertEq(timelockVault.owner(), address(timelock));
 
-        // Ensure vault is not paused
+        // Ensure the vault is not paused
         assertFalse(timelockVault.paused());
 
-        // Ensure token is whitelisted on vault
+        // Ensure the token is whitelisted on the vault
         assertTrue(timelockVault.tokenWhitelist(address(token)));
 
-        // Get vault's token balance
+        // Get the vault's token balance
         uint256 balance = token.balanceOf(address(timelockVault));
 
-        // Get timelock deposits in vault
+        // Get the timelock deposits in the vault
         (uint256 amount, ) = timelockVault.deposits(
             address(token),
             address(timelock)
         );
 
-        // Ensure timelock deposit is same as vault's token balance
+        // Ensure the timelock deposit is the same as the vault's token balance
         assertEq(amount, balance);
 
         // Ensure all minted tokens are deposited into the vault
@@ -144,59 +141,56 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId` and `timelock` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`. Timelock is set using `setTimelock` that will be used to check onchain calldata and simulate the proposal.
+-   `run()`: This function sets the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. The timelock is set using `setTimelock` for simulating the proposal and checking on-chain calldata.
 
     ```solidity
     function run() public override {
-        // Create and select sepolia fork for proposal execution.
+        // Create and select the sepolia fork for proposal execution
         primaryForkId = vm.createFork("sepolia");
         vm.selectFork(primaryForkId);
 
-        // Set addresses object reading addresses from json file.
+        // Set the addresses object by reading addresses from the json file
         setAddresses(
             new Addresses(
                 vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
             )
         );
 
-        // Make 'addresses' state persist across selected fork.
+        // Make the 'addresses' state persist across the selected fork
         vm.makePersistent(address(addresses));
 
-        // Set timelock. This address is used for proposal simulation and check on
-        // chain proposal state.
+        // Set the timelock; this address is used for proposal simulation and checking on-chain proposal state
         setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
 
-        // Call the run function of parent contract 'Proposal.sol'.
+        // Call the run function of the parent contract 'Proposal.sol'
         super.run();
     }
     ```
 
-## Proposal simulation
+## Proposal Simulation
 
-First, remove all addresses in `Addresses.json` before running through the tutorial. There are two ways to execute proposals:
+To begin, clear all addresses in `Addresses.json` before proceeding with the tutorial. There are two methods for executing proposals:
 
-1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
-2. **Using `forge script`**: This is the chosen method for this tutorial.
+1. **Using `forge test`**: Refer to the [integration-tests.md](../testing/integration-tests.md) section for detailed instructions on this method.
+2. **Using `forge script`**: This tutorial focuses on using this method.
 
-## Running the Proposal with `forge script`
+### Running the Proposal with `forge script`
 
-### Setting Up Your Deployer Address
+#### Setting Up Your Deployer Address
 
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+The deployer address is utilized to broadcast transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. Emphasizing security in private key management, we avoid storing the private key as an environment variable. Instead, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
 
-If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+If you lack a wallet in `~/.foundry/keystores/`, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
 ```
 
-### Deploying a Timelock Controller on Testnet
+#### Deploying a Timelock Controller on Testnet
 
-You'll need a Timelock Controller contract set up on the testnet before running the proposal.
+Before executing the proposal, set up a Timelock Controller contract on the testnet. We provide a script in the [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder named `DeployTimelock.s.sol` to streamline this process.
 
-We have a script in [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder called `DeployTimelock.s.sol` to facilitate this process.
-
-Before running the script, you must add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
 ```json
 [
@@ -209,19 +203,18 @@ Before running the script, you must add the `DEPLOYER_EOA` address to the `Addre
 ]
 ```
 
-After adding the addresses, run the script:
+After adding the addresses, execute the script:
 
 ```sh
 forge script script/DeployTimelock.s.sol --broadcast --rpc-url
 sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
 ```
 
-Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`.
+Ensure that the ${wallet_name} and ${wallet_address} accurately correspond to the wallet details saved in `~/.foundry/keystores/`.
 
-### Setting Up the Addresses JSON
+#### Setting Up the Addresses JSON
 
-Add the Timelock Controller address to the json file. The file should look like this:
+Add the Timelock Controller address to the JSON file. The structure should resemble this:
 
 ```json
 [
@@ -240,13 +233,13 @@ Add the Timelock Controller address to the json file. The file should look like 
 ]
 ```
 
-### Running the Proposal
+#### Running the Proposal
 
 ```sh
-forge script src/proposals/TimelockProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
+forge script src/proposals/simple-vault-timelock/TimelockProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
-Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
+Before executing the proposal script, ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's essential to verify that ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. Failure to align these details will result in script execution failure.
 
 The script will output the following:
 
@@ -301,6 +294,6 @@ payload
   0xe38335e500000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000000eff0dbf88af0664ed6d8db81251aaaeac77a977f015bb9bf3d34c91b1bf988a60000000000000000000000000000000000000000000000000000000000000003000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
 
-It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+It's crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be manually added to ensure accuracy.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with schedule and execute calldatas for the proposal. The proposal can be scheduled and executed manually using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action, along with schedule and execute calldatas for the proposal. The proposal can be scheduled and executed manually using the cast send along with the calldata generated above.

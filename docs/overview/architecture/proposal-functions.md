@@ -1,12 +1,12 @@
-The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of functions that all governance models inherit. There are currently four governance models inheriting from Proposal.sol: Bravo, Multisig, Timelock and OpenZeppelin Governor. When using FPS for any of the abovementioned models for creating proposals, all that needs to be done is to inherit one of the proposal types, such as [GovernorBravoProposal.sol](../../../src/proposals/GovernorBravoProposal.sol) and override the necessary functions to create the proposal, like `build` and `deploy`. FPS is flexible enough so that for any different governance model, governance proposal types can be easily adjusted to fit into the governance architecture. An example has been provided using Arbitrum Governance on FPS example repo (link here) to demonstrate FPS flexibility. The following is a list of functions proposals can implement:
+The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of functions that all governance models inherit. Currently, there are four governance models inheriting from Proposal.sol: Bravo, Multisig, Timelock, and OpenZeppelin Governor. When using FPS for any of the aforementioned models to create proposals, all that needs to be done is to inherit one of the proposal types, such as [GovernorBravoProposal.sol](../../../src/proposals/GovernorBravoProposal.sol), and override the necessary functions to create the proposal, like `build` and `deploy`. FPS is flexible enough so that for any different governance model, governance proposal types can be easily adjusted to fit into the governance architecture. An example has been provided using Arbitrum Governance on the FPS example repo (link here) to demonstrate FPS flexibility. The following is a list of functions proposals can implement:
 
--   `function name() public`: This is an empty function in `Proposal` contract.
+-   `function name() public`: This function is empty in the `Proposal` contract.
 
     ```solidity
     function name() external view virtual returns (string memory);
     ```
 
-    Override this function in the proposal specific contract to define the proposal name. Example:
+    Override this function in the proposal-specific contract to define the proposal name. For example:
 
     ```solidity
     function name() public pure override returns (string memory) {
@@ -14,13 +14,13 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function description() public`: This is an empty function in `Proposal` contract.
+-   `function description() public`: This function is empty in the `Proposal` contract.
 
     ```solidity
     function description() public view virtual returns (string memory);
     ```
 
-    Override this function in the proposal specific contract to define the proposal description. Example:
+    Override this function in the proposal-specific contract to define the proposal description. For example:
 
     ```solidity
     function description() public pure override returns (string memory) {
@@ -28,7 +28,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function deploy() public`: This is an empty function in `Proposal` contract.
+-   `function deploy() public`: This function is empty in the `Proposal` contract.
 
     ```solidity
     function deploy() public virtual {}
@@ -63,22 +63,21 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    Deployments are done by `DEPLOYER_EOA` address defined in `Addresses.json`. We get this address while setting the proposal environment in the `run` function, please refer `run` function documentation below to get more details. In tests `deploy()` is used to simulates the proposal contract deployments and on the other hand when the proposal is run as a script with broadcast flag and deployer eoa private key, it is used to deploy all the contracts on chain and adds those addresses to the `addresses` object.
+    Deployments are done by `DEPLOYER_EOA` address defined in `Addresses.json`. We get this address while setting the proposal environment in the `run` function; please refer to the `run` function documentation below to get more details. In tests, `deploy()` is used to simulate the proposal contract deployments, and on the other hand, when the proposal is run as a script with the broadcast flag and deployer EOA private key, it is used to deploy all the contracts on the chain and adds those addresses to the `addresses` object.
 
 -   `function afterDeployMock() public`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
 
 <a id="#build-function"></a>
 
--   `function build() public`: Besides deployments a proposal will have some actions to be made, for eg: transferring of ownership rights of a deployed contract. This function helps create and store these actions, each of these actions stores a target contract and calldata for making that action. In Proposal contract it is an empty function. This function should always be overridden in the proposal specific contract as every proposal must have atleast a single action to be made.
+-   `function build() public`: Besides deployments, a proposal will have some actions to be made, for example, transferring ownership rights of a deployed contract. This function helps create and store these actions, with each action storing a target contract and calldata for executing that action. In the Proposal contract, it is an empty function. This function should always be overridden in the proposal-specific contract, as every proposal must have at least a single action to be made.
 
     ```solidity
     function build() public virtual {}
     ```
 
-    This function helps the user store the actions without having to write any complicated calldata generation code by cleverly using a few foundry features. This can be best understood by having a look at the `buildModifier` in the `Proposal` contract. This modifier runs `_startBuild()` function before `build()` and `endBuild()` function after `build()`. `toPrank` is also passed as a parameter to this modifier which is the address that will be used as the caller for the actions in the proposal, eg: multisig address, timelock address, etc. In `startBuild()` function first of all we prank to the caller address and then take a snapshot of the start state by using foundry's `vm.snapshot()` feature. After this we call foundry's `vm.startStateDiffRecording()` which will now start recording all the function calls made after this step. Next the `build()` function will run and all the steps in the build will be recorded. Finally `endBuild()` will run, first it will stop the state diff recording and get all the calls info, then stop prank, then revert the state to the start snapshot and finally it will filter the calls made by the caller and also ignore the static calls. This way only the mutative calls made by the caller will be filtered out and these calls are finally stored in the actions array. Inside end build duplicate actions are also checked using `_validateAction` and custom checks can also be created using `_validateActions` like target should always be timelock contract, value should always be 0 or any custom action check.
+    This function helps the user store the actions without having to write any complicated calldata generation code by cleverly using a few Foundry features. This can be best understood by looking at the `buildModifier` in the Proposal contract. This modifier runs the `_startBuild()` function before `build()` and the `endBuild()` function after `build()`. `toPrank` is also passed as a parameter to this modifier, which is the address that will be used as the caller for the actions in the proposal, e.g., multisig address, timelock address, etc. In the `startBuild()` function, first of all, we prank to the caller address and then take a snapshot of the start state by using Foundry's `vm.snapshot()` feature. After this, we call Foundry's `vm.startStateDiffRecording()`, which will now start recording all the function calls made after this step. Next, the `build()` function will run, and all the steps in the build will be recorded. Finally, `endBuild()` will run; first, it will stop the state diff recording and get all the call info, then stop the prank, then revert the state to the start snapshot, and finally, it will filter the calls made by the caller and also ignore the static calls. This way, only the mutative calls made by the caller will be filtered out, and these calls are finally stored in the actions array. Inside end build, duplicate actions are also checked using `_validateAction`, and custom checks can also be created using `_validateActions`, like the target should always be the timelock contract, value should always be 0, or any custom action check.
 
     ```solidity
-
     modifier buildModifier(address toPrank) {
         _startBuild(toPrank);
         _;
@@ -90,7 +89,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     ///  2). starting prank as the caller
     ///  3). starting a $recording of all calls created during the proposal
     /// @param toPrank the address that will be used as the caller for the
-    /// actions, e.g. multisig address, timelock address, etc.
+    /// actions, e.g., multisig address, timelock address, etc.
     function _startBuild(address toPrank) private {
         vm.startPrank(toPrank);
 
@@ -103,7 +102,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     /// the actions performed by the proposal and revert these changes
     /// then, stop the prank and record the actions that were taken by the proposal.
     /// @param caller the address that will be used as the caller for the
-    /// actions, e.g. multisig address, timelock address, etc.
+    /// actions, e.g., multisig address, timelock address, etc.
     function _endBuild(address caller) private {
         VmSafe.AccountAccess[] memory accountAccesses = vm
             .stopAndReturnStateDiff();
@@ -159,7 +158,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    For more clear understanding we can have a look at the bravo proposal example snippet. Here `build()` has the `buildModifier` which takes `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function but only the mutative calls made by the caller will be stored in the actions array. In this example there are three mutative actions. First, deployed token is whitelisted on the deployed vault. Second, vault is approved to transfer some `balance` on behalf of bravo timelock contract. Third, `balance` amount of tokens are deposited in the vault from the bravo timelock contract.
+    For a clearer understanding, we can look at the Bravo proposal example snippet. Here, `build()` has the `buildModifier`, which takes `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function, but only the mutative calls made by the caller will be stored in the actions array. In this example, there are three mutative actions. First, the deployed token is whitelisted on the deployed vault. Second, the vault is approved to transfer some `balance` on behalf of the Bravo timelock contract. Third, the `balance` amount of tokens is deposited in the vault from the Bravo timelock contract.
 
     ```solidity
     function build()
@@ -175,7 +174,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
         // Get token address.
         address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
 
-        // Get timelock bravo's token balance.
+        // Get Bravo timelock's token balance.
         uint256 balance = Token(token).balanceOf(
             addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
         );
@@ -193,24 +192,24 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function getProposalActions() public`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most of the cases.
+-   `function getProposalActions() public`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
 
--   `function getCalldata() public`: Retrieves any generated governance proposal calldata. TainCalldata() public`: Check if any on-chain proposal matches the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract.
+-   `function getCalldata() public`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract.
 
--   `function simulate() public`: Executes the previously saved actions during the `build` step. This function's execution is dependent on the successful execution of the `build` function. On Proposal contract this function is empty.
+-   `function simulate() public`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function. On the Proposal contract, this function is empty.
 
     ```solidity
     function simulate() public virtual {}
     ```
 
-    This function can we overridden at the governance specific contract or the proposal specific contract depending on the type of proposal. For eg: governor bravo type overrides this function at the governance specific contract while timelock type overrides at the proposal specific contract. Here we will take a look at the governor bravo type example. In this example we have a proposer address that proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself, then it registers the proposal, then it rolls the proposal to the Active state so that voting can begin, then it votes yes to the proposal, then it rolls to block where voting period has ended and now the proposal is in Succeeded state, then it queue the proposal in the governance timelock contract, then it warps to the end of timelock delay period and finally executes the proposal, thus simulating the complete proposal on the local fork.
+    This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. Here we will take a look at the Governor Bravo type example. In this example, we have a proposer address that proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, and now the proposal is in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
 
     ```solidity
     function simulate() public override {
         address proposerAddress = address(1);
         IERC20VotesComp governanceToken = governor.comp();
         {
-            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            // Ensure the proposer meets the minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
             uint256 proposalThreshold = governor.proposalThreshold();
             uint256 votingPower = quorumVotes > proposalThreshold
@@ -230,7 +229,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
         bytes memory data = address(governor).functionCall(proposeCalldata);
         uint256 proposalId = abi.decode(data, (uint256));
 
-        // Check proposal is in Pending state
+        // Check if the proposal is in Pending state
         require(
             governor.state(proposalId) == IGovernorBravo.ProposalState.Pending
         );
@@ -269,62 +268,62 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    Without calling `build` first, `simulate` function becomes ineffectual as there would be no predefined actions to execute.
+    Without calling `build` first, the `simulate` function becomes ineffectual as there would be no predefined actions to execute.
 
--   `function validate() public`: Validates system state post proposal simulation. This allows checking that contract's variables and newly deployed contracts are set up correctly and the actions in the build were simulated correctly. In `Proposal` contract this function is empty.
+-   `function validate() public`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly. In the `Proposal` contract, this function is empty.
 
-        ```solidity
-        function validate() public virtual {}
-        ```
+    ```solidity
+    function validate() public virtual {}
+    ```
 
-        This function is overridden at the proposal specefic contract. For eg: we can have a look at governor bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and bravo timelock is the owner of deployed token and vault as the ownersip of these contracts was transferred from deployer eoa to the bravo timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that token was successfully whitelisted on the vault and the vault's token balance is equal to the bravo timelock's deposit in the vault.
+    This function is overridden at the proposal-specific contract. For example, we can take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
 
-        ```solidity
-        function validate() public override {
-            // Get vault address
-            Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
+    ```solidity
+    function validate() public override {
+        // Get vault address
+        Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
 
-            // Get token address
-            Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
+        // Get token address
+        Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
 
-            // Get governor bravo's timelock address
-            address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+        // Get Governor Bravo's Timelock address
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
-            // Ensure token total supply is 10 million
-            assertEq(token.totalSupply(), 10_000_000e18);
+        // Ensure the token total supply is 10 million
+        assertEq(token.totalSupply(), 10_000_000e18);
 
-            // Ensure timelock is owner of deployed token.
-            assertEq(token.owner(), address(timelock));
+        // Ensure the Timelock is the owner of the deployed token.
+        assertEq(token.owner(), address(timelock));
 
-            // Ensure timelock is owner of deployed vault
-            assertEq(bravoVault.owner(), address(timelock));
+        // Ensure the Timelock is the owner of the deployed vault
+        assertEq(bravoVault.owner(), address(timelock));
 
-            // Ensure vault is not paused
-            assertFalse(bravoVault.paused());
+        // Ensure the vault is not paused
+        assertFalse(bravoVault.paused());
 
-            // Ensure token is whitelisted on vault
-            assertTrue(bravoVault.tokenWhitelist(address(token)));
+        // Ensure the token is whitelisted on the vault
+        assertTrue(bravoVault.tokenWhitelist(address(token)));
 
-            // Get vault's token balance
-            uint256 balance = token.balanceOf(address(bravoVault));
+        // Get the vault's token balance
+        uint256 balance = token.balanceOf(address(bravoVault));
 
-            // Get timelock deposits in vault
-            (uint256 amount, ) = bravoVault.deposits(
-                address(token),
-                address(timelock)
-            );
+        // Get the Timelock deposits in the vault
+        (uint256 amount, ) = bravoVault.deposits(
+            address(token),
+            address(timelock)
+        );
 
-            // Ensure timelock deposit is same as vault's token balance
-            assertEq(amount, balance);
+        // Ensure the Timelock deposit is the same as the vault's token balance
+        assertEq(amount, balance);
 
-            // Ensure all minted tokens are deposited into the vault
-            assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
-        }
-        ```
+        // Ensure all minted tokens are deposited into the vault
+        assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
+    }
+    ```
 
-    <a id="#run-function"></a>
+<a id="#run-function"></a>
 
--   `function run() public`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()` and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast, this is done so that contracts can be deployed on chain.
+-   `function run() public`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
 
     ```solidity
     function run() public virtual {
@@ -347,7 +346,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    This function is overridden at the proposal specific contract. For eg: let's take a look at the governor bravo `run()` method. Here this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example first `primaryForkId` is set to `sepolia`. Next `addresses` object is set by reading the `Addresses.json` file. We make the state of the `addresses` contract persist across selected fork so that we don't need to set `addresses` object every time we selectFork. The bravo governor specific contract requires to set the bravo governor contract address as it requires this address in `simulate()` and `checkOnChainCalldata()` functions. Finally `run()` sets the bravo governor address and calls `super.run()`.
+    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. We make the state of the `addresses` contract persist across selected fork so that we don't need to set the `addresses` object every time we `selectFork`. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
 
     ```solidity
     function run() public override {
@@ -365,7 +364,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
         // Make 'addresses' state persist across selected fork.
         vm.makePersistent(address(addresses));
 
-        // Set governor bravo. This address is used for proposal simulation and check on
+        // Set governor Bravo. This address is used for proposal simulation and check on
         // chain proposal state.
         setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
 
@@ -374,8 +373,8 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function checkOnChainCalldata() public`: Check if there are any on-chain proposal that matches the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract. [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol)
+-   `function checkOnChainCalldata() public`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract. [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol)
 
--   `function print() public`: Print proposal description, actions and calldata. No need to override.
+-   `function print() public`: Print proposal description, actions, and calldata. No need to override.
 
 The actions in FPS are designed to be loosely coupled for flexible implementation, with the exception of the build and run functions, which require sequential execution. This design choice offers developers significant flexibility and power in tailoring the system to their specific needs. For example, a developer may choose to only execute the deploy and validate functions, bypassing the others. This could be suitable in situations where only initial deployment and final validation are necessary, without the need for intermediate steps. Alternatively, a developer might opt to simulate a proposal by executing only the build and run functions, omitting the deploy step if there is no need to deploy new contracts. FPS empowers developers with the ability to pick and choose speeds integration tests, deployment scripts, and governance proposal creation as it becomes easy to access whichever part of a governance proposal that is needed.

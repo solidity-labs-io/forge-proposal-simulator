@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Addresses contract plays a pivotal role in managing and storing the
-addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
+The Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
 
 ## Structure
 
@@ -38,18 +37,13 @@ Deployed contract addresses are registered along with their respective names and
 ]
 ```
 
-FPS allows contracts with identical names as long as they are deployed on
-different networks. However, duplicates on the same network are not
-permitted. The `Addresses.sol` contract enforces this rule by reverting during
-construction if such a duplicate is detected.
+FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected.
 
 ## Functions
 
 ### Adding
 
-Addresses can be added to the object during a proposal or test by calling the
-`addAddress` function with the name to be saved in storage and the address of the
-contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
+Addresses can be added to the object during a proposal or test by calling the `addAddress` function with the name to be saved in storage and the address of the contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
 
 ```solidity
 addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);
@@ -69,7 +63,7 @@ FPS has the following type checks implemented for the function `addAddress`:
 -   Address must be a contract in the specified chain if `isContract` is set to `true`.
 -   Address must not be a contract in the specified chain if `isContract` is set to `false`.
 
-Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment the `getRecordedAddresses` function will return all of the newly deployed addresses, and their respective names and chain id's.
+Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment, the `getRecordedAddresses` function will return all of the newly deployed addresses and their respective names and chain ids.
 
 ### Updating
 
@@ -95,7 +89,7 @@ FPS has the following type checks implemented for the function `changeAddress`:
 -   Address must be different from the existing address.
 -   An address for the specified name must already exist.
 
-After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain id's.
+After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain ids.
 
 ### Removing
 
@@ -133,8 +127,7 @@ addresses.getChangedAddresses();
 
 ### Address exists
 
-The `isAddressSet` function checks if an address exists in the Addresses
-contract storage.
+The `isAddressSet` function checks if an address exists in the Addresses contract storage.
 
 ```solidity
 addresses.isAddressSet("CONTRACT_NAME");
@@ -146,10 +139,7 @@ addresses.isAddressSet("CONTRACT_NAME", chainId);
 
 ### Address is a contract
 
-The `isAddressContract` function determines whether an address on the execution chain
-represents a contract. This is useful for distinguishing between contract and
-non-contract addresses, helping to avoid runtime errors when attempting to
-interact with non-existent contracts or contracts not deployed on the current chain.
+The `isAddressContract` function determines whether an address on the execution chain represents a contract. This is useful for distinguishing between contract and non-contract addresses, helping to avoid runtime errors when attempting to interact with non-existent contracts or contracts not deployed on the current chain.
 
 ```solidity
 addresses.isAddressContract("CONTRACT_NAME");
@@ -157,10 +147,7 @@ addresses.isAddressContract("CONTRACT_NAME");
 
 ## Usage
 
-When writing a proposal, pass the addresses path to the proposal constructor.
-[Proposal.sol](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/main/proposals/Proposal.sol)
-will load the addresses from the path and make them available to the proposal.
-Use the `addresses` object to add, update, retrieve, and remove addresses.
+When writing a proposal, pass the addresses path to the proposal constructor. [Proposal.sol](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/main/proposals/Proposal.sol) will load the addresses from the path and make them available to the proposal. Use the `addresses` object to add, update, retrieve, and remove addresses.
 
 ```solidity
 pragma solidity ^0.8.0;

@@ -2,12 +2,9 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the
-first Proposal contract. This example provides guidance on writing a proposal
-for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
+After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example provides guidance on writing a proposal for deploying new instances of `Vault.sol` and `Token`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
 
-This proposal includes the transfer of ownership of both contracts to multisig, along with the whitelisting of the token, minting of tokens to the multisig and multisig depositing tokens into the vault.
+This proposal includes the transfer of ownership of both contracts to multisig, along with the whitelisting of the token, minting of tokens to the multisig, and multisig depositing tokens into the vault.
 
 ## Proposal contract
 
@@ -27,9 +24,7 @@ Let's go through each of the functions that are overridden.
         return "Multisig proposal mock";
     }
     ```
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the
-    deployment of Vault and an ERC20 token. Once the contracts are deployed,
-    they are added to the `Addresses` contract by calling `addAddress()`.
+-   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
     ```solidity
     function deploy() public override {
@@ -113,7 +108,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig and the token was whitelisted on the Vault contract
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig, and the token was whitelisted on the Vault contract
 
     ```solidity
     function validate() public override {
@@ -191,9 +186,7 @@ First, remove all addresses in `Addresses.json` before running through the tutor
 
 To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the testnet.
 
-1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet
-   (we're using Sepolia for this tutorial). Follow the on-screen instructions to
-   generate a new Safe Account.
+1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet (we're using Sepolia for this tutorial). Follow the on-screen instructions to generate a new Safe Account.
 
 2. After setting up your Safe, you'll find the address in the details section of your Safe Account. Make sure to copy this address and keep it handy for later steps.
 
@@ -233,7 +226,7 @@ Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Sa
 ### Running the Proposal
 
 ```sh
-forge script src/proposals/MultisigProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
+forge script src/proposals/simple-vault-multisig/MultisigProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
 Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
@@ -287,8 +280,8 @@ payload
   0x174dea7100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000260000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
 
-If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
+If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is important to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in the deploy() method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send command along with the calldata generated above.

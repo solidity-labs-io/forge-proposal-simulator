@@ -2,108 +2,111 @@
 
 ## Overview
 
-This is an mainnet example of FPS where FPS is used to simulate proposals for ENS governor on L1. This example sets new DNSSEC on ens root on L1. This proposal deploys new DNSSEC contract `UPGRADE_DNSSEC_SUPPORT`. Then timelock sets new deployed DNSSEC contract as controller for ENS Root.
+This example on mainnet demonstrates FPS being utilized to simulate proposals for the ENS Governor on L1. The proposal involves setting up a new DNSSEC on the ENS root on L1. It entails deploying a new DNSSEC contract named `UPGRADE_DNSSEC_SUPPORT`. Subsequently, the timelock sets the newly deployed DNSSEC contract as the controller for the ENS Root.
 
-The following contract is present in the [mocks folder](../../mocks/MockOZGovernorProposal.sol).
+The contract for this proposal is located in the [mocks folder](../../mocks/MockOZGovernorProposal.sol).
 
-Let's go through each of the functions that are overridden.
+Let's review each of the overridden functions:
 
--   `name()`: Define the name of your proposal.
-    ```solidity
-    function name() public pure override returns (string memory) {
-        return "UPGRADE_DNSSEC_SUPPORT";
+-   `name()`: Specifies the name of the proposal.
+
+```solidity
+function name() public pure override returns (string memory) {
+    return "UPGRADE_DNSSEC_SUPPORT";
+}
+```
+
+-   `description()`: Provides a detailed description of the proposal.
+
+```solidity
+function description() public pure override returns (string memory) {
+    return
+        "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
+}
+```
+
+-   `build()`: Defines the necessary actions for the proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
+
+```solidity
+function build()
+    public
+    override
+    buildModifier(addresses.getAddress("ENS_TIMELOCK"))
+{
+    /// STATICCALL -- non-mutative and hence not recorded for the run stage
+
+    // Get ENS root address
+    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+
+    // Get deployed dnsSec address
+    address dnsSec = addresses.getAddress("ENS_DNSSEC");
+
+    /// CALLS -- mutative and recorded
+
+    // Set controller to newly deployed dnsSec contract
+    control.setController(dnsSec, true);
+}
+```
+
+-   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of a new `dnsSec` contract (only a mock for this proposal). Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
+
+```solidity
+function deploy() public override {
+    // Deploy a mock upgrade contract to set controller if not already deployed
+    if (!addresses.isAddressSet("ENS_DNSSEC")) {
+        // In a real case, this function would be responsible for
+        // deploying the DNSSEC contract instead of using a mock
+        address dnsSec = address(new MockUpgrade());
+
+        addresses.addAddress("ENS_DNSSEC", dnsSec, true);
     }
-    ```
--   `description()`: Provide a detailed description of your proposal.
-    ```solidity
-    function description() public pure override returns (string memory) {
-        return
-            "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
-    }
-    ```
--   `build()`: Set the necessary actions for your proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, newly deployed `dnsSec` contract is set as controller for root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the oz governor's timelock for this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
+}
+```
 
-    ```solidity
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("ENS_TIMELOCK"))
-    {
-        /// STATICCALL -- non-mutative and hence not recorded for the run stage
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the dnsSec contract is set as the controller for the root contract.
 
-        // Get ENS root address
-        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+```solidity
+function validate() public view override {
+    // Get ENS root address
+    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
 
-        // Get deployed dnsSec address
-        address dnsSec = addresses.getAddress("ENS_DNSSEC");
+    // Get deployed dnsSec address
+    address dnsSec = addresses.getAddress("ENS_DNSSEC");
 
-        /// CALLS -- mutative and recorded
+    // Ensure dnsSec is set as the controller for the ENS root contract
+    assertEq(control.controllers(dnsSec), true);
+}
+```
 
-        // Set controller to new deployed dnsSec contract
-        control.setController(dnsSec, true);
-    }
-    ```
+-   `run()`: Sets up the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor OZ is set using `setGovernor`, which will be used to check on-chain calldata and simulate the proposal.
 
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of new `dnsSec` contract (only a mock for this proposal). Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
+```solidity
+function run() public override {
+    // Create and select the mainnet fork for proposal execution.
+    setPrimaryForkId(vm.createFork("mainnet"));
+    vm.selectFork(primaryForkId);
 
-    ```solidity
-    function deploy() public override {
-        // deploy a mock upgrade contract to set controller if not already deployed
-        if (!addresses.isAddressSet("ENS_DNSSEC")) {
-            // In a real case, this function would be responsable for
-            // deployig the DNSSEC contract instead of using a mock
-            address dnsSec = address(new MockUpgrade());
+    // Set the addresses object by reading addresses from the JSON file.
+    setAddresses(
+        new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        )
+    );
 
-            addresses.addAddress("ENS_DNSSEC", dnsSec, true);
-        }
-    }
-    ```
+    // Persist the 'addresses' state across the selected fork.
+    vm.makePersistent(address(addresses));
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that dnsSec contract is set as controller for root contract.
+    // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
+    setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
-    ```solidity
-    function validate() public view override {
-        // Get ENS root address
-        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
-
-        // Get deployed dnsSec address
-        address dnsSec = addresses.getAddress("ENS_DNSSEC");
-
-        // Ensure dnsSec is set as controller for ENS root contract
-        assertEq(control.controllers(dnsSec), true);
-    }
-    ```
-
--   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId` and `governor` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `mainnet` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`. governor oz is set using `setGovernor` that will be used to check onchain calldata and simulate the proposal.
-
-    ```solidity
-    function run() public override {
-        // Create and select mainnet fork for proposal execution.
-        setPrimaryForkId(vm.createFork("mainnet"));
-        vm.selectFork(primaryForkId);
-
-        // Set addresses object reading addresses from json file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-            )
-        );
-
-        // Make 'addresses' state persist across selected fork.
-        vm.makePersistent(address(addresses));
-
-        // Set oz governor. This address is used for proposal simulation and check on
-        // chain proposal state.
-        setGovernor(addresses.getAddress("ENS_GOVERNOR"));
-
-        // Call the run function of parent contract 'Proposal.sol'.
-        super.run();
-    }
-    ```
+    // Call the run function of the parent contract 'Proposal.sol'.
+    super.run();
+}
+```
 
 ## Setting Up Your Deployer Address
 
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
 
 If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
 
@@ -117,7 +120,7 @@ cast wallet import ${wallet_name} --interactive
 forge script mocks/MockOZGovernorProposal.sol:MockOZGovernorProposal --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file including `DEPLOYER_EOA` address which will deploy the new contracts. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these don't align, the script execution will fail.
 
 The script will output the following:
 

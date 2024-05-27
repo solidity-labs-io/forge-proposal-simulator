@@ -1,4 +1,4 @@
-## Compatibility with other libraries
+## Compatibility with Other Libraries
 
 ### [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/)
 

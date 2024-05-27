@@ -2,13 +2,13 @@
 
 ## Overview
 
-This is an mainnet example of FPS where FPS is used to make proposals for compound governor bravo. No deployments in this example. This example sets comet's borrow and supply kink to 0.75 \* 1e18 through compound configurator.
+This serves as a mainnet example of FPS, where FPS is utilized to propose adjustments for the Compound Governor Bravo. No deployments are included in this example. Specifically, this example sets Comet's borrow and supply kink to 0.75 \* 1e18 through the Compound Configurator.
 
-The following contract is present in the [mocks/](../../mocks/) folder.
+The contract outlined below is located in the [mocks/](../../mocks/) folder.
 
-Let's go through each of the functions that are overridden.
+Let's examine each of the functions that are overridden:
 
--   `name()`: Define the name of your proposal.
+-   `name()`: Specifies the name of the proposal.
 
 ```solidity
 function name() public pure override returns (string memory) {
@@ -16,15 +16,16 @@ function name() public pure override returns (string memory) {
 }
 ```
 
--   `description()`: Provide a detailed description of your proposal.
+-   `description()`: Offers a detailed description of the proposal.
 
 ```solidity
 function description() public pure override returns (string memory) {
-    return "Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet";
+    return
+        "Mock proposal to adjust the IR Curve for Compound v3 WETH on Mainnet";
 }
 ```
 
--   `build()`: Set the necessary actions for your proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, borrow and supply kink is set through configurator by timelock bravo. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address is passed into `buildModifier` that will call actions in `build`. Caller is governor's timelock in this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
+-   `build()`: Defines the necessary actions for the proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this instance, borrow and supply kink are set through the configurator by Bravo's timelock. The actions should be written in Solidity code and in the order they are intended to be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier`, which will call actions in `build`. In this example, the caller is Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
 
     ```solidity
     function build()
@@ -39,7 +40,7 @@ function description() public pure override returns (string memory) {
             addresses.getAddress("COMPOUND_CONFIGURATOR")
         );
 
-        // get commet address
+        // get comet address
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded
@@ -52,7 +53,7 @@ function description() public pure override returns (string memory) {
     }
     ```
 
--   `validate()`: It validates that supply and borrow kink is set correctly.
+-   `validate()`: Validates that the supply and borrow kink are set correctly.
 
 ```solidity
 function validate() public view override {
@@ -76,36 +77,35 @@ function validate() public view override {
 }
 ```
 
--   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId` and `governor` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `mainnet` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`. governor bravo is set using `setGovernor` that will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Establishes the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor Bravo is set using `setGovernor`, which will be used to check on-chain calldata and simulate the proposal.
 
 ```solidity
 function run() public override {
-    // Create and select mainnet fork for proposal execution.
+    // Create and select the mainnet fork for proposal execution.
     primaryForkId = vm.createFork("mainnet");
     vm.selectFork(primaryForkId);
 
-    // Set addresses object reading addresses from json file.
+    // Set the addresses object by reading addresses from the JSON file.
     setAddresses(
         new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         )
     );
 
-    // Make 'addresses' state persist across selected fork.
+    // Persist the 'addresses' state across the selected fork.
     vm.makePersistent(address(addresses));
 
-    // Set governor bravo. This address is used for proposal simulation and check on
-    // chain proposal state.
+    // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
     setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
-    // Call the run function of parent contract 'Proposal.sol'.
+    // Call the run function of the parent contract 'Proposal.sol'.
     super.run();
 }
 ```
 
 ## Setting Up Your Deployer Address
 
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
 
 If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
 
@@ -119,7 +119,7 @@ cast wallet import ${wallet_name} --interactive
 forge script mocks/MockBravoProposal.sol --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file including `DEPLOYER_EOA` address which will deploy the new contracts. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these don't align, the script execution will fail.
 
 The script will output the following:
 

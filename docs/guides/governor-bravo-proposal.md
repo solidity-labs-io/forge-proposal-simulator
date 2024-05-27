@@ -2,32 +2,33 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the
-first Proposal contract. This example provides guidance on writing a proposal
-for deploying new instances of `Vault.sol` and `Token`. These contracts are
-located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
+Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`. These contracts can be found in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). You can either copy each file in this tutorial into your project or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repository. This tutorial assumes you have cloned the fps-example-repo.
 
-This proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token, minting of tokens to the timelock and timelock depositing tokens into the vault.
+This proposal entails transferring ownership of both contracts to Governor Bravo's timelock, alongside whitelisting the token, minting tokens to the timelock, and depositing tokens into the vault.
 
-## Proposal contract
+## Proposal Contract
 
-Here we are using the BravoProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We will use this contract as a reference for the tutorial.
+Here, we utilize the BravoProposal_01 proposal available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We'll use this contract as a reference for the tutorial.
 
-Let's go through each of the functions that are overridden.
+Let's delve into each of the overridden functions:
 
--   `name()`: Define the name of your proposal.
+-   `name()`: Defines the name of your proposal.
+
     ```solidity
     function name() public pure override returns (string memory) {
         return "BRAVO_MOCK";
     }
     ```
--   `description()`: Provide a detailed description of your proposal.
+
+-   `description()`: Provides a detailed description of your proposal.
+
     ```solidity
     function description() public pure override returns (string memory) {
         return "Bravo proposal mock";
     }
     ```
--   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function) for detailed explanation. In this example, ERC20 token is whitelisted on the Vault contract. Then timelock approves token for vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`, it is the governor bravo's timelock for this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
+
+-   `build()`: Sets the necessary actions for your proposal. In this example, the ERC20 token is whitelisted on the Vault contract. Then, the timelock approves the token for the vault and deposits all tokens into the vault.
 
     ```solidity
     function build()
@@ -37,38 +38,38 @@ Let's go through each of the functions that are overridden.
     {
         /// STATICCALL -- non-mutative and hence not recorded for the run stage
 
-        // Get vault address
+        // Get the vault address
         address bravoVault = addresses.getAddress("BRAVO_VAULT");
 
-        // Get token address
+        // Get the token address
         address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
 
-        // Get timelock bravo's token balance.
+        // Get the timelock bravo's token balance
         uint256 balance = Token(token).balanceOf(
             addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
         );
 
         /// CALLS -- mutative and recorded
 
-        // Whitelists the deployed token on the deployed vault.
+        // Whitelist the deployed token on the deployed vault
         Vault(bravoVault).whitelistToken(token, true);
 
-        // Approve the token for the vault.
+        // Approve the token for the vault
         Token(token).approve(bravoVault, balance);
 
-        // Deposit all tokens into the vault.
+        // Deposit all tokens into the vault
         Vault(bravoVault).deposit(token, balance);
     }
     ```
 
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
+-   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
 
     ```solidity
     function deploy() public override {
-        // Set governor bravo's timelock as owner for vault and token.
+        // Set governor bravo's timelock as the owner for the vault and token
         address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
-        // Deploy vault address if not already deployed and transfer ownership to timelock.
+        // Deploy the vault address if not already deployed and transfer ownership to the timelock
         if (!addresses.isAddressSet("BRAVO_VAULT")) {
             Vault bravoVault = new Vault();
 
@@ -76,8 +77,8 @@ Let's go through each of the functions that are overridden.
             bravoVault.transferOwnership(owner);
         }
 
-        // Deploy token address if not already deployed, transfer ownership to timelock
-        // and transfer all initial minted tokens from deployer to timelock.
+        // Deploy the token address if not already deployed, transfer ownership to the timelock
+        // and transfer all initial minted tokens from the deployer to the timelock
         if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
             Token token = new Token();
             addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
@@ -94,44 +95,44 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the governor bravo's timelock is the new owner of Vault and token, the tokens were transferred to governor bravo's timelock and the token was whitelisted on the Vault contract
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that Governor Bravo's timelock is the new owner of the Vault and token, the tokens were transferred to Governor Bravo's timelock, and the token was whitelisted on the Vault contract.
 
     ```solidity
     function validate() public override {
-        // Get vault address
+        // Get the vault address
         Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
 
-        // Get token address
+        // Get the token address
         Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
 
-        // Get governor bravo's timelock address
+        // Get Governor Bravo's timelock address
         address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
-        // Ensure token total supply is 10 million
+        // Ensure the token total supply is 10 million
         assertEq(token.totalSupply(), 10_000_000e18);
 
-        // Ensure timelock is owner of deployed token.
+        // Ensure the timelock is the owner of the deployed token
         assertEq(token.owner(), address(timelock));
 
-        // Ensure timelock is owner of deployed vault
+        // Ensure the timelock is the owner of the deployed vault
         assertEq(bravoVault.owner(), address(timelock));
 
-        // Ensure vault is not paused
+        // Ensure the vault is not paused
         assertFalse(bravoVault.paused());
 
-        // Ensure token is whitelisted on vault
+        // Ensure the token is whitelisted on the vault
         assertTrue(bravoVault.tokenWhitelist(address(token)));
 
-        // Get vault's token balance
+        // Get the vault's token balance
         uint256 balance = token.balanceOf(address(bravoVault));
 
-        // Get timelock deposits in vault
+        // Get the timelock deposits in the vault
         (uint256 amount, ) = bravoVault.deposits(
             address(token),
             address(timelock)
         );
 
-        // Ensure timelock deposit is same as vault's token balance
+        // Ensure the timelock deposit is the same as the vault's token balance
         assertEq(amount, balance);
 
         // Ensure all minted tokens are deposited into the vault
@@ -139,7 +140,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) for detailed explanation. It sets `addresses`, `primaryForkId` and `governor` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`. Governor bravo contract is set using `setGovernor` that will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Governor Bravo's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
 
     ```solidity
     function run() public override {
@@ -166,20 +167,18 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
-## Proposal simulation
+## Proposal Simulation
 
-First, remove all addresses in `Addresses.json` before running through the tutorial. There are two ways to execute proposals:
+Before proceeding with the tutorial, ensure all addresses in `Addresses.json` are removed. There are two methods for executing proposals:
 
-1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
-2. **Using `forge script`**: This is the chosen method for this tutorial.
-
-## Running the Proposal with `forge script`
+1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
+2. **Using `forge script`**: This tutorial employs this method.
 
 ### Setting Up Your Deployer Address
 
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+The deployer address is used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. We prioritize security in private key management. To avoid storing the private key as an environment variable, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
 
-If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+If you lack a wallet in `~/.foundry/keystores/`, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
@@ -187,11 +186,11 @@ cast wallet import ${wallet_name} --interactive
 
 ### Deploying a Governor Bravo on Testnet
 
-You'll need a Bravo Governor contract set up on the testnet before running the proposal.
+Before running the proposal, set up a Bravo Governor contract on the testnet.
 
-We have a script in [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder called `DeployGovernorBravo.s.sol` to facilitate this process.
+A script named `DeployGovernorBravo.s.sol` in the [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder facilitates this process.
 
-Before running the script, you must add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
 ```json
 [
@@ -204,7 +203,7 @@ Before running the script, you must add the `DEPLOYER_EOA` address to the `Addre
 ]
 ```
 
-After adding the address, run the script:
+After adding the address, execute the script:
 
 ```sh
 forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
@@ -248,7 +247,7 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 After adding the addresses, run the second script to accept ownership of the timelock and initialize the governor.
 
 The script is called `InitializeBravo.s.sol` and is located in the [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder.
-Before running the script, get the eta from the queue transaction on the previous script and set as a environment variable.
+Before running the script, obtain the eta from the queue transaction on the previous script and set it as an environment variable.
 
 ```sh
 export ETA=123456
@@ -262,8 +261,7 @@ forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --
 
 ### Setting Up the Addresses JSON
 
-Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to
-the `Addresses.json` file. The final Addresses.json file should be something like this:
+Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `Addresses.json` file. The final `Addresses.json` file should be something like this:
 
 ```json
 [
@@ -303,10 +301,10 @@ the `Addresses.json` file. The final Addresses.json file should be something lik
 ### Running the Proposal
 
 ```sh
-forge script src/proposals/BravoProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
+forge script src/proposals/simple-vault-bravo/BravoProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
+Before executing the proposal script, ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the `Addresses.json` file. Failure to align these will result in script execution failure.
 
 The script will output the following:
 
@@ -357,8 +355,8 @@ payload
 
 ```
 
-If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
+If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's essential to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using the cast send along with the calldata generated above.
