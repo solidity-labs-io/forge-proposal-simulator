@@ -10,7 +10,7 @@ This proposal entails transferring ownership of both contracts to Governor Bravo
 
 Here, we utilize the BravoProposal_01 proposal available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We'll use this contract as a reference for the tutorial.
 
-Let's delve into each of the overridden functions:
+Let's go through each of the overridden functions.
 
 -   `name()`: Defines the name of your proposal.
 
