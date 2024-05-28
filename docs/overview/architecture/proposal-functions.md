@@ -34,7 +34,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     function deploy() public virtual {}
     ```
 
-    Override this function when there are deployments to be made in the proposal. Here is an example from a [governor bravo proposal](../../guides/governor-bravo-proposal.md). Here two contracts are deployed, Vault and Token if they are not already deployed.
+    Override this function when there are deployments to be made in the proposal. Here is an example from a [governor bravo proposal](../../guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
 
     ```solidity
     function deploy() public override {
@@ -63,13 +63,13 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    Deployments are done by `DEPLOYER_EOA` address defined in `Addresses.json`. We get this address while setting the proposal environment in the `run` function; please refer to the `run` function documentation below to get more details. In tests, `deploy()` is used to simulate the proposal contract deployments, and on the other hand, when the proposal is run as a script with the broadcast flag and deployer EOA private key, it is used to deploy all the contracts on the chain and adds those addresses to the `addresses` object.
+    Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs[(https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. On the other hand, when proposals are executed through a `forge script,` the deployer is the proposal contract itself.
 
 -   `function afterDeployMock() public`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
 
 <a id="#build-function"></a>
 
--   `function build() public`: Besides deployments, a proposal will have some actions to be made, for example, transferring ownership rights of a deployed contract. This function helps create and store these actions, with each action storing a target contract and calldata for executing that action. In the Proposal contract, it is an empty function. This function should always be overridden in the proposal-specific contract, as every proposal must have at least a single action to be made.
+-   `function build() public`: this function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata. This calldata can then be proposed on the Governance, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function.
 
     ```solidity
     function build() public virtual {}
