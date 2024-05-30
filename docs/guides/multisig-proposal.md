@@ -96,7 +96,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
 
     ```solidity
     function simulate() public override {
