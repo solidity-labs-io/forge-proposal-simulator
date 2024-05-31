@@ -1,35 +1,27 @@
-# Customizable proposal
+# Customizing Proposals
 
 ## Overview
-FPS is designed to be loosely coupled for flexibility as explained [here](../overview/architecture/proposal-functions.md#flexibility). But for some use cases further customization is needed. FPS currently supports 4 types of proposals but each type of proposal can be further customized to meet exact requirments. In this guide we will have a look through one such example where we will customize Governor OZ proposal type for implementing Aribitrum cross chain proposals. There is OZ governor with timelock extension on Arbitrum L2 and a simple timelock on L1 for managing proposals in the Arbitrum network. On Arbitrum each proposal goes through both L2 and L1 chain governance. There can be broadly two types of proposals:
+The framework is designed to be flexible and loosely coupled, as explained [here](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where we customize the Governor OZ proposal type to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
 
-1. Proposal is to be executed on L1. Following are the steps:
-    - proposal is proposed on L2 governor OZ
-    - proposal is voted on and passes
-    - proposal is scheduled on the governor OZ L2 timelock
-    - proposal is executed after L2 timelock delay which schedules the proposal on L1 timelock. The calldata for the L2 proposal must be a call to `sendTxToL1` on the ArbSys precompiled contract which takes L1 timelock contract address as the first parameter and L1 timelock schedule calldata as the second. This way the ArbSys contract schedules the proposal calldata on L1 timelock via the Arbitrum bridge contract.
-    Note: before the proposal is scheduled on L1 timelock, bridge verifies that schedule was called by the L2 timelock by querying the outbox contract.
-    - proposal is executed on L1 after L1 timelock delay which triggers the upgrade executer contract on L1. Upgrade executer contract calls the Governance Action Contract(GAC) which is a unique contract deployed for each proposal. For this proposal a GAC contract will be deployed on L1.
-
-2. Proposal is to be executed on L2. Following are the steps:
-    - proposal is proposed on L2 governor OZ
-    - proposal is voted on and passes
-    - proposal is scheduled on the governor OZ L2 timelock
-    - proposal is executed after L2 timelock delay which schedules the proposal on L1 timelock. The calldata for the L2 proposal must be a call to `sendTxToL1` on the ArbSys precompiled contract which takes L1 timelock contract address as the first parameter and L1 timelock schedule calldata as the second. This way the ArbSys contract schedules the proposal calldata on L1 timelock via the Arbitrum bridge contract.
-    Note: before the proposal is scheduled on L1 timelock, bridge verifies that schedule was called by the L2 timelock by querying the outbox contract.
-    - proposal is executed on L1 after L1 timelock delay which triggers the upgrade executer contract on L2 via the retryable ticket magic contract and the arbitrum inbox contract. The target Upgrade executer contract calls the Governance Action Contract(GAC) which is a unique contract deployed for each proposal. For this proposal a GAC contract will be deployed on L2.
+The following steps from A to E are equal no matter which chain the proposal final contract target is deployed:
+    a) Proposal is created on L2 Governor
+    b) Proposal is voted on and passes
+    c) Proposal is queued on L2 timelock
+    d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
+   e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
+   f)Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
+    ```
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
-We can observe that Arbitrum proposal is an extension of Governor OZ propsal with multiple chains involved and many other details. We cannot directly use the Governor OZ proposal type to simulate an arbitrum proposal, we must extend it to accomodate multiple forks as well as override the `simulate` of Governor OZ.
+It is worth noting that the Arbitrum governance process has its own specifications and is not a straightforward implementation of the OZ Governor contract. Therefore, it is not possible to directly use the Governor OZ proposal type to simulate an Arbitrum proposal. Customization is needed to accommodate FPS for creating and testing Arbitrum proposals. Thanks to FPS flexibility, this is possible without much extra effort.
 
 
-## Customizing Governor OZ proposal for Arbitrum.
-We will override `simulate` of `GovernorOZProposal` contract, override `afterDeployMock`, `getProposalActions` and `_validateActions` of `Proposal` contract and add some helper methods to create a new Arbitrum proposal type which can then be used to create arbitrum cross chain proposals easily. This has already been implemented in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol). We'll use this contract as a reference for the tutorial.
+## Extending FPS for accommodate Arbitrum Governance
+In order to demonstrate the framework's flexibility, we developed the [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol). Let's go through each of its functions:
 
-Let's go through each of the functions in the `ArbitrumProposal` contract:
 
-- `setEthForkId()`: It is used to set ethereum mainnet fork id on `ArbitrumProposal` contract. This function will be set by the child proposal specific contract.
+- `setEthForkId()`: used to create the Ethereum fork using Foundry as the Arbitrum Governance is a cross-chain governance. This function will be set by the child proposal.
   ```solidity
   /// @notice set eth fork id
   function setEthForkId(uint256 _forkId) public {

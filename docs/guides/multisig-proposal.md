@@ -108,7 +108,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to multisig, and the token was whitelisted on the Vault contract
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to the multisig, and the token was whitelisted on the Vault contract
 
     ```solidity
     function validate() public override {

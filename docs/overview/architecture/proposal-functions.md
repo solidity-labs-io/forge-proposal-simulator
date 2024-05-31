@@ -63,19 +63,23 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs[(https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. On the other hand, when proposals are executed through a `forge script,` the deployer is the proposal contract itself.
+    Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs](https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. Alternatively, when proposals are executed through `forge script,` the deployer address is the proposal contract itself.
 
 -   `function afterDeployMock() public`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
 
 <a id="#build-function"></a>
 
--   `function build() public`: this function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata. This calldata can then be proposed on the Governance, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function.
+-   `function build() public`: this function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata encoded for the user's governance model. This calldata can then be proposed on the Governance contract, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function as a privileged admin role in the system.
 
     ```solidity
     function build() public virtual {}
     ```
 
-    This function helps the user store the actions without having to write any complicated calldata generation code by cleverly using a few Foundry features. This can be best understood by looking at the `buildModifier` in the Proposal contract. This modifier runs the `_startBuild()` function before `build()` and the `endBuild()` function after `build()`. `toPrank` is also passed as a parameter to this modifier, which is the address that will be used as the caller for the actions in the proposal, e.g., multisig address, timelock address, etc. In the `startBuild()` function, first of all, we prank to the caller address and then take a snapshot of the start state by using Foundry's `vm.snapshot()` feature. After this, we call Foundry's `vm.startStateDiffRecording()`, which will now start recording all the function calls made after this step. Next, the `build()` function will run, and all the steps in the build will be recorded. Finally, `endBuild()` will run; first, it will stop the state diff recording and get all the call info, then stop the prank, then revert the state to the start snapshot, and finally, it will filter the calls made by the caller and also ignore the static calls. This way, only the mutative calls made by the caller will be filtered out, and these calls are finally stored in the actions array. Inside end build, duplicate actions are also checked using `_validateAction`, and custom checks can also be created using `_validateActions`, like the target should always be the timelock contract, value should always be 0, or any custom action check.
+  The `buildModifier` must be implemented when overriding so that FPS can store the actions to be used later on in the calldata generation. This modifier runs the `_startBuild()` function before `build()` and the `endBuild()` function after.  This modifier also takes `toPrank` as a parameter, which represents the address used as the caller for the actions in the proposal, such as the multisig address or timelock address.
+
+In the `startBuild()` function, we set the prank to the caller address and take a snapshot of the initial state using Foundry's `vm.snapshot()` cheat code. Then, we initiate Foundry's `vm.startStateDiffRecording()` to start recording all function calls made after this step. The `build()` function is then executed, and all the build steps are recorded. Finally, `endBuild()` stops the state diff recording, retrieves all the call information, stops the prank, reverts the state to the initial snapshot, and filters out the calls made by the caller, ignoring any static calls. This process ensures that only the mutative calls made by the caller are filtered and stored in the actions array.```
+
+validateActions and validateAction should be explained each one in its section 
 
     ```solidity
     modifier buildModifier(address toPrank) {
@@ -268,7 +272,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    Without calling `build` first, the `simulate` function becomes ineffectual as there would be no predefined actions to execute.
+    Without calling `build` first, the `simulate` function would be a no-op as there would be no predefined actions to execute.
 
 -   `function validate() public`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly. In the `Proposal` contract, this function is empty.
 
