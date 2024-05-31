@@ -2,7 +2,7 @@
 
 ## Overview
 
-After adding FPS to project dependencies, the next step is creating the first Proposal contract. This example guides you in writing a proposal for deploying new instances of `Vault.sol` and `Token`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Copy each file in this tutorial into your project, or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo. This tutorial assumes you have cloned the fps-example-repo.
+After adding FPS to project dependencies, the next step is creating the first Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`, whitelist `Token` on `Vault`, approve and deposit all tokens into `Vault`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo before continuing the tutorial.
 
 This proposal involves transferring ownership of both contracts to Governor OZ's timelock, along with whitelisting the token, minting tokens to the timelock, and having the timelock deposit tokens into the vault.
 
@@ -69,7 +69,9 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function) for a detailed explanation. In this example, ERC20 token is whitelisted on the Vault contract. Then, the Governor oz timelock approves the token for the vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the Governor oz's timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
+
+-   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then, the Governor oz's timelock approves the token for the vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor oz's timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -103,7 +105,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) for a detailed explanation. It sets `addresses`, `primaryForkId`, and `governor` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor OZ contract is set using `setGovernor` that will be used to check on-chain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persistent across forks foundry's `vm.makePersistent()` cheatcode. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -192,7 +194,7 @@ First, remove all addresses in `Addresses.json` before running through the tutor
 
 The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
 
-If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
@@ -202,7 +204,7 @@ cast wallet import ${wallet_name} --interactive
 
 You'll need a Governor OZ contract set up on the testnet before running the proposal.
 
-We have a script in [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder called `DeployGovernorOz.s.sol` to facilitate this process.
+We have a script [DeployGovernorOz](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorOz.s.sol) to facilitate this process.
 
 Before running the script, you must add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
@@ -224,8 +226,7 @@ forge script script/DeployGovernorOz.s.sol --rpc-url sepolia --broadcast
 -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`.
+Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`.
 
 ### Setting Up the Addresses JSON
 

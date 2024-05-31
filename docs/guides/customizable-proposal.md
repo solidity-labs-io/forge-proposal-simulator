@@ -11,7 +11,6 @@ c) Proposal is queued on L2 timelock
 d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
 e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
 f)Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
-```
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
@@ -436,7 +435,7 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     }
     ```
 
--   `build()`: This function sets the necessary actions for your proposal. In this example, we try to upgrade the weth gateway on L1. Since all the upgrades on L1 can only be done thourgh the upgrade executor on L1, we use it to upgrade implementation of Weth gateway. The actions should be written in solidity code in the order they should be executed. Any mutative calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the arbitrum L1 timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, we try to upgrade the weth gateway on L1. Since all the upgrades on L1 can only be done thourgh the upgrade executor on L1, we use it to upgrade implementation of Weth gateway. The actions should be written in solidity code in the order they should be executed. Any mutative calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the arbitrum L1 timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -465,7 +464,7 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persistent across forks foundry's `vm.makePersistent()` cheatcode. The Arbitrum L2 governor's contract address address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -563,7 +562,7 @@ Now let's have a look at `ArbitrumProposal_02`:
     }
     ```
 
--   `build()`: Sets the necessary actions for your proposal. In this example, we try to upgrade weth gateway on L2. Since all the upgrades on L2 can only be done thourgh upgrade executor on L2, we use it to upgrade implementation of Weth gateway on L2. The actions should be written in solidity code in the order they should be executed. Any mutative calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the arbitrum L1 timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, we try to upgrade weth gateway on L2. Since all the upgrades on L2 can only be done thourgh upgrade executor on L2, we use it to upgrade implementation of Weth gateway on L2. The actions should be written in solidity code in the order they should be executed. Any mutative calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the arbitrum L1 timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -587,7 +586,7 @@ Now let's have a look at `ArbitrumProposal_02`:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persistent across forks foundry's `vm.makePersistent()` cheatcode. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
 
     ```solidity
     function run() public override {
@@ -638,7 +637,7 @@ Let's now simulate `ArbitrumProposal_01`. Before proceeding with the tutorial, e
 
 The deployer address is used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. We prioritize security in private key management. To avoid storing the private key as an environment variable, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
 
-If you lack a wallet in `~/.foundry/keystores/`, create one by executing:
+If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive

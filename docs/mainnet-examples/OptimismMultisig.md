@@ -40,7 +40,9 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
--   `build()`: Sets the necessary actions for your proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
+
+-   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -61,7 +63,7 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId`, and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. The `addresses` contract state is persistent across forks foundry's `vm.makePersistent()` cheatcode.
 
     ```solidity
     function run() public override {
@@ -120,7 +122,7 @@ Let's go through each of the functions that are overridden:
 
 The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
 
-If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
+If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive

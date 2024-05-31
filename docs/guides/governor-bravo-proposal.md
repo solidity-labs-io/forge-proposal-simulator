@@ -2,7 +2,7 @@
 
 ## Overview
 
-Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`. These contracts can be found in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). You can either copy each file in this tutorial into your project or clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repository. This tutorial assumes you have cloned the fps-example-repo.
+Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`, whitelist `Token` on `Vault`, approve and deposit all tokens into `Vault`. These contracts can be found in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo before continuing the tutorial.
 
 This proposal entails transferring ownership of both contracts to Governor Bravo's timelock, alongside whitelisting the token, minting tokens to the timelock, and depositing tokens into the vault.
 
@@ -61,7 +61,9 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `build()`: Sets the necessary actions for your proposal. In this example, the ERC20 token is whitelisted on the Vault contract. Then, the timelock approves the token for the vault and deposits all tokens into the vault.
+    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
+
+-   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then, the timelock approves the token for the vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor bravo's timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -95,7 +97,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Governor Bravo's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persistent across forks foundry's `vm.makePersistent()` cheatcode. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -178,7 +180,7 @@ Before proceeding with the tutorial, ensure all addresses in `Addresses.json` ar
 
 The deployer address is used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. We prioritize security in private key management. To avoid storing the private key as an environment variable, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
 
-If you lack a wallet in `~/.foundry/keystores/`, create one by executing:
+If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
@@ -186,9 +188,9 @@ cast wallet import ${wallet_name} --interactive
 
 ### Deploying a Governor Bravo on Testnet
 
-Before running the proposal, set up a Bravo Governor contract on the testnet.
+You'll need a Governor Bravo contract set up on the testnet before running the proposal.
 
-A script named `DeployGovernorBravo.s.sol` in the [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder facilitates this process.
+We have a script [DeployGovernorBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorBravo.s.sol) to facilitate this process.
 
 Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
@@ -210,8 +212,7 @@ forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
 -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`.
+Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`.
 
 Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should look like this:
 
@@ -244,9 +245,7 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ]
 ```
 
-After adding the addresses, run the second script to accept ownership of the timelock and initialize the governor.
-
-The script is called `InitializeBravo.s.sol` and is located in the [script/](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script) folder.
+After adding the addresses, run the second script to accept ownership of the timelock and initialize the governor. The script to facilate this process is [InitializeBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/InitializeBravo.s.sol).
 Before running the script, obtain the eta from the queue transaction on the previous script and set it as an environment variable.
 
 ```sh
