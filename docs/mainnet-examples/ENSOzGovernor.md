@@ -10,99 +10,99 @@ Let's review each of the overridden functions:
 
 -   `name()`: Specifies the name of the proposal.
 
-```solidity
-function name() public pure override returns (string memory) {
-    return "UPGRADE_DNSSEC_SUPPORT";
-}
-```
+    ```solidity
+    function name() public pure override returns (string memory) {
+        return "UPGRADE_DNSSEC_SUPPORT";
+    }
+    ```
 
 -   `description()`: Provides a detailed description of the proposal.
 
-```solidity
-function description() public pure override returns (string memory) {
-    return
-        "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
-}
-```
-
--   `build()`: Defines the necessary actions for the proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
-
-```solidity
-function build()
-    public
-    override
-    buildModifier(addresses.getAddress("ENS_TIMELOCK"))
-{
-    /// STATICCALL -- non-mutative and hence not recorded for the run stage
-
-    // Get ENS root address
-    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
-
-    // Get deployed dnsSec address
-    address dnsSec = addresses.getAddress("ENS_DNSSEC");
-
-    /// CALLS -- mutative and recorded
-
-    // Set controller to newly deployed dnsSec contract
-    control.setController(dnsSec, true);
-}
-```
+    ```solidity
+    function description() public pure override returns (string memory) {
+        return
+            "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
+    }
+    ```
 
 -   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of a new `dnsSec` contract (only a mock for this proposal). Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
-```solidity
-function deploy() public override {
-    // Deploy a mock upgrade contract to set controller if not already deployed
-    if (!addresses.isAddressSet("ENS_DNSSEC")) {
-        // In a real case, this function would be responsible for
-        // deploying the DNSSEC contract instead of using a mock
-        address dnsSec = address(new MockUpgrade());
+    ```solidity
+    function deploy() public override {
+        // Deploy a mock upgrade contract to set controller if not already deployed
+        if (!addresses.isAddressSet("ENS_DNSSEC")) {
+            // In a real case, this function would be responsible for
+            // deploying the DNSSEC contract instead of using a mock
+            address dnsSec = address(new MockUpgrade());
 
-        addresses.addAddress("ENS_DNSSEC", dnsSec, true);
+            addresses.addAddress("ENS_DNSSEC", dnsSec, true);
+        }
     }
-}
-```
+    ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the dnsSec contract is set as the controller for the root contract.
+-   `build()`: Defines the necessary actions for the proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
 
-```solidity
-function validate() public view override {
-    // Get ENS root address
-    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+    ```solidity
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("ENS_TIMELOCK"))
+    {
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
 
-    // Get deployed dnsSec address
-    address dnsSec = addresses.getAddress("ENS_DNSSEC");
+        // Get ENS root address
+        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
 
-    // Ensure dnsSec is set as the controller for the ENS root contract
-    assertEq(control.controllers(dnsSec), true);
-}
-```
+        // Get deployed dnsSec address
+        address dnsSec = addresses.getAddress("ENS_DNSSEC");
+
+        /// CALLS -- mutative and recorded
+
+        // Set controller to newly deployed dnsSec contract
+        control.setController(dnsSec, true);
+    }
+    ```
 
 -   `run()`: Sets up the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor OZ is set using `setGovernor`, which will be used to check on-chain calldata and simulate the proposal.
 
-```solidity
-function run() public override {
-    // Create and select the mainnet fork for proposal execution.
-    setPrimaryForkId(vm.createFork("mainnet"));
-    vm.selectFork(primaryForkId);
+    ```solidity
+    function run() public override {
+        // Create and select the mainnet fork for proposal execution.
+        setPrimaryForkId(vm.createFork("mainnet"));
+        vm.selectFork(primaryForkId);
 
-    // Set the addresses object by reading addresses from the JSON file.
-    setAddresses(
-        new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-        )
-    );
+        // Set the addresses object by reading addresses from the JSON file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+            )
+        );
 
-    // Persist the 'addresses' state across the selected fork.
-    vm.makePersistent(address(addresses));
+        // Persist the 'addresses' state across the selected fork.
+        vm.makePersistent(address(addresses));
 
-    // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
-    setGovernor(addresses.getAddress("ENS_GOVERNOR"));
+        // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
+        setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
-    // Call the run function of the parent contract 'Proposal.sol'.
-    super.run();
-}
-```
+        // Call the run function of the parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
+
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the dnsSec contract is set as the controller for the root contract.
+
+    ```solidity
+    function validate() public view override {
+        // Get ENS root address
+        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+
+        // Get deployed dnsSec address
+        address dnsSec = addresses.getAddress("ENS_DNSSEC");
+
+        // Ensure dnsSec is set as the controller for the ENS root contract
+        assertEq(control.controllers(dnsSec), true);
+    }
+    ```
 
 ## Setting Up Your Deployer Address
 

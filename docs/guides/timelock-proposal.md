@@ -13,17 +13,21 @@ In this example, we are using the TimelockProposal_01 proposal that is present i
 Let's review each of the functions that are overridden.
 
 -   `name()`: This function defines the name of your proposal.
+
     ```solidity
     function name() public pure override returns (string memory) {
         return "TIMELOCK_MOCK";
     }
     ```
+
 -   `description()`: It provides a detailed description of your proposal.
+
     ```solidity
     function description() public pure override returns (string memory) {
         return "Timelock proposal mock";
     }
     ```
+
 -   `deploy()`: This function deploys any necessary contracts. In this example, it demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
     ```solidity
@@ -87,6 +91,32 @@ Let's review each of the functions that are overridden.
     }
     ```
 
+-   `run()`: This function sets the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. The timelock is set using `setTimelock` for simulating the proposal and checking on-chain calldata.
+
+    ```solidity
+    function run() public override {
+        // Create and select the sepolia fork for proposal execution
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set the addresses object by reading addresses from the json file
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Make the 'addresses' state persist across the selected fork
+        vm.makePersistent(address(addresses));
+
+        // Set the timelock; this address is used for proposal simulation and checking on-chain proposal state
+        setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
+
+        // Call the run function of the parent contract 'Proposal.sol'
+        super.run();
+    }
+    ```
+
 -   `simulate()`: This function executes the proposal actions outlined in the `build()` step. It performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
 
     ```solidity
@@ -138,32 +168,6 @@ Let's review each of the functions that are overridden.
 
         // Ensure all minted tokens are deposited into the vault
         assertEq(token.balanceOf(address(timelockVault)), token.totalSupply());
-    }
-    ```
-
--   `run()`: This function sets the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. The timelock is set using `setTimelock` for simulating the proposal and checking on-chain calldata.
-
-    ```solidity
-    function run() public override {
-        // Create and select the sepolia fork for proposal execution
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
-
-        // Set the addresses object by reading addresses from the json file
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-
-        // Make the 'addresses' state persist across the selected fork
-        vm.makePersistent(address(addresses));
-
-        // Set the timelock; this address is used for proposal simulation and checking on-chain proposal state
-        setTimelock(addresses.getAddress("PROTOCOL_TIMELOCK"));
-
-        // Call the run function of the parent contract 'Proposal.sol'
-        super.run();
     }
     ```
 

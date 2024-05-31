@@ -10,109 +10,111 @@ Let's go through each of the functions that are overridden:
 
 -   `name()`: Defines the name of your proposal.
 
-```solidity
-function name() public pure override returns (string memory) {
-    return "OPTIMISM_MULTISIG_MOCK";
-}
-```
+    ```solidity
+    function name() public pure override returns (string memory) {
+        return "OPTIMISM_MULTISIG_MOCK";
+    }
+    ```
 
 -   `description()`: Provides a detailed description of your proposal.
 
-```solidity
-function description() public pure override returns (string memory) {
-    return "Mock proposal that upgrades the L1 NFT Bridge";
-}
-```
+    ```solidity
+    function description() public pure override returns (string memory) {
+        return "Mock proposal that upgrades the L1 NFT Bridge";
+    }
+    ```
 
 -   `deploy()`: This example demonstrates the deployment of the new MockUpgrade, which will be used as the new implementation for the proxy.
 
-```solidity
-function deploy() public override {
-    if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
-        address l1NFTBridgeImplementation = address(new MockUpgrade());
+    ```solidity
+    function deploy() public override {
+        if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
+            address l1NFTBridgeImplementation = address(new MockUpgrade());
 
-        addresses.addAddress(
-            "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
-            l1NFTBridgeImplementation,
-            true
-        );
+            addresses.addAddress(
+                "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
+                l1NFTBridgeImplementation,
+                true
+            );
+        }
     }
-}
-```
+    ```
 
 -   `build()`: Sets the necessary actions for your proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
-```solidity
-function build()
-    public
-    override
-    buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
-{
-    /// STATICCALL -- not recorded for the run stage
-    IProxyAdmin proxy = IProxyAdmin(
-        addresses.getAddress("OPTIMISM_PROXY_ADMIN")
-    );
+    ```solidity
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
+    {
+        /// STATICCALL -- not recorded for the run stage
+        IProxyAdmin proxy = IProxyAdmin(
+            addresses.getAddress("OPTIMISM_PROXY_ADMIN")
+        );
 
-    /// CALLS -- mutative and recorded
-    proxy.upgrade(
-        addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
-        addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
-    );
-}
-```
-
--   `simulate()`: Executes the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
-
-```solidity
-function simulate() public override {
-    // get multisig address
-    address multisig = addresses.getAddress("OPTIMISM_MULTISIG");
-
-    // simulate all actions in 'build' functions through multisig
-    _simulateActions(multisig);
-}
-```
-
--   `validate()`: Validates that the implementation is upgraded correctly.
-
-```solidity
-function validate() public override {
-    // get proxy address
-    IProxy proxy = IProxy(addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"));
-
-    // implementation() caller must be the owner
-    vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
-
-    // ensure implementation is upgraded
-    require(
-        proxy.implementation() ==
-            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
-        "Proxy implementation not set"
-    );
-    vm.stopPrank();
-}
-```
+        /// CALLS -- mutative and recorded
+        proxy.upgrade(
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
+        );
+    }
+    ```
 
 -   `run()`: Sets up the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId`, and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`.
 
-```solidity
-function run() public override {
-    // Create and select mainnet fork for proposal execution.
-    primaryForkId = vm.createFork("mainnet");
-    vm.selectFork(primaryForkId);
+    ```solidity
+    function run() public override {
+        // Create and select mainnet fork for proposal execution.
+        primaryForkId = vm.createFork("mainnet");
+        vm.selectFork(primaryForkId);
 
-    // Set addresses object reading addresses from JSON file.
-    addresses = new Addresses(
-        vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-    );
+        // Set addresses object reading addresses from JSON file.
+        addresses = new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        );
 
-    // Make 'addresses' state persist across selected fork.
-    vm.makePersistent(address(addresses));
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
 
-    // Call the run function of parent contract 'Proposal.sol'.
-    super.run();
-}
-```
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
+
+-   `simulate()`: Executes the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
+
+    ```solidity
+    function simulate() public override {
+        // get multisig address
+        address multisig = addresses.getAddress("OPTIMISM_MULTISIG");
+
+        // simulate all actions in 'build' functions through multisig
+        _simulateActions(multisig);
+    }
+    ```
+
+-   `validate()`: Validates that the implementation is upgraded correctly.
+
+    ```solidity
+    function validate() public override {
+        // get proxy address
+        IProxy proxy = IProxy(
+            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
+        );
+
+        // implementation() caller must be the owner
+        vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
+
+        // ensure implementation is upgraded
+        require(
+            proxy.implementation() ==
+                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+            "Proxy implementation not set"
+        );
+        vm.stopPrank();
+    }
+    ```
 
 ## Setting Up Your Deployer Address
 

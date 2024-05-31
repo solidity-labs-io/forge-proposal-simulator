@@ -10,20 +10,20 @@ Let's examine each of the functions that are overridden:
 
 -   `name()`: Specifies the name of the proposal.
 
-```solidity
-function name() public pure override returns (string memory) {
-    return "ADJUST_WETH_IR_CURVE";
-}
-```
+    ```solidity
+    function name() public pure override returns (string memory) {
+        return "ADJUST_WETH_IR_CURVE";
+    }
+    ```
 
 -   `description()`: Offers a detailed description of the proposal.
 
-```solidity
-function description() public pure override returns (string memory) {
-    return
-        "Mock proposal to adjust the IR Curve for Compound v3 WETH on Mainnet";
-}
-```
+    ```solidity
+    function description() public pure override returns (string memory) {
+        return
+            "Mock proposal to adjust the IR Curve for Compound v3 WETH on Mainnet";
+    }
+    ```
 
 -   `build()`: Defines the necessary actions for the proposal. [Refer](../overview/architecture/proposal-functions.md#build-function). In this instance, borrow and supply kink are set through the configurator by Bravo's timelock. The actions should be written in Solidity code and in the order they are intended to be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier`, which will call actions in `build`. In this example, the caller is Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
 
@@ -53,55 +53,55 @@ function description() public pure override returns (string memory) {
     }
     ```
 
--   `validate()`: Validates that the supply and borrow kink are set correctly.
-
-```solidity
-function validate() public view override {
-    // get configurator address
-    ICompoundConfigurator configurator = ICompoundConfigurator(
-        addresses.getAddress("COMPOUND_CONFIGURATOR")
-    );
-
-    // get comet address
-    address comet = addresses.getAddress("COMPOUND_COMET");
-
-    // get comet configuration
-    ICompoundConfigurator.Configuration memory config = configurator
-        .getConfiguration(comet);
-
-    // ensure supply kink is set to 0.75 * 1e18
-    assertEq(config.supplyKink, kink);
-
-    // ensure borrow kink is set to 0.75 * 1e18
-    assertEq(config.borrowKink, kink);
-}
-```
-
 -   `run()`: Establishes the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor Bravo is set using `setGovernor`, which will be used to check on-chain calldata and simulate the proposal.
 
-```solidity
-function run() public override {
-    // Create and select the mainnet fork for proposal execution.
-    primaryForkId = vm.createFork("mainnet");
-    vm.selectFork(primaryForkId);
+    ```solidity
+    function run() public override {
+        // Create and select the mainnet fork for proposal execution.
+        primaryForkId = vm.createFork("mainnet");
+        vm.selectFork(primaryForkId);
 
-    // Set the addresses object by reading addresses from the JSON file.
-    setAddresses(
-        new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-        )
-    );
+        // Set the addresses object by reading addresses from the JSON file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+            )
+        );
 
-    // Persist the 'addresses' state across the selected fork.
-    vm.makePersistent(address(addresses));
+        // Persist the 'addresses' state across the selected fork.
+        vm.makePersistent(address(addresses));
 
-    // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
-    setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
+        // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
+        setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
-    // Call the run function of the parent contract 'Proposal.sol'.
-    super.run();
-}
-```
+        // Call the run function of the parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
+
+-   `validate()`: Validates that the supply and borrow kink are set correctly.
+
+    ```solidity
+    function validate() public view override {
+        // get configurator address
+        ICompoundConfigurator configurator = ICompoundConfigurator(
+            addresses.getAddress("COMPOUND_CONFIGURATOR")
+        );
+
+        // get comet address
+        address comet = addresses.getAddress("COMPOUND_COMET");
+
+        // get comet configuration
+        ICompoundConfigurator.Configuration memory config = configurator
+            .getConfiguration(comet);
+
+        // ensure supply kink is set to 0.75 * 1e18
+        assertEq(config.supplyKink, kink);
+
+        // ensure borrow kink is set to 0.75 * 1e18
+        assertEq(config.borrowKink, kink);
+    }
+    ```
 
 ## Setting Up Your Deployer Address
 

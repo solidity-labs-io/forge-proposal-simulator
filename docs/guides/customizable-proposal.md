@@ -1,390 +1,401 @@
 # Customizing Proposals
 
 ## Overview
+
 The framework is designed to be flexible and loosely coupled, as explained [here](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where we customize the Governor OZ proposal type to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
 
 The following steps from A to E are equal no matter which chain the proposal final contract target is deployed:
-    a) Proposal is created on L2 Governor
-    b) Proposal is voted on and passes
-    c) Proposal is queued on L2 timelock
-    d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
-   e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
-   f)Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
-    ```
+a) Proposal is created on L2 Governor
+b) Proposal is voted on and passes
+c) Proposal is queued on L2 timelock
+d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
+e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
+f)Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
+```
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
 It is worth noting that the Arbitrum governance process has its own specifications and is not a straightforward implementation of the OZ Governor contract. Therefore, it is not possible to directly use the Governor OZ proposal type to simulate an Arbitrum proposal. Customization is needed to accommodate FPS for creating and testing Arbitrum proposals. Thanks to FPS flexibility, this is possible without much extra effort.
 
-
 ## Extending FPS for accommodate Arbitrum Governance
+
 In order to demonstrate the framework's flexibility, we developed the [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol). Let's go through each of its functions:
 
-
-- `setEthForkId()`: used to create the Ethereum fork using Foundry as the Arbitrum Governance is a cross-chain governance. This function will be set by the child proposal.
-  ```solidity
-  /// @notice set eth fork id
-  function setEthForkId(uint256 _forkId) public {
-      ethForkId = _forkId;
-  }
-  ```
-
-- `afterDeployMock()`: Here it is used to deploy and add `MockOutBox` contract address on `Arbitrum Bridge` contract using `vm.store` foundry cheatcode and it also etches `MockArbSys` bytecode at `Arbitrum sys` contract address. As already explained in overview section the calldata for the L2 proposal must be a call to `sendTxToL1` on the ArbSys precompiled contract which takes L1 timelock contract address as the first parameter and L1 timelock schedule calldata as the second. The `MockArbOutbox` is used to simulate offchain actions, bridge verifies that schedule was called by the L2 timelock by querying the outbox contract, by storing `MockArbOutbox` address inside bridge we make sure that the bridge verification passes although no offchain actions were made. These two mocks are critical for the arbitrum proposal flow and here we can see how FPS makes it easy to simulate such complex proposal flow.
-
-  ```solidity
-
-  /// @title MockArbSys
-  /// @notice a mocked version of the Arbitrum pre-compiled system contract, add additional methods as needed
-  contract MockArbSys {
-      uint256 public ticketId;
-
-      function sendTxToL1(
-          address _l1Target,
-          bytes memory _data
-      ) external payable returns (uint256) {
-          (bool success, ) = _l1Target.call(_data);
-          require(success, "Arbsys: sendTxToL1 failed");
-          return ++ticketId;
-      }
-  }
-
-  // @title MockArbOutbox
-  // @notice Mock arbitrum outbox to return L2 timelock on l2ToL1Sender call
-  contract MockArbOutbox {
-      function l2ToL1Sender() external pure returns (address) {
-          return 0x34d45e99f7D8c45ed05B5cA72D54bbD1fb3F98f0;
-      }
-  }
-
-  /// @notice mock arb sys precompiled contract on L2
-  ///         mock outbox on mainnet
-  function afterDeployMock() public override {
-      // switch to mainnet fork to mock arb outbox
-      vm.selectFork(ethForkId);
-      address mockOutbox = address(new MockArbOutbox());
-
-      vm.store(
-          addresses.getAddress("ARBITRUM_BRIDGE"),
-          bytes32(uint256(5)),
-          bytes32(uint256(uint160(mockOutbox)))
-      );
-
-      vm.selectFork(primaryForkId);
-
-      address arbsys = address(new MockArbSys());
-      vm.makePersistent(arbsys);
-
-      vm.etch(addresses.getAddress("ARBITRUM_SYS"), address(arbsys).code);
-  }
-  ```
-
-- `_validateActions()`: Validates proposal actions. An arbitrum proposal should have a single action this method checks that there is only one action in the proposal, target contract is not `ZERO ADDRESS`, no actions are allowed without both arguments and value and if execution chain is `L2` no `ETH` is transferred (value = 0).
-
-  ```solidity
-  /// @notice Arbitrum proposals should have a single action
-  function _validateActions() internal view override {
-      uint256 actionsLength = actions.length;
-
-      require(
-          actionsLength == 1,
-          "Arbitrum proposals must have a single action"
-      );
-
-      require(actions[0].target != address(0), "Invalid target for proposal");
-      /// if there are no args and no eth, the action is not valid
-      require(
-          (actions[0].arguments.length == 0 && actions[0].value > 0) ||
-              actions[0].arguments.length > 0,
-          "Invalid arguments for proposal"
-      );
-
-      // Value is ignored on L2 proposals
-      if (executionChain == ProposalExecutionChain.ARB_ONE) {
-          require(actions[0].value == 0, "Value must be 0 for L2 execution");
-      }
-  }
-  ```
-
-- `getScheduleTimelockCaldata()`: This function returns calldata to schedule proposal actions on L1 timelock. The calldata is generated based on the execution chain where the proposal will be executed. If the execution chain is L1 chain then the build target is the target contract but if the execution chain is L2 chain then target is `RETRYABLE_TICKET_MAGIC` contract and the build target is encoded in the calldata along with inbox contract address.
-  ```solidity
-  /// @notice get the calldata to schedule the timelock on L1
-  ///         the L1 schedule calldata must be the calldata for all arbitrum proposals
-  function getScheduleTimelockCaldata()
-      public
-      view
-      returns (bytes memory scheduleCalldata)
-  {
-      // address only used if is a L2 proposal
-      address inbox;
-
-      if (executionChain == ProposalExecutionChain.ARB_ONE) {
-          inbox = arbOneInbox;
-      } else if (executionChain == ProposalExecutionChain.ARB_NOVA) {
-          inbox = arbNovaInbox;
-      }
-
-      scheduleCalldata = abi.encodeWithSelector(
-          ITimelockController.schedule.selector,
-          // if the action is to be executed on l1, the target is the actual
-          // target, otherwise it is the magic value that tells that the
-          // proposal must be relayed back to l2
-          executionChain == ProposalExecutionChain.ETH
-              ? actions[0].target
-              : RETRYABLE_TICKET_MAGIC, // target
-          actions[0].value, // value
-          executionChain == ProposalExecutionChain.ETH
-              ? actions[0].arguments
-              : abi.encode( // these are the retryable data params
-                      // the inbox we want to use, should be arb one or nova
-                      inbox,
-                      addresses.getAddress("ARBITRUM_L2_UPGRADE_EXECUTOR"), // the upgrade executor on the l2 network
-                      0, // no value in this upgrade
-                      0, // max gas - will be filled in when the retryable is actually executed
-                      0, // max fee per gas - will be filled in when the retryable is actually executed
-                      actions[0].arguments // calldata created on the build function
-                  ),
-          bytes32(0), // no predecessor
-          keccak256(abi.encodePacked(description())), // salt is prop description
-          minDelay // delay for this proposal
-      );
-  }
-  ```
-
-- `getProposalActions()`: This function returns proposal calldata to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the l1 timelock schedule calldata.
-  ```solidity
-  /// @notice get proposal actions
-  /// @dev Arbitrum proposals must have a single action which must be a call
-  /// to ArbSys address with the l1 timelock schedule calldata
-  function getProposalActions()
-      public
-      view
-      override
-      returns (
-          address[] memory targets,
-          uint256[] memory values,
-          bytes[] memory arguments
-      )
-  {
-      _validateActions();
-
-      // inner calldata must be a call to schedule on L1Timelock
-      bytes memory innerCalldata = getScheduleTimelockCaldata();
-
-      targets = new address[](1);
-      values = new uint256[](1);
-      arguments = new bytes[](1);
-
-      bytes memory callData = abi.encodeWithSelector(
-          MockArbSys.sendTxToL1.selector,
-          addresses.getAddress("ARBITRUM_L1_TIMELOCK", 1),
-          innerCalldata
-      );
-
-      // Arbitrum proposals target must be the ArbSys precompiled address
-      targets[0] = addresses.getAddress("ARBITRUM_SYS");
-      values[0] = 0;
-      arguments[0] = callData;
-  }
-  ```
-
-- `simulate()`: This function simulates proposal actions on chain. Before understanding simulate of the customised `ArbitrumProposal` contract let's first get an overview of the `GovernorOZProposal` simulate function. In GovernorOZProposal, first required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then we skip the time by the voting delay and queue the proposal. After queuing the proposal, we skip the time by timelock delay and then finally execute the proposal. Check the code snippet below with inline comments to get a better idea.
-
-  ### GovernorOZProposal.sol
-  ```solidity
-  /// @notice Simulate governance proposal
-  function simulate() public virtual override {
-      address proposerAddress = address(1);
-      IVotes governanceToken = IVotes(IGovernorVotes(address(governor)).token());
-      {
-          // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
-          uint256 quorumVotes = governor.quorum(block.number - 1);
-          uint256 proposalThreshold = governor.proposalThreshold();
-          uint256 votingPower = quorumVotes > proposalThreshold
-              ? quorumVotes
-              : proposalThreshold;
-          deal(address(governanceToken), proposerAddress, votingPower);
-          vm.roll(block.number - 1);
-          // Delegate proposer's votes to itself
-          vm.prank(proposerAddress);
-          IVotes(governanceToken).delegate(proposerAddress);
-          vm.roll(block.number + 2);
-      }
-
-      bytes memory proposeCalldata = getCalldata();
-
-      // Register the proposal
-      vm.prank(proposerAddress);
-      bytes memory data = address(governor).functionCall(proposeCalldata);
-
-      uint256 returnedProposalId = abi.decode(data, (uint256));
-
-      (
-          address[] memory targets,
-          uint256[] memory values,
-          bytes[] memory calldatas
-      ) = getProposalActions();
-
-      // Check that the proposal was registered correctly
-      uint256 proposalId = governor.hashProposal(
-              targets,
-              values,
-              calldatas,
-              keccak256(abi.encodePacked(description()))
-          );
-
-      require(returnedProposalId == proposalId, "Proposal id mismatch");
-
-      // Check proposal is in Pending state
-      require(
-          governor.state(proposalId) == IGovernor.ProposalState.Pending
-      );
-
-      // Roll to Active state (voting period)
-      vm.roll(block.number + governor.votingDelay() + 1);
-
-      require(
-          governor.state(proposalId) == IGovernor.ProposalState.Active
-      );
-
-      // Vote YES
-      vm.prank(proposerAddress);
-      governor.castVote(proposalId, 1);
-
-      // Roll to allow proposal state transitions
-      vm.roll(block.number + governor.votingPeriod());
-
-      require(
-          governor.state(proposalId) == IGovernor.ProposalState.Succeeded
-      );
-
-
-      vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
-
-      // Queue the proposal
-      governor.queue(targets, values, calldatas, keccak256(abi.encodePacked(description())));
-
-      require(
-          governor.state(proposalId) == IGovernor.ProposalState.Queued
-      );
-
-      // Warp to allow proposal execution on timelock
-      ITimelockController timelock = ITimelockController(IGovernorTimelockControl(address(governor)).timelock());
-      vm.warp(block.timestamp + timelock.getMinDelay());
-
-      // Execute the proposal
-      governor.execute(targets, values, calldatas, keccak256(abi.encodePacked(description())));
-
-      require(
-          governor.state(proposalId) == IGovernor.ProposalState.Executed
-      );
-  }
-  ```
-
-  Now let's have a look at the customised `ArbitrumProposal` contract type, this contract inherits the `GovernorOZProposal` contract. initial steps to simulate a proposal is the same as in `GovernorOZProposal` as arbitrum also uses governor OZ with timelock for L2 governance, so we call `super.simulate` at the start of the cutomized simulate method. Next we add further steps for the proposal simulation, these steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
-
-  ### ArbitrumProposal.sol
-  ```solidity
-  /// @notice override the GovernorOZProposal simulate function to handle
-  ///         the proposal L1 settlement
-  function simulate() public override {
-      // First part of Arbitrum Governance proposal path follows the OZ
-      // Governor with TimelockController extension
-      super.simulate();
-
-      // Second part of Arbitrum Governance proposal path is the proposal
-      // settlement on the L1 network
-      bytes memory scheduleCalldata = getScheduleTimelockCaldata();
-
-      // switch fork to mainnet
-      vm.selectFork(ethForkId);
-
-      // prank as the bridge
-      vm.startPrank(addresses.getAddress("ARBITRUM_BRIDGE"));
-
-      address l1TimelockAddress = addresses.getAddress(
-          "ARBITRUM_L1_TIMELOCK"
-      );
-
-      ITimelockController timelock = ITimelockController(l1TimelockAddress);
-
-      address target;
-      uint256 value;
-      bytes memory data;
-      bytes32 predecessor;
-
-      {
-          // Start recording logs so we can create the execute calldata using the
-          // CallSchedule log data
-          vm.recordLogs();
-
-          // Call the schedule function on the L1 timelock
-          l1TimelockAddress.functionCall(scheduleCalldata);
-
-          // Stop recording logs
-          Vm.Log[] memory entries = vm.getRecordedLogs();
-
-          // Get the execute parameters from schedule call logs
-          (target, value, data, predecessor, ) = abi.decode(
-              entries[0].data,
-              (address, uint256, bytes, bytes32, uint256)
-          );
-
-          // warp to the future to execute the proposal
-          vm.warp(block.timestamp + minDelay);
-      }
-
-      vm.stopPrank();
-
-      {
-          // Start recording logs so we can get the TxToL2 log data
-          vm.recordLogs();
-
-          // execute the proposal
-          timelock.execute(
-              target,
-              value,
-              data,
-              predecessor,
-              keccak256(abi.encodePacked(description()))
-          );
-
-          // Stop recording logs
-          Vm.Log[] memory entries = vm.getRecordedLogs();
-
-          // If is a retriable ticket, we need to execute on L2
-          if (target == RETRYABLE_TICKET_MAGIC) {
-              // entries index 2 is TxToL2
-              // topic with index 2 is the l2 target address
-              address to = address(uint160(uint256(entries[2].topics[2])));
-
-              bytes memory l2Calldata = abi.decode(entries[2].data, (bytes));
-
-              // Switch back to primary fork, must be either Arb One or Arb Nova
-              vm.selectFork(primaryForkId);
-
-              // Perform the low-level call
-              vm.prank(addresses.getAddress("ARBITRUM_ALIASED_L1_TIMELOCK"));
-              bytes memory returndata = to.functionCall(l2Calldata);
-
-              if (DEBUG && returndata.length > 0) {
-                  console.log("Target %s called on L2 and returned:", to);
-                  console.logBytes(returndata);
-              }
-          }
-      }
-  }
-  ```
+-   `setEthForkId()`: used to create the Ethereum fork using Foundry as the Arbitrum Governance is a cross-chain governance. This function will be set by the child proposal.
+
+    ```solidity
+    /// @notice set eth fork id
+    function setEthForkId(uint256 _forkId) public {
+        ethForkId = _forkId;
+    }
+    ```
+
+-   `afterDeployMock()`: Here it is used to deploy and add `MockOutBox` contract address on `Arbitrum Bridge` contract using `vm.store` foundry cheatcode and it also etches `MockArbSys` bytecode at `Arbitrum sys` contract address. As already explained in overview section the calldata for the L2 proposal must be a call to `sendTxToL1` on the ArbSys precompiled contract which takes L1 timelock contract address as the first parameter and L1 timelock schedule calldata as the second. The `MockArbOutbox` is used to simulate offchain actions, bridge verifies that schedule was called by the L2 timelock by querying the outbox contract, by storing `MockArbOutbox` address inside bridge we make sure that the bridge verification passes although no offchain actions were made. These two mocks are critical for the arbitrum proposal flow and here we can see how FPS makes it easy to simulate such complex proposal flow.
+
+    ```solidity
+    /// @title MockArbSys
+    /// @notice a mocked version of the Arbitrum pre-compiled system contract, add additional methods as needed
+    contract MockArbSys {
+        uint256 public ticketId;
+
+        function sendTxToL1(
+            address _l1Target,
+            bytes memory _data
+        ) external payable returns (uint256) {
+            (bool success, ) = _l1Target.call(_data);
+            require(success, "Arbsys: sendTxToL1 failed");
+            return ++ticketId;
+        }
+    }
+
+    // @title MockArbOutbox
+    // @notice Mock arbitrum outbox to return L2 timelock on l2ToL1Sender call
+    contract MockArbOutbox {
+        function l2ToL1Sender() external pure returns (address) {
+            return 0x34d45e99f7D8c45ed05B5cA72D54bbD1fb3F98f0;
+        }
+    }
+
+    /// @notice mock arb sys precompiled contract on L2
+    ///         mock outbox on mainnet
+    function afterDeployMock() public override {
+        // switch to mainnet fork to mock arb outbox
+        vm.selectFork(ethForkId);
+        address mockOutbox = address(new MockArbOutbox());
+
+        vm.store(
+            addresses.getAddress("ARBITRUM_BRIDGE"),
+            bytes32(uint256(5)),
+            bytes32(uint256(uint160(mockOutbox)))
+        );
+
+        vm.selectFork(primaryForkId);
+
+        address arbsys = address(new MockArbSys());
+        vm.makePersistent(arbsys);
+
+        vm.etch(addresses.getAddress("ARBITRUM_SYS"), address(arbsys).code);
+    }
+    ```
+
+-   `_validateActions()`: Validates proposal actions. An arbitrum proposal should have a single action this method checks that there is only one action in the proposal, target contract is not `ZERO ADDRESS`, no actions are allowed without both arguments and value and if execution chain is `L2` no `ETH` is transferred (value = 0).
+
+    ```solidity
+    /// @notice Arbitrum proposals should have a single action
+    function _validateActions() internal view override {
+        uint256 actionsLength = actions.length;
+
+        require(
+            actionsLength == 1,
+            "Arbitrum proposals must have a single action"
+        );
+
+        require(actions[0].target != address(0), "Invalid target for proposal");
+        /// if there are no args and no eth, the action is not valid
+        require(
+            (actions[0].arguments.length == 0 && actions[0].value > 0) ||
+                actions[0].arguments.length > 0,
+            "Invalid arguments for proposal"
+        );
+
+        // Value is ignored on L2 proposals
+        if (executionChain == ProposalExecutionChain.ARB_ONE) {
+            require(actions[0].value == 0, "Value must be 0 for L2 execution");
+        }
+    }
+    ```
+
+-   `getScheduleTimelockCaldata()`: This function returns calldata to schedule proposal actions on L1 timelock. The calldata is generated based on the execution chain where the proposal will be executed. If the execution chain is L1 chain then the build target is the target contract but if the execution chain is L2 chain then target is `RETRYABLE_TICKET_MAGIC` contract and the build target is encoded in the calldata along with inbox contract address.
+
+    ```solidity
+    /// @notice get the calldata to schedule the timelock on L1
+    ///         the L1 schedule calldata must be the calldata for all arbitrum proposals
+    function getScheduleTimelockCaldata()
+        public
+        view
+        returns (bytes memory scheduleCalldata)
+    {
+        // address only used if is a L2 proposal
+        address inbox;
+
+        if (executionChain == ProposalExecutionChain.ARB_ONE) {
+            inbox = arbOneInbox;
+        } else if (executionChain == ProposalExecutionChain.ARB_NOVA) {
+            inbox = arbNovaInbox;
+        }
+
+        scheduleCalldata = abi.encodeWithSelector(
+            ITimelockController.schedule.selector,
+            // if the action is to be executed on l1, the target is the actual
+            // target, otherwise it is the magic value that tells that the
+            // proposal must be relayed back to l2
+            executionChain == ProposalExecutionChain.ETH
+                ? actions[0].target
+                : RETRYABLE_TICKET_MAGIC, // target
+            actions[0].value, // value
+            executionChain == ProposalExecutionChain.ETH
+                ? actions[0].arguments
+                : abi.encode( // these are the retryable data params
+                        // the inbox we want to use, should be arb one or nova
+                        inbox,
+                        addresses.getAddress("ARBITRUM_L2_UPGRADE_EXECUTOR"), // the upgrade executor on the l2 network
+                        0, // no value in this upgrade
+                        0, // max gas - will be filled in when the retryable is actually executed
+                        0, // max fee per gas - will be filled in when the retryable is actually executed
+                        actions[0].arguments // calldata created on the build function
+                    ),
+            bytes32(0), // no predecessor
+            keccak256(abi.encodePacked(description())), // salt is prop description
+            minDelay // delay for this proposal
+        );
+    }
+    ```
+
+-   `getProposalActions()`: This function returns proposal calldata to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the l1 timelock schedule calldata.
+
+    ```solidity
+    /// @notice get proposal actions
+    /// @dev Arbitrum proposals must have a single action which must be a call
+    /// to ArbSys address with the l1 timelock schedule calldata
+    function getProposalActions()
+        public
+        view
+        override
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory arguments
+        )
+    {
+        _validateActions();
+
+        // inner calldata must be a call to schedule on L1Timelock
+        bytes memory innerCalldata = getScheduleTimelockCaldata();
+
+        targets = new address[](1);
+        values = new uint256[](1);
+        arguments = new bytes[](1);
+
+        bytes memory callData = abi.encodeWithSelector(
+            MockArbSys.sendTxToL1.selector,
+            addresses.getAddress("ARBITRUM_L1_TIMELOCK", 1),
+            innerCalldata
+        );
+
+        // Arbitrum proposals target must be the ArbSys precompiled address
+        targets[0] = addresses.getAddress("ARBITRUM_SYS");
+        values[0] = 0;
+        arguments[0] = callData;
+    }
+    ```
+
+-   `simulate()`: This function simulates proposal actions on chain. Before understanding simulate of the customised `ArbitrumProposal` contract let's first get an overview of the `GovernorOZProposal` simulate function. In GovernorOZProposal, first required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then we skip the time by the voting delay and queue the proposal. After queuing the proposal, we skip the time by timelock delay and then finally execute the proposal. Check the code snippet below with inline comments to get a better idea.
+
+    ### GovernorOZProposal.sol
+
+    ```solidity
+    /// @notice Simulate governance proposal
+    function simulate() public virtual override {
+        address proposerAddress = address(1);
+        IVotes governanceToken = IVotes(
+            IGovernorVotes(address(governor)).token()
+        );
+        {
+            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            uint256 quorumVotes = governor.quorum(block.number - 1);
+            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 votingPower = quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
+            deal(address(governanceToken), proposerAddress, votingPower);
+            vm.roll(block.number - 1);
+            // Delegate proposer's votes to itself
+            vm.prank(proposerAddress);
+            IVotes(governanceToken).delegate(proposerAddress);
+            vm.roll(block.number + 2);
+        }
+
+        bytes memory proposeCalldata = getCalldata();
+
+        // Register the proposal
+        vm.prank(proposerAddress);
+        bytes memory data = address(governor).functionCall(proposeCalldata);
+
+        uint256 returnedProposalId = abi.decode(data, (uint256));
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
+
+        // Check that the proposal was registered correctly
+        uint256 proposalId = governor.hashProposal(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(returnedProposalId == proposalId, "Proposal id mismatch");
+
+        // Check proposal is in Pending state
+        require(governor.state(proposalId) == IGovernor.ProposalState.Pending);
+
+        // Roll to Active state (voting period)
+        vm.roll(block.number + governor.votingDelay() + 1);
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Active);
+
+        // Vote YES
+        vm.prank(proposerAddress);
+        governor.castVote(proposalId, 1);
+
+        // Roll to allow proposal state transitions
+        vm.roll(block.number + governor.votingPeriod());
+
+        require(
+            governor.state(proposalId) == IGovernor.ProposalState.Succeeded
+        );
+
+        vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
+
+        // Queue the proposal
+        governor.queue(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Queued);
+
+        // Warp to allow proposal execution on timelock
+        ITimelockController timelock = ITimelockController(
+            IGovernorTimelockControl(address(governor)).timelock()
+        );
+        vm.warp(block.timestamp + timelock.getMinDelay());
+
+        // Execute the proposal
+        governor.execute(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Executed);
+    }
+    ```
+
+    Now let's have a look at the customised `ArbitrumProposal` contract type, this contract inherits the `GovernorOZProposal` contract. initial steps to simulate a proposal is the same as in `GovernorOZProposal` as arbitrum also uses governor OZ with timelock for L2 governance, so we call `super.simulate` at the start of the cutomized simulate method. Next we add further steps for the proposal simulation, these steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
+
+    ### ArbitrumProposal.sol
+
+    ```solidity
+    /// @notice override the GovernorOZProposal simulate function to handle
+    ///         the proposal L1 settlement
+    function simulate() public override {
+        // First part of Arbitrum Governance proposal path follows the OZ
+        // Governor with TimelockController extension
+        super.simulate();
+
+        // Second part of Arbitrum Governance proposal path is the proposal
+        // settlement on the L1 network
+        bytes memory scheduleCalldata = getScheduleTimelockCaldata();
+
+        // switch fork to mainnet
+        vm.selectFork(ethForkId);
+
+        // prank as the bridge
+        vm.startPrank(addresses.getAddress("ARBITRUM_BRIDGE"));
+
+        address l1TimelockAddress = addresses.getAddress(
+            "ARBITRUM_L1_TIMELOCK"
+        );
+
+        ITimelockController timelock = ITimelockController(l1TimelockAddress);
+
+        address target;
+        uint256 value;
+        bytes memory data;
+        bytes32 predecessor;
+
+        {
+            // Start recording logs so we can create the execute calldata using the
+            // CallSchedule log data
+            vm.recordLogs();
+
+            // Call the schedule function on the L1 timelock
+            l1TimelockAddress.functionCall(scheduleCalldata);
+
+            // Stop recording logs
+            Vm.Log[] memory entries = vm.getRecordedLogs();
+
+            // Get the execute parameters from schedule call logs
+            (target, value, data, predecessor, ) = abi.decode(
+                entries[0].data,
+                (address, uint256, bytes, bytes32, uint256)
+            );
+
+            // warp to the future to execute the proposal
+            vm.warp(block.timestamp + minDelay);
+        }
+
+        vm.stopPrank();
+
+        {
+            // Start recording logs so we can get the TxToL2 log data
+            vm.recordLogs();
+
+            // execute the proposal
+            timelock.execute(
+                target,
+                value,
+                data,
+                predecessor,
+                keccak256(abi.encodePacked(description()))
+            );
+
+            // Stop recording logs
+            Vm.Log[] memory entries = vm.getRecordedLogs();
+
+            // If is a retriable ticket, we need to execute on L2
+            if (target == RETRYABLE_TICKET_MAGIC) {
+                // entries index 2 is TxToL2
+                // topic with index 2 is the l2 target address
+                address to = address(uint160(uint256(entries[2].topics[2])));
+
+                bytes memory l2Calldata = abi.decode(entries[2].data, (bytes));
+
+                // Switch back to primary fork, must be either Arb One or Arb Nova
+                vm.selectFork(primaryForkId);
+
+                // Perform the low-level call
+                vm.prank(addresses.getAddress("ARBITRUM_ALIASED_L1_TIMELOCK"));
+                bytes memory returndata = to.functionCall(l2Calldata);
+
+                if (DEBUG && returndata.length > 0) {
+                    console.log("Target %s called on L2 and returned:", to);
+                    console.logBytes(returndata);
+                }
+            }
+        }
+    }
+    ```
 
 ## Proposal contract
 
 Now that we a customized `ArbitrumProposal` type we can use it to write proposal specific contracts. There are two proposals added in the fps-example-repo. First, [ArbitrumPorposal_01](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal_01.sol) which is an arbitrum proposal that executes on L2. Second, [ArbitrumPorposal_02](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal_02.sol) which is an arbitrum proposal that executes on L1. Let's first have a look at `ArbitrumPorposal_02` by going through the code snippets:
 
 -   `constructor()`: Execution chain is set to ethereum mainnet in constructor.
+
     ```solidity
     constructor() {
         executionChain = ProposalExecutionChain.ETH;
     }
     ```
+
 -   `name()`: Defines the name of the proposal.
 
     ```solidity
@@ -398,6 +409,30 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     ```solidity
     function description() public pure override returns (string memory) {
         return "This proposal upgrades the L1 weth gateway";
+    }
+    ```
+
+-   `deploy()`: This function deploys any necessary contracts. In this example the new weth gateway implementation contract and the GAC contract are deployed on L1. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+
+    ```solidity
+    function deploy() public override {
+        if (
+            !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
+        ) {
+            address mockUpgrade = address(new MockUpgrade());
+
+            addresses.addAddress(
+                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
+                mockUpgrade,
+                true
+            );
+        }
+
+        if (!addresses.isAddressSet("PROXY_UPGRADE_ACTION")) {
+            address gac = address(new MockProxyUpgradeAction());
+
+            addresses.addAddress("PROXY_UPGRADE_ACTION", gac, true);
+        }
     }
     ```
 
@@ -430,53 +465,6 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     }
     ```
 
--   `deploy()`: This function deploys any necessary contracts. In this example the new weth gateway implementation contract and the GAC contract are deployed on L1. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
-
-    ```solidity
-    function deploy() public override {
-        if (
-            !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
-        ) {
-            address mockUpgrade = address(new MockUpgrade());
-
-            addresses.addAddress(
-                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
-                mockUpgrade,
-                true
-            );
-        }
-
-        if (!addresses.isAddressSet("PROXY_UPGRADE_ACTION")) {
-            address gac = address(new MockProxyUpgradeAction());
-
-            addresses.addAddress("PROXY_UPGRADE_ACTION", gac, true);
-        }
-    }
-    ```
--   `validate()`: This final step validates the system in its post-execution state. It ensures that gateway proxy is upgraded to new implementation on L1. Only proxy owner can call `implementation()` method to check implementation.
-
-    ```solidity
-    function validate() public override {
-        vm.selectFork(ethForkId);
-
-        IProxy proxy = IProxy(
-            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
-        );
-
-        // implementation() caller must be the owner
-        vm.startPrank(addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"));
-        require(
-            proxy.implementation() ==
-                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
-            "Proxy implementation not set"
-        );
-
-        vm.stopPrank();
-
-        vm.selectFork(primaryForkId);
-    }
-    ```
-
 -   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
 
     ```solidity
@@ -502,16 +490,40 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     }
     ```
 
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that gateway proxy is upgraded to new implementation on L1. Only proxy owner can call `implementation()` method to check implementation.
 
+    ```solidity
+    function validate() public override {
+        vm.selectFork(ethForkId);
+
+        IProxy proxy = IProxy(
+            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
+        );
+
+        // implementation() caller must be the owner
+        vm.startPrank(addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"));
+        require(
+            proxy.implementation() ==
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
+            "Proxy implementation not set"
+        );
+
+        vm.stopPrank();
+
+        vm.selectFork(primaryForkId);
+    }
+    ```
 
 Now let's have a look at `ArbitrumProposal_02`:
 
 -   `constructor()`: Execution chain is set to arbitrum one chain in constructor.
+
     ```solidity
     constructor() {
         executionChain = ProposalExecutionChain.ARB_ONE;
     }
     ```
+
 -   `name()`: Defines the name of the proposal.
 
     ```solidity
@@ -525,6 +537,29 @@ Now let's have a look at `ArbitrumProposal_02`:
     ```solidity
     function description() public pure override returns (string memory) {
         return "This proposal upgrades the L2 weth gateway";
+    }
+    ```
+
+-   `deploy()`: This function deploys any necessary contracts. In this example the new weth gateway implementation contract and the GAC contract are deployed on L2. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+
+    ```solidity
+    function deploy() public override {
+        if (
+            !addresses.isAddressSet("ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION")
+        ) {
+            address mockUpgrade = address(new MockUpgrade());
+
+            addresses.addAddress(
+                "ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION",
+                mockUpgrade,
+                true
+            );
+        }
+
+        if (!addresses.isAddressSet("PROXY_UPGRADE_ACTION")) {
+            address gac = address(new MockProxyUpgradeAction());
+            addresses.addAddress("PROXY_UPGRADE_ACTION", gac, true);
+        }
     }
     ```
 
@@ -552,26 +587,24 @@ Now let's have a look at `ArbitrumProposal_02`:
     }
     ```
 
--   `deploy()`: This function deploys any necessary contracts. In this example the new weth gateway implementation contract and the GAC contract are deployed on L2. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+-   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
 
     ```solidity
-    function deploy() public override {
-        if (
-            !addresses.isAddressSet("ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION")
-        ) {
-            address mockUpgrade = address(new MockUpgrade());
+    function run() public override {
+        addresses = new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        );
+        vm.makePersistent(address(addresses));
 
-            addresses.addAddress(
-                "ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION",
-                mockUpgrade,
-                true
-            );
-        }
+        setPrimaryForkId(vm.createFork("arbitrum"));
 
-        if (!addresses.isAddressSet("PROXY_UPGRADE_ACTION")) {
-            address gac = address(new MockProxyUpgradeAction());
-            addresses.addAddress("PROXY_UPGRADE_ACTION", gac, true);
-        }
+        setEthForkId(vm.createFork("ethereum"));
+
+        vm.selectFork(primaryForkId);
+
+        setGovernor(addresses.getAddress("ARBITRUM_L2_CORE_GOVERNOR"));
+
+        super.run();
     }
     ```
 
@@ -591,27 +624,6 @@ Now let's have a look at `ArbitrumProposal_02`:
             "Proxy implementation not set"
         );
         vm.stopPrank();
-    }
-    ```
-
--   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Arbitrum L2 governor's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
-
-    ```solidity
-    function run() public override {
-        addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-        );
-        vm.makePersistent(address(addresses));
-
-        setPrimaryForkId(vm.createFork("arbitrum"));
-
-        setEthForkId(vm.createFork("ethereum"));
-
-        vm.selectFork(primaryForkId);
-
-        setGovernor(addresses.getAddress("ARBITRUM_L2_CORE_GOVERNOR"));
-
-        super.run();
     }
     ```
 
@@ -734,35 +746,36 @@ forge script src/proposals/arbitrum/Arbitrum_Proposal_01.sol --slow --sender ${w
 Before executing the proposal script, ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the `Addresses.json` file. Failure to align these will result in script execution failure.
 
 The script will output the following:
+
 ```sh
 == Logs ==
-  
+
 
 --------- Addresses added ---------
   {
-          'addr': '0x6801E4888A91180238A8c36594EC65797eC2dDDf', 
+          'addr': '0x6801E4888A91180238A8c36594EC65797eC2dDDf',
           'chainId': 42161,
           'isContract': true ,
           'name': 'ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION'
 },
   {
-          'addr': '0xA98deC0C8e0326756C956033bbF091081986d0eD', 
+          'addr': '0xA98deC0C8e0326756C956033bbF091081986d0eD',
           'chainId': 42161,
           'isContract': true ,
           'name': 'PROXY_UPGRADE_ACTION'
 }
-  
+
 ---------------- Proposal Description ----------------
   This proposal upgrades the L2 weth gateway
-  
+
 ------------------ Proposal Actions ------------------
   1). calling 0xCF57572261c7c2BCF21ffD220ea7d1a27D40A827 with 0 eth and 0x1cff79cd000000000000000000000000a98dec0c8e0326756c956033bbf091081986d0ed00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064e17f52e9000000000000000000000000d570ace65c43af47101fc6250fd6fc63d1c22a860000000000000000000000006c411ad3e74de3e7bd422b94a27770f5b86c623b0000000000000000000000006801e4888a91180238a8c36594ec65797ec2dddf00000000000000000000000000000000000000000000000000000000 data.
   target: 0xCF57572261c7c2BCF21ffD220ea7d1a27D40A827
 payload
   0x1cff79cd000000000000000000000000a98dec0c8e0326756c956033bbf091081986d0ed00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064e17f52e9000000000000000000000000d570ace65c43af47101fc6250fd6fc63d1c22a860000000000000000000000006c411ad3e74de3e7bd422b94a27770f5b86c623b0000000000000000000000006801e4888a91180238a8c36594ec65797ec2dddf00000000000000000000000000000000000000000000000000000000
-  
 
-  
+
+
 
 ------------------ Proposal Calldata ------------------
   0x7d5e81e2000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000004c00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000344928c169a000000000000000000000000e6841d92b0c345144506576ec13ecf5103ac7f49000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000002c401d5062a000000000000000000000000a723c008e76e379c55599d2e4d93879beafda79c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000009c33e8e47a5438b554b45b782bed73248b78e26754b37292265f0b4a3ede7874000000000000000000000000000000000000000000000000000000000003f48000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000004dbd4fc535ac27206064b68ffcf827b0a60bab3f000000000000000000000000cf57572261c7c2bcf21ffd220ea7d1a27d40a82700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000e41cff79cd000000000000000000000000a98dec0c8e0326756c956033bbf091081986d0ed00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064e17f52e9000000000000000000000000d570ace65c43af47101fc6250fd6fc63d1c22a860000000000000000000000006c411ad3e74de3e7bd422b94a27770f5b86c623b0000000000000000000000006801e4888a91180238a8c36594ec65797ec2dddf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a546869732070726f706f73616c20757067726164657320746865204c322077657468206761746577617900000000000000000000000000000000000000000000

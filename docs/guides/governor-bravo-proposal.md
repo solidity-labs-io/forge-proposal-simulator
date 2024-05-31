@@ -28,6 +28,39 @@ Let's go through each of the overridden functions.
     }
     ```
 
+-   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+
+    ```solidity
+    function deploy() public override {
+        // Set governor bravo's timelock as the owner for the vault and token
+        address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+
+        // Deploy the vault address if not already deployed and transfer ownership to the timelock
+        if (!addresses.isAddressSet("BRAVO_VAULT")) {
+            Vault bravoVault = new Vault();
+
+            addresses.addAddress("BRAVO_VAULT", address(bravoVault), true);
+            bravoVault.transferOwnership(owner);
+        }
+
+        // Deploy the token address if not already deployed, transfer ownership to the timelock
+        // and transfer all initial minted tokens from the deployer to the timelock
+        if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
+            Token token = new Token();
+            addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
+            token.transferOwnership(owner);
+
+            // During forge script execution, the deployer of the contracts is
+            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
+            uint256 balance = token.balanceOf(address(this)) > 0
+                ? token.balanceOf(address(this))
+                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
+
+            token.transfer(address(owner), balance);
+        }
+    }
+    ```
+
 -   `build()`: Sets the necessary actions for your proposal. In this example, the ERC20 token is whitelisted on the Vault contract. Then, the timelock approves the token for the vault and deposits all tokens into the vault.
 
     ```solidity
@@ -62,36 +95,30 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+-   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Governor Bravo's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
 
     ```solidity
-    function deploy() public override {
-        // Set governor bravo's timelock as the owner for the vault and token
-        address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+    function run() public override {
+        // Create and select sepolia fork for proposal execution.
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
 
-        // Deploy the vault address if not already deployed and transfer ownership to the timelock
-        if (!addresses.isAddressSet("BRAVO_VAULT")) {
-            Vault bravoVault = new Vault();
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
 
-            addresses.addAddress("BRAVO_VAULT", address(bravoVault), true);
-            bravoVault.transferOwnership(owner);
-        }
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
 
-        // Deploy the token address if not already deployed, transfer ownership to the timelock
-        // and transfer all initial minted tokens from the deployer to the timelock
-        if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
-            Token token = new Token();
-            addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
-            token.transferOwnership(owner);
+        // Set governor bravo. This address is used for proposal simulation and check on
+        // chain proposal state.
+        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
 
-            // During forge script execution, the deployer of the contracts is
-            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
-            uint256 balance = token.balanceOf(address(this)) > 0
-                ? token.balanceOf(address(this))
-                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
-
-            token.transfer(address(owner), balance);
-        }
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
     }
     ```
 
@@ -137,33 +164,6 @@ Let's go through each of the overridden functions.
 
         // Ensure all minted tokens are deposited into the vault
         assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
-    }
-    ```
-
--   `run()`: Sets up the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to execute the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persisted across forks using `vm.makePersistent()`. Governor Bravo's contract address is set using `setGovernor`, which is utilized for simulating the proposal and checking on-chain proposal state.
-
-    ```solidity
-    function run() public override {
-        // Create and select sepolia fork for proposal execution.
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
-
-        // Set addresses object reading addresses from json file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-
-        // Make 'addresses' state persist across selected fork.
-        vm.makePersistent(address(addresses));
-
-        // Set governor bravo. This address is used for proposal simulation and check on
-        // chain proposal state.
-        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
-
-        // Call the run function of parent contract 'Proposal.sol'.
-        super.run();
     }
     ```
 

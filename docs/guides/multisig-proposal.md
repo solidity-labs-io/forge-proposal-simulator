@@ -13,17 +13,21 @@ Here we are using the MultisigProposal_01 proposal that is present in the [fps-e
 Let's go through each of the functions that are overridden.
 
 -   `name()`: Define the name of your proposal.
+
     ```solidity
     function name() public pure override returns (string memory) {
         return "MULTISIG_MOCK";
     }
     ```
+
 -   `description()`: Provide a detailed description of your proposal.
+
     ```solidity
     function description() public pure override returns (string memory) {
         return "Multisig proposal mock";
     }
     ```
+
 -   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
 
     ```solidity
@@ -96,6 +100,29 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
+-   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`.
+
+    ```solidity
+    function run() public override {
+        // Create and select sepolia fork for proposal execution
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Make 'addresses' state persist across selected fork.
+        vm.makePersistent(address(addresses));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
+
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
 
     ```solidity
@@ -147,29 +174,6 @@ Let's go through each of the functions that are overridden.
 
         // Ensure all minted tokens are deposited into the vault
         assertEq(token.balanceOf(address(multisigVault)), token.totalSupply());
-    }
-    ```
-
--   `run()`: Sets environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function). It sets `addresses`, `primaryForkId` and calls `super.run()` to run proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted accross forks using `vm.makePersistent()`.
-
-    ```solidity
-    function run() public override {
-        // Create and select sepolia fork for proposal execution
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
-
-        // Set addresses object reading addresses from json file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-
-        // Make 'addresses' state persist across selected fork.
-        vm.makePersistent(address(addresses));
-
-        // Call the run function of parent contract 'Proposal.sol'.
-        super.run();
     }
     ```
 

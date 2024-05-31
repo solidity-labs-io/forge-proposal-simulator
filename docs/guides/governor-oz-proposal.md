@@ -13,48 +13,18 @@ Here we are using the GovernorOZProposal_01 proposal present in the [fps-example
 Let's go through each of the overridden functions.
 
 -   `name()`: Define the name of your proposal.
+
     ```solidity
     function name() public pure override returns (string memory) {
         return "GOVERNOR_OZ_PROPOSAL";
     }
     ```
+
 -   `description()`: Provide a detailed description of your proposal.
+
     ```solidity
     function description() public pure override returns (string memory) {
         return "Governor oz proposal mock 1";
-    }
-    ```
--   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function) for a detailed explanation. In this example, ERC20 token is whitelisted on the Vault contract. Then, the Governor oz timelock approves the token for the vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the Governor oz's timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
-
-    ```solidity
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("GOVERNOR_OZ_TIMELOCK"))
-    {
-        /// STATICCALL -- non-mutative and hence not recorded for the run stage
-
-        // Get vault address
-        address governorOZVault = addresses.getAddress("GOVERNOR_OZ_VAULT");
-
-        // Get token address
-        address token = addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN");
-
-        // Get Governor oz timelock's token balance.
-        uint256 balance = Token(token).balanceOf(
-            addresses.getAddress("GOVERNOR_OZ_TIMELOCK")
-        );
-
-        /// CALLS -- mutative and recorded
-
-        // Whitelists the deployed token on the deployed vault.
-        Vault(governorOZVault).whitelistToken(token, true);
-
-        // Approve the token for the vault.
-        Token(token).approve(governorOZVault, balance);
-
-        // Deposit all tokens into the vault.
-        Vault(governorOZVault).deposit(token, balance);
     }
     ```
 
@@ -99,50 +69,39 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the Governor oz's timelock is the new owner of the Vault and token, the tokens were transferred to Governor oz's timelock, and the token was whitelisted on the Vault contract.
+-   `build()`: Set the necessary actions for your proposal, [Refer](../overview/architecture/proposal-functions.md#build-function) for a detailed explanation. In this example, ERC20 token is whitelisted on the Vault contract. Then, the Governor oz timelock approves the token for the vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. `caller` address that will call actions is passed into `buildModifier`; it is the Governor oz's timelock for this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
-```solidity
-function validate() public override {
-    // Get the vault address
-    Vault governorOZVault = Vault(addresses.getAddress("GOVERNOR_OZ_VAULT"));
+    ```solidity
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("GOVERNOR_OZ_TIMELOCK"))
+    {
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
 
-    // Get the token address
-    Token token = Token(addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN"));
+        // Get vault address
+        address governorOZVault = addresses.getAddress("GOVERNOR_OZ_VAULT");
 
-    // Get Governor oz's timelock address
-    address timelock = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
+        // Get token address
+        address token = addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN");
 
-    // Ensure the token total supply is 10 million
-    assertEq(token.totalSupply(), 10_000_000e18);
+        // Get Governor oz timelock's token balance.
+        uint256 balance = Token(token).balanceOf(
+            addresses.getAddress("GOVERNOR_OZ_TIMELOCK")
+        );
 
-    // Ensure the timelock is the owner of the deployed token.
-    assertEq(token.owner(), address(timelock));
+        /// CALLS -- mutative and recorded
 
-    // Ensure the timelock is the owner of the deployed vault
-    assertEq(governorOZVault.owner(), address(timelock));
+        // Whitelists the deployed token on the deployed vault.
+        Vault(governorOZVault).whitelistToken(token, true);
 
-    // Ensure the vault is not paused
-    assertFalse(governorOZVault.paused());
+        // Approve the token for the vault.
+        Token(token).approve(governorOZVault, balance);
 
-    // Ensure the token is whitelisted on the vault
-    assertTrue(governorOZVault.tokenWhitelist(address(token)));
-
-    // Get the vault's token balance
-    uint256 balance = token.balanceOf(address(governorOZVault));
-
-    // Get the timelock deposits in the vault
-    (uint256 amount, ) = governorOZVault.deposits(
-        address(token),
-        address(timelock)
-    );
-
-    // Ensure the timelock deposit is the same as the vault's token balance
-    assertEq(amount, balance);
-
-    // Ensure all minted tokens are deposited into the vault
-    assertEq(token.balanceOf(address(governorOZVault)), token.totalSupply());
-}
-```
+        // Deposit all tokens into the vault.
+        Vault(governorOZVault).deposit(token, balance);
+    }
+    ```
 
 -   `run()`: Sets the environment for running the proposal. [Refer](../overview/architecture/proposal-functions.md#run-function) for a detailed explanation. It sets `addresses`, `primaryForkId`, and `governor` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `sepolia` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. `addresses` contract state is persisted across forks using `vm.makePersistent()`. Governor OZ contract is set using `setGovernor` that will be used to check on-chain calldata and simulate the proposal.
 
@@ -167,6 +126,56 @@ function validate() public override {
 
         // Call the run function of the parent contract 'Proposal.sol'.
         super.run();
+    }
+    ```
+
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the Governor oz's timelock is the new owner of the Vault and token, the tokens were transferred to Governor oz's timelock, and the token was whitelisted on the Vault contract.
+
+    ```solidity
+    function validate() public override {
+        // Get the vault address
+        Vault governorOZVault = Vault(
+            addresses.getAddress("GOVERNOR_OZ_VAULT")
+        );
+
+        // Get the token address
+        Token token = Token(addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN"));
+
+        // Get Governor oz's timelock address
+        address timelock = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
+
+        // Ensure the token total supply is 10 million
+        assertEq(token.totalSupply(), 10_000_000e18);
+
+        // Ensure the timelock is the owner of the deployed token.
+        assertEq(token.owner(), address(timelock));
+
+        // Ensure the timelock is the owner of the deployed vault
+        assertEq(governorOZVault.owner(), address(timelock));
+
+        // Ensure the vault is not paused
+        assertFalse(governorOZVault.paused());
+
+        // Ensure the token is whitelisted on the vault
+        assertTrue(governorOZVault.tokenWhitelist(address(token)));
+
+        // Get the vault's token balance
+        uint256 balance = token.balanceOf(address(governorOZVault));
+
+        // Get the timelock deposits in the vault
+        (uint256 amount, ) = governorOZVault.deposits(
+            address(token),
+            address(timelock)
+        );
+
+        // Ensure the timelock deposit is the same as the vault's token balance
+        assertEq(amount, balance);
+
+        // Ensure all minted tokens are deposited into the vault
+        assertEq(
+            token.balanceOf(address(governorOZVault)),
+            token.totalSupply()
+        );
     }
     ```
 

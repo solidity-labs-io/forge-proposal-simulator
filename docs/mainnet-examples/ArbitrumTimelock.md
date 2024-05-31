@@ -10,145 +10,151 @@ Let's review each of the overridden functions:
 
 -   `name()`: Defines the name of the proposal.
 
-```solidity
-function name() public pure override returns (string memory) {
-    return "ARBITRUM_L1_TIMELOCK_MOCK";
-}
-```
+    ```solidity
+    function name() public pure override returns (string memory) {
+        return "ARBITRUM_L1_TIMELOCK_MOCK";
+    }
+    ```
 
 -   `description()`: Provides a detailed description of the proposal.
 
-```solidity
-function description() public pure override returns (string memory) {
-    return "Mock proposal for upgrading the WETH gateway";
-}
-```
+    ```solidity
+    function description() public pure override returns (string memory) {
+        return "Mock proposal for upgrading the WETH gateway";
+    }
+    ```
 
 -   `deploy()`: This function demonstrates the deployment of a new MockUpgrade, which will be used as the new implementation for the WETH Gateway Proxy and a new GAC contract for the upgrade.
 
-```solidity
-function deploy() public override {
-    // Deploy new WETH gateway implementation if not already deployed
-    if (!addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")) {
-        // In a real case, this function would be responsible for
-        // deploying a new implementation contract instead of using a mock
-        address l1NFTBridgeImplementation = address(new MockUpgrade());
+    ```solidity
+    function deploy() public override {
+        // Deploy new WETH gateway implementation if not already deployed
+        if (
+            !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
+        ) {
+            // In a real case, this function would be responsible for
+            // deploying a new implementation contract instead of using a mock
+            address l1NFTBridgeImplementation = address(new MockUpgrade());
 
-        addresses.addAddress(
-            "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
-            l1NFTBridgeImplementation,
-            true
-        );
-    }
+            addresses.addAddress(
+                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
+                l1NFTBridgeImplementation,
+                true
+            );
+        }
 
-    // Deploy new GAC contract for gateway upgrade if not already deployed
-    if (!addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY")) {
-        address gac = address(new GovernanceActionUpgradeWethGateway());
-        addresses.addAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY", gac, true);
+        // Deploy new GAC contract for gateway upgrade if not already deployed
+        if (!addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY")) {
+            address gac = address(new GovernanceActionUpgradeWethGateway());
+            addresses.addAddress(
+                "ARBITRUM_GAC_UPGRADE_WETH_GATEWAY",
+                gac,
+                true
+            );
+        }
     }
-}
-```
+    ```
 
 -   `afterDeployMock()`: Post-deployment mock actions, such as setting a new `outBox` for `Arbitrum bridge` using `vm.store` foundry cheatcode.
 
-```solidity
-function afterDeployMock() public override {
-    // Deploy new mockOutBox address
-    address mockOutbox = address(new MockOutbox());
+    ```solidity
+    function afterDeployMock() public override {
+        // Deploy new mockOutBox address
+        address mockOutbox = address(new MockOutbox());
 
-    // This is a workaround to replace the mainnet outBox with the newly deployed one for testing purposes only
-    vm.store(
-        addresses.getAddress("ARBITRUM_BRIDGE"),
-        bytes32(uint256(5)),
-        bytes32(uint256(uint160(mockOutbox)))
-    );
-}
-```
+        // This is a workaround to replace the mainnet outBox with the newly deployed one for testing purposes only
+        vm.store(
+            addresses.getAddress("ARBITRUM_BRIDGE"),
+            bytes32(uint256(5)),
+            bytes32(uint256(uint160(mockOutbox)))
+        );
+    }
+    ```
 
 -   `build()`: Sets the necessary actions for the proposal. In this example, `ARBITRUM_L1_WETH_GATEWAY_PROXY` is upgraded to the new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier`; it will call the actions in `build`. The caller is the Arbitrum timelock in this example. `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
-```solidity
-function build() public override buildModifier(address(timelock)) {
-    /// STATICCALL -- not recorded for the run stage
+    ```solidity
+    function build() public override buildModifier(address(timelock)) {
+        /// STATICCALL -- not recorded for the run stage
 
-    // Get upgrade executor address
-    IUpgradeExecutor upgradeExecutor = IUpgradeExecutor(
-        addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR")
-    );
+        // Get upgrade executor address
+        IUpgradeExecutor upgradeExecutor = IUpgradeExecutor(
+            addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR")
+        );
 
-    /// CALLS -- mutative and recorded
+        /// CALLS -- mutative and recorded
 
-    // Upgrade WETH gateway using GAC contract to the newly deployed implementation
-    upgradeExecutor.execute(
-        addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"),
-        abi.encodeWithSelector(
-            GovernanceActionUpgradeWethGateway.upgradeWethGateway.selector,
-            addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"),
-            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY"),
-            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
-        )
-    );
-}
-```
-
--   `simulate()`: Executes the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
-
-```solidity
-function simulate() public override {
-    // Proposer must be the Arbitrum bridge
-    address proposer = addresses.getAddress("ARBITRUM_BRIDGE");
-
-    // Executor can be anyone
-    address executor = address(1);
-
-    // Simulate the actions in the `build` function
-    _simulateActions(proposer, executor);
-}
-```
-
--   `validate()`: Validates that the implementation is upgraded correctly.
-
-```solidity
-function validate() public override {
-    // Get proxy address
-    IProxy proxy = IProxy(
-        addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
-    );
-
-    // Ensure implementation is upgraded to the newly deployed implementation
-    require(
-        proxy.implementation() ==
-            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
-        "Proxy implementation not set"
-    );
-}
-```
+        // Upgrade WETH gateway using GAC contract to the newly deployed implementation
+        upgradeExecutor.execute(
+            addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"),
+            abi.encodeWithSelector(
+                GovernanceActionUpgradeWethGateway.upgradeWethGateway.selector,
+                addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"),
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY"),
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
+            )
+        );
+    }
+    ```
 
 -   `run()`: Sets the environment for running the proposal. It sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the proposal lifecycle. In this function, `primaryForkId` is set to `mainnet` and the fork for running the proposal is selected. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persisted across forks using `vm.makePersistent()`. The timelock is set using `setTimelock`, which will be used to check on-chain calldata and simulate the proposal.
 
-```solidity
-function run() public override {
-    // Create and select the mainnet fork for proposal execution
-    primaryForkId = vm.createFork("mainnet");
-    vm.selectFork(primaryForkId);
+    ```solidity
+    function run() public override {
+        // Create and select the mainnet fork for proposal execution
+        primaryForkId = vm.createFork("mainnet");
+        vm.selectFork(primaryForkId);
 
-    // Set the addresses object by reading addresses from the json file
-    addresses = new Addresses(
-        vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-    );
+        // Set the addresses object by reading addresses from the json file
+        addresses = new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        );
 
-    // Make the 'addresses' state persist across the selected fork
-    vm.makePersistent(address(addresses));
+        // Make the 'addresses' state persist across the selected fork
+        vm.makePersistent(address(addresses));
 
-    // Set the timelock. This address is used for proposal simulation and checking on-chain proposal state
-    timelock = ITimelockController(
-        addresses.getAddress("ARBITRUM_L1_TIMELOCK")
-    );
+        // Set the timelock. This address is used for proposal simulation and checking on-chain proposal state
+        timelock = ITimelockController(
+            addresses.getAddress("ARBITRUM_L1_TIMELOCK")
+        );
 
-    // Call the run function of the parent contract 'Proposal.sol'
-    super.run();
-}
-```
+        // Call the run function of the parent contract 'Proposal.sol'
+        super.run();
+    }
+    ```
+
+-   `simulate()`: Executes the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions` from the inherited `TimelockProposal` contract. Internally, `_simulateActions()` simulates a call to Timelock [scheduleBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L291) and [executeBatch](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/governance/TimelockController.sol#L385) with the calldata generated from the actions set up in the build step.
+
+    ```solidity
+    function simulate() public override {
+        // Proposer must be the Arbitrum bridge
+        address proposer = addresses.getAddress("ARBITRUM_BRIDGE");
+
+        // Executor can be anyone
+        address executor = address(1);
+
+        // Simulate the actions in the `build` function
+        _simulateActions(proposer, executor);
+    }
+    ```
+
+-   `validate()`: Validates that the implementation is upgraded correctly.
+
+    ```solidity
+    function validate() public override {
+        // Get proxy address
+        IProxy proxy = IProxy(
+            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
+        );
+
+        // Ensure implementation is upgraded to the newly deployed implementation
+        require(
+            proxy.implementation() ==
+                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
+            "Proxy implementation not set"
+        );
+    }
+    ```
 
 ## Setting Up Your Deployer Address
 
