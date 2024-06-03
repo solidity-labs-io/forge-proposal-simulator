@@ -219,7 +219,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `_validateActions() internal virtual`: This method can be overridden to add custom checks on all actions of proposals. Eg. Number of actions should be 1, First action should be approval etc.
+-   `_validateActions() internal virtual`: This method can be overridden to add custom checks on all actions of proposals. For example, there must be a single action, the first action should be an approval call, etc.
 
 -   `function getProposalActions() public`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
 

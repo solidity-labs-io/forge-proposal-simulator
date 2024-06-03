@@ -1,6 +1,6 @@
 ---
 description: >-
-    FPS is compatible with the OpenZeppelin Timelock, Compound Governor Bravo, and GnosisSafe Multisig wallet contracts. The project is open source, and we encourage submissions of different types of actions.
+    FPS is compatible with the OpenZeppelin Timelock, Compound Governor Bravo, OZ Governor and GnosisSafe Multisig wallet contracts. The project is open source, and we encourage submissions of different types of actions.
 ---
 
 # Use cases

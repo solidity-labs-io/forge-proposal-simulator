@@ -77,7 +77,7 @@ In order to demonstrate the framework's flexibility, we developed the [Arbitrum 
     }
     ```
 
--   `_validateActions()`: Validates proposal actions. An arbitrum proposal should have a single action this method checks that there is only one action in the proposal, target contract is not `ZERO ADDRESS`, no actions are allowed without both arguments and value and if execution chain is `L2` no `ETH` is transferred (value = 0).
+-   `_validateActions()`: Validates proposal actions. An arbitrum proposal should have a single action. This method checks that there is only one action in the proposal and the target contract is not the zero address. Furthermore, it also checks that there are no actions without arguments and value, and if the execution chain is `L2`, no `ETH` is transferred (value = 0).
 
     ```solidity
     /// @notice Arbitrum proposals should have a single action

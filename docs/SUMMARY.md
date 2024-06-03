@@ -21,7 +21,7 @@
 -   [Timelock Proposal](guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
 -   [Governor Oz Proposal](guides/governor-oz-proposal.md)
--   [Customizing Proposal](guides/Customizing-proposal.md)
+-   [Customizing Proposal](guides/customizing-proposal.md)
 
 ## Mainnet examples
 
