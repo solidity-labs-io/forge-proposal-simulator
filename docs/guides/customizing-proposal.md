@@ -4,13 +4,14 @@
 
 The framework is designed to be flexible and loosely coupled, as explained [here](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where we customize the Governor OZ proposal type to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
 
-The following steps from A to E are equal no matter which chain the proposal final contract target is deployed:
-a) Proposal is created on L2 Governor
-b) Proposal is voted on and passes
-c) Proposal is queued on L2 timelock
-d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
-e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
-f) Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
+The following steps from 1 to 5 are equal no matter which chain the proposal final contract target is deployed:
+
+1. Proposal is created on L2 Governor
+2. Proposal is voted on and passes
+3. Proposal is queued on L2 timelock
+4. Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
+5. After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
+6. Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
