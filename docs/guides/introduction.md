@@ -3,7 +3,17 @@
 FPS is designed to be loosely coupled, making it easy to integrate into any
 governance model. Each of these governance models have their unique
 specifications. To accommodate the unique requirements of different governance systems, FPS
-introduces [proposal-specific](../../src/proposals) contracts. Each contract is designed to align with their respective governance model.
+introduces proposal-specific contracts. Each contract is designed to align with their respective governance model.
+
+## Setting Up Your Deployer Address
+
+Before going through guides to understand each proposal through examples ensure deployer address is already setup. The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+
+If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
+
+```sh
+cast wallet import ${wallet_name} --interactive
+```
 
 ## Validated Governance Models
 
@@ -13,6 +23,11 @@ models. FPS has been tested and confirmed to be compatible with:
 1. [Gnosis Safe Multisig](./multisig-proposal.md)
 2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
 3. [Governor Bravo](./governor-bravo-proposal.md)
+4. [Governor OZ](./governor-oz-proposal.md)
+
+## Customized Governance Models
+
+This framework can be customized to meet unique protocol requirements to simulate proposals. Here we have an example of a [customized proposal type](./customizing-proposal.md).
 
 ## Example Contracts
 

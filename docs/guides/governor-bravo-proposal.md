@@ -176,16 +176,6 @@ Before proceeding with the tutorial, ensure all addresses in `Addresses.json` ar
 1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This tutorial employs this method.
 
-### Setting Up Your Deployer Address
-
-The deployer address is used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. We prioritize security in private key management. To avoid storing the private key as an environment variable, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
 ### Deploying a Governor Bravo on Testnet
 
 You'll need a Governor Bravo contract set up on the testnet before running the proposal.
@@ -356,6 +346,6 @@ payload
 
 If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's essential to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using the cast send along with the calldata generated above.

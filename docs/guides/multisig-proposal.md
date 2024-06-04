@@ -196,16 +196,6 @@ To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on
 
 2. After setting up your Safe, you'll find the address in the details section of your Safe Account. Make sure to copy this address and keep it handy for later steps.
 
-### Setting Up Your Deployer Address
-
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
 ### Setting Up the Addresses JSON
 
 Set up Addresses.json file and add the Gnosis Safe address and deployer address to it. The file should look like this:
@@ -288,6 +278,6 @@ payload
 
 If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is important to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 
 The proposal script will deploy the contracts in the deploy() method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send command along with the calldata generated above.

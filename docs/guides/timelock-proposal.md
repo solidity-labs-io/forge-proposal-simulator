@@ -180,19 +180,9 @@ To begin, clear all addresses in `Addresses.json` before proceeding with the tut
 1. **Using `forge test`**: Refer to the [integration-tests.md](../testing/integration-tests.md) section for detailed instructions on this method.
 2. **Using `forge script`**: This tutorial focuses on using this method.
 
-### Running the Proposal with `forge script`
+## Running the Proposal with `forge script`
 
-#### Setting Up Your Deployer Address
-
-The deployer address is utilized to broadcast transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. Emphasizing security in private key management, we avoid storing the private key as an environment variable. Instead, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
-#### Deploying a Timelock Controller on Testnet
+### Deploying a Timelock Controller on Testnet
 
 Before executing the proposal, set up a Timelock Controller contract on the testnet. We provide a script [DeployTimelock](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployTimelock.s.sol) to streamline this process.
 
@@ -218,7 +208,7 @@ sepolia --slow --sender ${wallet_address} --account ${wallet_name} -vvv
 
 Ensure that the ${wallet_name} and ${wallet_address} accurately correspond to the wallet details saved in `~/.foundry/keystores/`.
 
-#### Setting Up the Addresses JSON
+### Setting Up the Addresses JSON
 
 Add the Timelock Controller address to the JSON file. The structure should resemble this:
 
@@ -239,7 +229,7 @@ Add the Timelock Controller address to the JSON file. The structure should resem
 ]
 ```
 
-#### Running the Proposal
+### Running the Proposal
 
 ```sh
 forge script src/proposals/simple-vault-timelock/TimelockProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv

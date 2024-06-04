@@ -190,16 +190,6 @@ First, remove all addresses in `Addresses.json` before running through the tutor
 
 ## Running the Proposal with `forge script`
 
-### Setting Up Your Deployer Address
-
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
 ### Deploying a Governor OZ on Testnet
 
 You'll need a Governor OZ contract set up on the testnet before running the proposal.
@@ -320,6 +310,6 @@ payload
 
 If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.

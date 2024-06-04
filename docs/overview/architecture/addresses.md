@@ -125,6 +125,14 @@ Addresses changed during the proposals executions can be retrieved by calling th
 addresses.getChangedAddresses();
 ```
 
+### Print Added and Changed Addressses
+
+Addresses that are changed or newly added during the proposal's execution can be retrieved by calling the `printJSONChanges` method. It prints the changes in JSON format, making it easy for users to add them to `Addresses.json`.
+
+```solidity
+addresses.printJSONChanges();
+```
+
 ### Address exists
 
 The `isAddressSet` function checks if an address exists in the Addresses contract storage.

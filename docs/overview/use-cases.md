@@ -16,3 +16,7 @@ For Gnosis Safe Multisig support, FPS generates and simulates the Multicall call
 ### Compound Governor Bravo
 
 For Compound Governor Bravo, FPS generates and simulates the proposal creation, voting, queuing, and execution. This enables simulation throughout the entire proposal lifecycle for governor and timelock systems. View the [Governor Bravo Proposal](../guides/governor-bravo-proposal.md) documentation to learn how to integrate with Compound Governor Bravo contracts.
+
+### Governor OZ
+
+Similar to Compound Governor Bravo, FPS simulates the entire proposal lifecycle for the governor with a timelock controller extension. View the [Governor OZ Proposal](../guides/governor-oz-proposal.md) documentation to learn how to integrate with Governor OZ contracts.

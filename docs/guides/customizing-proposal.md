@@ -10,7 +10,7 @@ b) Proposal is voted on and passes
 c) Proposal is queued on L2 timelock
 d) Proposal is executed on L2 timelock after the delay, and therefore initiates a bridge request to L1 inbox by calling the ArbSys precompiled contract
 e) After the bridge delay of 1 week, anyone can call the Bridge contract on L1 using the merkle proof generated for the proposal calldata, effectively scheduling the proposal on the L1 Timelock
-f)Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
+f) Once the proposal is scheduled on the L1 Timelock, there is a three-day delay before it becomes executable. When executed, it can follow two different paths. If the target is an L1 contract, the proposal follows the standard OpenZeppelin Timelock path. For L2 proposals, identified by the target being a Retryable Ticket Magic address, a call to the L1 inbox generates the L2 ticket. Once it is bridged to L2, anyone can execute the ticket. The ticket is responsible for calling the final contract target, which, for proposals that are Arbitrum contract upgrades, will be the Arbitrum Upgrade Executor Contract.
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
@@ -29,7 +29,7 @@ In order to demonstrate the framework's flexibility, we developed the [Arbitrum 
     }
     ```
 
--   `afterDeployMock()`: Here it is used to deploy and add `MockOutBox` contract address on `Arbitrum Bridge` contract using `vm.store` foundry cheatcode and it also etches `MockArbSys` bytecode at `Arbitrum sys` contract address. As already explained in overview section the calldata for the L2 proposal must be a call to `sendTxToL1` on the ArbSys precompiled contract which takes L1 timelock contract address as the first parameter and L1 timelock schedule calldata as the second. The `MockArbOutbox` is used to simulate offchain actions, bridge verifies that schedule was called by the L2 timelock by querying the outbox contract, by storing `MockArbOutbox` address inside bridge we make sure that the bridge verification passes although no offchain actions were made. These two mocks are critical for the arbitrum proposal flow and here we can see how FPS makes it easy to simulate such complex proposal flow.
+-   `afterDeployMock()`: deploys the `MockOutBox` contract and points on the `Arbitrum Bridge` with the help of the `vm.store` foundry cheatcode. Additionally, we embed the `MockArbSys` bytecode at the `Arbitrum sys` contract address. As previously mentioned in the overview section, the calldata for the L2 proposal needs to be a call to the `sendTxToL1` on the ArbSys precompiled contract. This call requires the L1 timelock contract address as the first parameter and the L1 timelock schedule calldata as the second parameter. The `MockArbOutbox` is employed to replicate off-chain actions. The bridge ensures that the schedule was initiated by the L2 timelock by calling `l1ToL2Sender` in the outbox contract . We ensure that the bridge verification is successful, even though no genuine off-chain actions have been executed. These two mock functionalities are crucial for the arbitrum proposal flow, and here, we can observe how FPS simplifies the simulation of such a complex proposal flow.
 
     ```solidity
     /// @title MockArbSys
@@ -287,7 +287,7 @@ In order to demonstrate the framework's flexibility, we developed the [Arbitrum 
     }
     ```
 
-    Now let's have a look at the customised `ArbitrumProposal` contract type, this contract inherits the `GovernorOZProposal` contract. initial steps to simulate a proposal is the same as in `GovernorOZProposal` as arbitrum also uses governor OZ with timelock for L2 governance, so we call `super.simulate` at the start of the cutomized simulate method. Next we add further steps for the proposal simulation, these steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
+    Initial steps to simulate a proposal are the same as in `GovernorOZProposal` as arbitrum also uses governor OZ with timelock for L2 governance, so we call `super.simulate` at the start of the customized simulate method. Next we add further steps for the proposal simulation, these steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
 
     ### ArbitrumProposal.sol
 
@@ -633,16 +633,6 @@ Let's now simulate `ArbitrumProposal_01`. Before proceeding with the tutorial, e
 1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: This tutorial employs this method.
 
-### Setting Up Your Deployer Address
-
-The deployer address is used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address holds sufficient funds from the faucet to cover deployment costs on the testnet. We prioritize security in private key management. To avoid storing the private key as an environment variable, we utilize Foundry's cast tool. Ensure the cast address matches the Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
 ### Setting Up the Addresses JSON
 
 Copy all address arbitrum address from [Addresses.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/Addresses.json). Your addresses.json file should look like:
@@ -782,6 +772,6 @@ payload
 
 If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.
