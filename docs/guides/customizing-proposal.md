@@ -629,11 +629,6 @@ Now let's have a look at `ArbitrumProposal_02`:
 
 ## Proposal Simulation
 
-Let's now simulate `ArbitrumProposal_01`. Before proceeding with the tutorial, ensure all addresses in `Addresses.json` are removed. There are two methods for executing proposals:
-
-1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
-2. **Using `forge script`**: This tutorial employs this method.
-
 ### Setting Up the Addresses JSON
 
 Copy all address arbitrum address from [Addresses.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/Addresses.json). Your addresses.json file should look like:

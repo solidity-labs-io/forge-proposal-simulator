@@ -171,11 +171,6 @@ Let's go through each of the overridden functions.
 
 ## Proposal Simulation
 
-Before proceeding with the tutorial, ensure all addresses in `Addresses.json` are removed. There are two methods for executing proposals:
-
-1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
-2. **Using `forge script`**: This tutorial employs this method.
-
 ### Deploying a Governor Bravo on Testnet
 
 You'll need a Governor Bravo contract set up on the testnet before running the proposal.

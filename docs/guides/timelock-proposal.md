@@ -175,13 +175,6 @@ Let's review each of the functions that are overridden.
 
 ## Proposal Simulation
 
-To begin, clear all addresses in `Addresses.json` before proceeding with the tutorial. There are two methods for executing proposals:
-
-1. **Using `forge test`**: Refer to the [integration-tests.md](../testing/integration-tests.md) section for detailed instructions on this method.
-2. **Using `forge script`**: This tutorial focuses on using this method.
-
-## Running the Proposal with `forge script`
-
 ### Deploying a Timelock Controller on Testnet
 
 Before executing the proposal, set up a Timelock Controller contract on the testnet. We provide a script [DeployTimelock](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployTimelock.s.sol) to streamline this process.

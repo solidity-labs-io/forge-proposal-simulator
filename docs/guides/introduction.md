@@ -1,19 +1,24 @@
 # Guides
 
-FPS is designed to be loosely coupled, making it easy to integrate into any
-governance model. Each of these governance models have their unique
-specifications. To accommodate the unique requirements of different governance systems, FPS
-introduces proposal-specific contracts. Each contract is designed to align with their respective governance model.
+FPS is designed to be loosely coupled, making it easy to integrate into any governance model. Each of these governance models have their unique
+specifications. To accommodate the unique requirements of different governance systems, FPS introduces proposal-specific contracts. Each contract is designed to align with their respective governance model. There are mainnet examples added as well for each governance model. These examples highlight how these models are implemented for existing real world projects for proposal simulation.
 
 ## Setting Up Your Deployer Address
 
-Before going through guides to understand each proposal through examples ensure deployer address is already setup. The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
+Before going through guides and mainnet examples to understand each proposal through examples, ensure deployer address is already setup. The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure cast address is same as Deployer address.
 
 If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
 
 ```sh
 cast wallet import ${wallet_name} --interactive
 ```
+## Executing Proposals
+There is proposal simulation section in each of the guides that explains proposal execution steps in detail. Before proceeding to this section ensure all addresses in `Addresses.json` are removed.
+
+There are two methods for executing proposals:
+1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
+2. **Using `forge script`**: All the guides employs this method.
+
 
 ## Validated Governance Models
 

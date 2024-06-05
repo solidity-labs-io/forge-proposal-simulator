@@ -22,13 +22,11 @@
 -   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
 -   [Governor Oz Proposal](guides/governor-oz-proposal.md)
 -   [Customizing Proposal](guides/customizing-proposal.md)
-
-## Mainnet examples
-
--   [Arbitrum Timelock](mainnet-examples/ArbitrumTimelock.md)
--   [Compound Governor Bravo](mainnet-examples/CompoundGovernorBravo.md)
--   [Optimism Multisig](mainnet-examples/OptimismMultisig.md)
--   [ENS OZ Governor](mainnet-examples/ENSOzGovernor.md)
+-   Mainnet examples
+    -   [Arbitrum Timelock](mainnet-examples/ArbitrumTimelock.md)
+    -   [Compound Governor Bravo](mainnet-examples/CompoundGovernorBravo.md)
+    -   [Optimism Multisig](mainnet-examples/OptimismMultisig.md)
+    -   [ENS OZ Governor](mainnet-examples/ENSOzGovernor.md)
 
 ## Testing
 

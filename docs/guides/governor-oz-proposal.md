@@ -183,13 +183,6 @@ Let's go through each of the overridden functions.
 
 ## Proposal Simulation
 
-First, remove all addresses in `Addresses.json` before running through the tutorial. There are two ways to execute proposals:
-
-1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
-2. **Using `forge script`**: This is the chosen method for this tutorial.
-
-## Running the Proposal with `forge script`
-
 ### Deploying a Governor OZ on Testnet
 
 You'll need a Governor OZ contract set up on the testnet before running the proposal.

@@ -118,16 +118,6 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
-## Setting Up Your Deployer Address
-
-The deployer address is the one used to broadcast the transactions deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet. We prioritize security when it comes to private key management. To avoid storing the private key as an environment variable, we use Foundry's cast tool. Ensure the cast address is the same as the Deployer address.
-
-If there are no wallets in the `~/.foundry/keystores/` folder, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
-
 ## Running the Proposal
 
 ```sh
