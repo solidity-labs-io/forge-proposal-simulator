@@ -1,4 +1,4 @@
-pragma solidity =0.8.25;
+pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
 import {VmSafe} from "@forge-std/Vm.sol";
@@ -205,19 +205,20 @@ abstract contract Proposal is Test, Script, IProposal {
         uint256 value,
         bytes memory data
     ) internal virtual {
-        // uses transition storage to check for duplicate actions
-        bytes32 actionHash = keccak256(abi.encodePacked(target, value, data));
+        uint256 actionsLength = actions.length;
+        for (uint256 i = 0; i < actionsLength; i++) {
+            // Check if the target, arguments and value matches with other exciting actions.
+            bool isDuplicateTarget = actions[i].target == target;
+            bool isDuplicateArguments = keccak256(actions[i].arguments) ==
+                keccak256(data);
+            bool isDuplicateValue = actions[i].value == value;
 
-        uint256 found;
-
-        assembly {
-            found := tload(actionHash)
-        }
-
-        require(found == 0, "Duplicated action found");
-
-        assembly {
-            tstore(actionHash, 1)
+            require(
+                !(isDuplicateTarget &&
+                    isDuplicateArguments &&
+                    isDuplicateValue),
+                "Duplicated action found"
+            );
         }
     }
 

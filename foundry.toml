@@ -6,7 +6,6 @@ auto_detect_solc = true
 fs_permissions = [{ access = "read", path = "./"}]
 optimizer = true
 optimizer_runs = 200
-evm_version="Cancun"
 
 [rpc_endpoints]
 localhost = "http://127.0.0.1:8545"
