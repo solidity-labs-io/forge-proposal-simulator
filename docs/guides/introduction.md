@@ -13,7 +13,7 @@ If there are no wallets in the `~/.foundry/keystores/` folder, create one by exe
 cast wallet import ${wallet_name} --interactive
 ```
 ## Executing Proposals
-There is proposal simulation section in each of the guides that explains proposal execution steps in detail. Before proceeding to this section ensure all addresses in `Addresses.json` are removed.
+Before proceeding with the guides, make sure to have a cleaned Addresses.json file with read permissions set to `foundry.toml` in your preferred location. Each guide includes a proposal simulation section that provides detailed explanations of the proposal execution steps.
 
 There are two methods for executing proposals:
 1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
@@ -32,7 +32,7 @@ models. FPS has been tested and confirmed to be compatible with:
 
 ## Customized Governance Models
 
-This framework can be customized to meet unique protocol requirements to simulate proposals. Here we have an example of a [customized proposal type](./customizing-proposal.md).
+The framework can be customized to meet unique protocol requirements for simulating the proposal flow. An [example](./customizing-proposal.md) has been provided using Arbitrum Proposal flow to demonstrate FPS flexibility.
 
 ## Example Contracts
 
