@@ -5,7 +5,6 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
-import {ITimelockController} from "@interface/ITimelockController.sol";
 import {IProxy} from "@interface/IProxy.sol";
 import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 
