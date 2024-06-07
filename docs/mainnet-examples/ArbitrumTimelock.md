@@ -113,9 +113,7 @@ Let's review each of the overridden functions:
         );
 
         // Set the timelock. This address is used for proposal simulation and checking on-chain proposal state
-        setTimelock(
-            ITimelockController(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
-        );
+        setTimelock(addresses.getAddress("ARBITRUM_L1_TIMELOCK"));
 
         // Call the run function of the parent contract 'Proposal.sol'
         super.run();

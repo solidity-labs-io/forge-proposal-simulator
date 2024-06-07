@@ -54,9 +54,7 @@ contract MockTimelockProposal is TimelockProposal {
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
 
-        setTimelock(
-            ITimelockController(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
-        );
+        setTimelock(addresses.getAddress("ARBITRUM_L1_TIMELOCK"));
 
         super.run();
     }
