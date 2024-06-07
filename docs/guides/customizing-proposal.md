@@ -2,7 +2,7 @@
 
 ## Overview
 
-The framework is designed to be flexible and loosely coupled, as explained [here](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where the Governor OZ proposal type is customized to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
+The framework is designed to be flexible and loosely coupled, as explained at the end of [proposal functions](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where the Governor OZ proposal type is customized to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
 
 The following steps from 1 to 5 are equal no matter which chain the proposal final contract target is deployed:
 
@@ -151,7 +151,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `getProposalActions()`: This function returns proposal calldata to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the l1 timelock schedule calldata.
+-   `getProposalActions()`: This function returns proposal actions to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the l1 timelock schedule calldata.
 
     ```solidity
     /// @notice get proposal actions

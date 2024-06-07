@@ -53,7 +53,14 @@ Ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet
 
 ## Validated Governance Models
 
-This framework have been validated through successful integration with leading governance models. FPS has been tested and confirmed to be compatible with governance models specified below. Guides below explain how FPS can be used to simulate governance proposals. Each guide drafts a proposal to perform following steps:
+This framework have been validated through successful integration with leading governance models. FPS has been tested and confirmed to be compatible with governance models specified below. Guides below explain how FPS can be used to simulate governance proposals.
+
+1. [Gnosis Safe Multisig](./multisig-proposal.md)
+2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
+3. [Governor Bravo](./governor-bravo-proposal.md)
+4. [Governor OZ](./governor-oz-proposal.md)
+
+Each guide drafts a proposal to perform following steps:
 
 1. deploy new instances of `Vault` and `Token`
 2. mint tokens to governance contract
@@ -63,11 +70,6 @@ This framework have been validated through successful integration with leading g
 
 Above `Token` and `Vault` contracts can be found in the fps-example-repo [mocks folder](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks/vault). Clone the fps-example-repo repo before proceeding with the respective guides. It is important to understand that these contracts are intended solely for demonstration and are not for production use due to their lack of validation, testing, and audits. Their sole purpose is to illustrate the deployment process and the setup of protocol parameters within proposals within the forge proposal simulator.
 
-1. [Gnosis Safe Multisig](./multisig-proposal.md)
-2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
-3. [Governor Bravo](./governor-bravo-proposal.md)
-4. [Governor OZ](./governor-oz-proposal.md)
-
 ## Customized Governance Models
 
 The framework can be customized to meet unique protocol requirements for simulating the proposal flow. An [example](./customizing-proposal.md) has been provided using Arbitrum Proposal flow to demonstrate FPS flexibility.
@@ -76,4 +78,7 @@ The framework can be customized to meet unique protocol requirements for simulat
 
 Mainnet examples highlight how each of the FPS governance models can be easily implemented for existing real world projects for proposal simulation.
 
-1. [Arbitrum Tim]
+1. [Arbitrum Timelock](../mainnet-examples/ArbitrumTimelock.md)
+2. [Compound Governor Bravo](../mainnet-examples/CompoundGovernorBravo.md)
+3. [ENS OZ Governor](../mainnet-examples/ENSOzGovernor.md)
+4. [Optimism Multisig](../mainnet-examples/OptimismMultisig.md)

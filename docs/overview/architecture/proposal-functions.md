@@ -1,6 +1,8 @@
-The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of functions that all governance models inherit. Currently, there are four governance models inheriting from Proposal.sol: Bravo, Multisig, Timelock, and OpenZeppelin Governor. When using FPS for any of the aforementioned models to create proposals, all that needs to be done is to inherit one of the proposal types, such as [GovernorBravoProposal.sol](../../../src/proposals/GovernorBravoProposal.sol), and override the necessary functions to create the proposal, like `build` and `deploy`. FPS is flexible enough so that for any different governance model, governance proposal types can be easily adjusted to fit into the governance architecture. An example has been provided using [Arbitrum Governance](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol) on the FPS example repo to demonstrate FPS flexibility. The following is a list of functions proposals can implement:
+The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of functions that all governance models inherit. Currently, there are four governance models inheriting from Proposal.sol: Bravo, Multisig, Timelock, and OpenZeppelin Governor. When using FPS for any of the aforementioned models to create proposals, all that needs to be done is to inherit one of the proposal types, such as [GovernorBravoProposal.sol](../../../src/proposals/GovernorBravoProposal.sol), and override the necessary functions to create the proposal, like `build` and `deploy`.
 
--   `name()`: Defines name of the proposal.
+FPS is flexible enough so that for any different governance model, governance proposal types can be easily adjusted to fit into the governance architecture. An example has been provided using [Arbitrum Governance](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol) on the FPS example repo. The following is a list of functions that the proposals can implement:
+
+-   `name()`: This function is empty in the Proposal contract. Override this function in the proposal-specific contract to define the proposal name. For example:
 
     ```solidity
     function name() public pure override returns (string memory) {
@@ -8,7 +10,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `description()`: Defines description of the proposal.
+-   `description()`: This function is empty in the Proposal contract. Override this function in the proposal-specific contract to define the proposal description. For example:
 
     ```solidity
     function description() public pure override returns (string memory) {
@@ -16,7 +18,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `deploy()`: Deploys necessary contracts for the proposal. Here is an example from a [governor bravo proposal](../../guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
+-   `deploy()`: This function is empty in the Proposal contract. Override this function when there are deployments to be made in the proposal. Here is an example from a [governor bravo proposal](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/6815ce32b86b60cb4bec7d3cb34ad9f15cbbe8dd/docs/guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
 
     ```solidity
     function deploy() public override {
@@ -47,7 +49,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
     Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs](https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. Alternatively, when proposals are executed through `forge script,` the deployer address is the proposal contract itself.
 
--   `afterDeployMock()`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
+-   `afterDeployMock()`: Post-deployment mock actions. Such actions can include pranking, etching, etc. Example: In [Arbitrum Timelock](../../mainnet-examples/ArbitrumTimelock.md) this method is used to set a new `outBox` for `Arbitrum bridge` using `vm.store` foundry cheatcode.
 
 <a id="#build-function"></a>
 
@@ -172,7 +174,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `_validateAction()`: It ensures there are no duplicate actions. This method can be further override to include custom checks for a action.
+-   `_validateAction()`: It ensures there are no duplicate actions. This method can be further overridden to include custom checks for a action.
 
     ```solidity
     function _validateAction(
@@ -180,19 +182,20 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
         uint256 value,
         bytes memory data
     ) internal virtual {
-        // uses transition storage to check for duplicate actions
-        bytes32 actionHash = keccak256(abi.encodePacked(target, value, data));
+        uint256 actionsLength = actions.length;
+        for (uint256 i = 0; i < actionsLength; i++) {
+            // Check if the target, arguments and value matches with other exciting actions.
+            bool isDuplicateTarget = actions[i].target == target;
+            bool isDuplicateArguments = keccak256(actions[i].arguments) ==
+                keccak256(data);
+            bool isDuplicateValue = actions[i].value == value;
 
-        uint256 found;
-
-        assembly {
-            found := tload(actionHash)
-        }
-
-        require(found == 0, "Duplicated action found");
-
-        assembly {
-            tstore(actionHash, 1)
+            require(
+                !(isDuplicateTarget &&
+                    isDuplicateArguments &&
+                    isDuplicateValue),
+                "Duplicated action found"
+            );
         }
     }
     ```
@@ -202,6 +205,55 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 -   `getProposalActions()`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
 
 -   `getCalldata()`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract.
+
+<a id="#run-function"></a>
+
+-   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
+
+    ```solidity
+    function run() public virtual {
+        vm.selectFork(primaryForkId);
+
+        if (DO_DEPLOY) {
+            address deployer = addresses.getAddress("DEPLOYER_EOA");
+
+            vm.startBroadcast(deployer);
+            deploy();
+            addresses.printJSONChanges();
+            vm.stopBroadcast();
+        }
+
+        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
+        if (DO_BUILD) build();
+        if (DO_SIMULATE) simulate();
+        if (DO_VALIDATE) validate();
+        if (DO_PRINT) print();
+    }
+    ```
+
+    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
+
+    ```solidity
+    function run() public override {
+        // Create and select sepolia fork for proposal execution.
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Set governor Bravo. This address is used for proposal simulation and check on
+        // chain proposal state.
+        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
 
 -   `simulate()`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function.
 
@@ -320,59 +372,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-<a id="#run-function"></a>
-
--   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
-
-    ```solidity
-    function run() public virtual {
-        vm.selectFork(primaryForkId);
-
-        if (DO_DEPLOY) {
-            address deployer = addresses.getAddress("DEPLOYER_EOA");
-
-            vm.startBroadcast(deployer);
-            deploy();
-            addresses.printJSONChanges();
-            vm.stopBroadcast();
-        }
-
-        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
-        if (DO_BUILD) build();
-        if (DO_SIMULATE) simulate();
-        if (DO_VALIDATE) validate();
-        if (DO_PRINT) print();
-    }
-    ```
-
-    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. The state of the `addresses` contract persists across selected fork so that there is no need to set the `addresses` object every time fork is selected using `selectFork`. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
-
-    ```solidity
-    function run() public override {
-        // Create and select sepolia fork for proposal execution.
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
-
-        // Set addresses object reading addresses from json file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
-        );
-
-        // Make 'addresses' state persist across selected fork.
-        vm.makePersistent(address(addresses));
-
-        // Set governor Bravo. This address is used for proposal simulation and check on
-        // chain proposal state.
-        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
-
-        // Call the run function of parent contract 'Proposal.sol'.
-        super.run();
-    }
-    ```
-
--   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal tyoe.
+-   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal tyoe.
 
 -   `print()`: Print proposal description, actions, and calldata. No need to override.
 

@@ -25,7 +25,6 @@ contract MockMultisigProposal is MultisigProposal {
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
-        vm.makePersistent(address(addresses));
 
         super.run();
     }

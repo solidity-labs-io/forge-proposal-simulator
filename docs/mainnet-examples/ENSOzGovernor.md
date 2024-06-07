@@ -65,7 +65,7 @@ Let's review each of the overridden functions:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persistent across forks by using foundry's `vm.makePersistent()` cheatcode. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -79,9 +79,6 @@ Let's review each of the overridden functions:
                 vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
             )
         );
-
-        // Persist the 'addresses' state across the selected fork.
-        vm.makePersistent(address(addresses));
 
         // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
         setGovernor(addresses.getAddress("ENS_GOVERNOR"));

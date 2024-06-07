@@ -4,7 +4,7 @@
 
 This serves as a mainnet example of FPS, where FPS is utilized to propose adjustments for the Compound Governor Bravo. No deployments are included in this example. Specifically, this example sets Comet's borrow and supply kink to 0.75 \* 1e18 through the Compound Configurator.
 
-The contract outlined below is located in the [mocks/](../../mocks/) folder.
+The contract outlined below is located in the [mocks folder](../../mocks/MockBravoProposal.sol).
 
 Let's examine each of the functions that are overridden:
 
@@ -53,7 +53,7 @@ Let's examine each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persistent across forks by using foundry's `vm.makePersistent()` cheatcode. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -67,9 +67,6 @@ Let's examine each of the functions that are overridden:
                 vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
             )
         );
-
-        // Persist the 'addresses' state across the selected fork.
-        vm.makePersistent(address(addresses));
 
         // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));

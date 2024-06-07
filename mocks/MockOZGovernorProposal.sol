@@ -34,8 +34,6 @@ contract MockOZGovernorProposal is GovernorOZProposal {
             )
         );
 
-        vm.makePersistent(address(addresses));
-
         setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
         super.run();

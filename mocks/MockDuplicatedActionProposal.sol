@@ -24,7 +24,6 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
-        vm.makePersistent(address(addresses));
 
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 

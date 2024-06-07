@@ -99,7 +99,7 @@ Let's review each of the overridden functions:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and the fork for running the proposal is selected. Next, the `addresses` object is set by reading the `addresses.json` file. The `addresses` contract state is persistent across forks by using foundry's `vm.makePersistent()` cheatcode. The timelock address to simulate the proposal through is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and the fork for running the proposal is selected. Next, the `addresses` object is set by reading the `addresses.json` file. The timelock address to simulate the proposal through is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -112,12 +112,9 @@ Let's review each of the overridden functions:
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
 
-        // Make the 'addresses' state persist across the selected fork
-        vm.makePersistent(address(addresses));
-
         // Set the timelock. This address is used for proposal simulation and checking on-chain proposal state
-        timelock = ITimelockController(
-            addresses.getAddress("ARBITRUM_L1_TIMELOCK")
+        setTimelock(
+            ITimelockController(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
         );
 
         // Call the run function of the parent contract 'Proposal.sol'

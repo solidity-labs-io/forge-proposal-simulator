@@ -156,7 +156,6 @@ addresses.isAddressContract("CONTRACT_NAME");
 ## Usage
 
 When writing a proposal, set the `addresses` object using the `setAddresses` method. Ensure the correct path for `Addresses.json` file is passed inside the constructor while creating the `addresses` object. Use the `addresses` object to add, update, retrieve, and remove addresses.
-Hack: A single `addresses` object can also be set to more than one proposal to reflect changes from one proposal into another.
 
 ```solidity
 pragma solidity ^0.8.0;

@@ -4,7 +4,7 @@
 
 This is an example of FPS where FPS is used to make proposals for the Optimism Multisig on mainnet. This example upgrades the L1 NFT Bridge contract. The Optimism Multisig calls `upgrade` on the proxy contract to upgrade the implementation to a new `MockUpgrade`.
 
-The following contract is present in the [mocks/](../../mocks/) folder.
+The following contract is present in the [mocks folder](../../mocks/MockMultisigProposal.sol).
 
 Let's go through each of the functions that are overridden:
 
@@ -63,7 +63,7 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file. The `addresses` contract state is persistent across forks by using foundry's `vm.makePersistent()` cheatcode.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading `addresses.json` file.
 
     ```solidity
     function run() public override {
@@ -75,9 +75,6 @@ Let's go through each of the functions that are overridden:
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
-
-        // Make 'addresses' state persist across selected fork.
-        vm.makePersistent(address(addresses));
 
         // Call the run function of parent contract 'Proposal.sol'.
         super.run();

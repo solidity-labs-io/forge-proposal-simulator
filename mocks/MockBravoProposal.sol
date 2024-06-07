@@ -29,8 +29,6 @@ contract MockBravoProposal is GovernorBravoProposal {
             )
         );
 
-        vm.makePersistent(address(addresses));
-
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
         super.run();
