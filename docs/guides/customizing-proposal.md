@@ -465,7 +465,7 @@ Now that we a customized `ArbitrumProposal` type we can use it to write proposal
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persistent across forks by using foundry's `vm.makePersistent()` cheatcode. The Arbitrum L2 governor's contract address address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, `ethForkId` and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `arbitrum` for executing the proposal on L2. Then, we set `EthForkId` as every arbitrum proposal goes to L1 timelock irrespective of execution chain before it execution. Next, the `addresses` object is set by reading from the `addresses.json` file. The state of the `addresses` contract is persistent across forks by using foundry's `vm.makePersistent()` cheatcode. The Arbitrum L2 governor's contract address to simulate the proposal is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -727,8 +727,6 @@ Copy all address arbitrum address from [Addresses.json](https://github.com/solid
 ```sh
 forge script src/proposals/arbitrum/Arbitrum_Proposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
-
-Before executing the proposal script, ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the `Addresses.json` file. Failure to align these will result in script execution failure.
 
 The script will output the following:
 

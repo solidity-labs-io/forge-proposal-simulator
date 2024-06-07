@@ -1,12 +1,6 @@
 The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of functions that all governance models inherit. Currently, there are four governance models inheriting from Proposal.sol: Bravo, Multisig, Timelock, and OpenZeppelin Governor. When using FPS for any of the aforementioned models to create proposals, all that needs to be done is to inherit one of the proposal types, such as [GovernorBravoProposal.sol](../../../src/proposals/GovernorBravoProposal.sol), and override the necessary functions to create the proposal, like `build` and `deploy`. FPS is flexible enough so that for any different governance model, governance proposal types can be easily adjusted to fit into the governance architecture. An example has been provided using [Arbitrum Governance](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol) on the FPS example repo to demonstrate FPS flexibility. The following is a list of functions proposals can implement:
 
--   `function name() public`: This function is empty in the `Proposal` contract.
-
-    ```solidity
-    function name() external view virtual returns (string memory);
-    ```
-
-    Override this function in the proposal-specific contract to define the proposal name. For example:
+-   `name()`: Defines name of the proposal.
 
     ```solidity
     function name() public pure override returns (string memory) {
@@ -14,13 +8,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function description() public`: This function is empty in the `Proposal` contract.
-
-    ```solidity
-    function description() public view virtual returns (string memory);
-    ```
-
-    Override this function in the proposal-specific contract to define the proposal description. For example:
+-   `description()`: Defines description of the proposal.
 
     ```solidity
     function description() public pure override returns (string memory) {
@@ -28,13 +16,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function deploy() public`: This function is empty in the `Proposal` contract.
-
-    ```solidity
-    function deploy() public virtual {}
-    ```
-
-    Override this function when there are deployments to be made in the proposal. Here is an example from a [governor bravo proposal](../../guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
+-   `deploy()`: Deploys necessary contracts for the proposal. Here is an example from a [governor bravo proposal](../../guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
 
     ```solidity
     function deploy() public override {
@@ -65,11 +47,11 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
     Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs](https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. Alternatively, when proposals are executed through `forge script,` the deployer address is the proposal contract itself.
 
--   `function afterDeployMock() public`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
+-   `afterDeployMock()`: Post-deployment mock actions. Such actions can include pranking, etching, etc.
 
 <a id="#build-function"></a>
 
--   `function build() public`: this function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata encoded for the user's governance model. This calldata can then be proposed on the Governance contract, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function as a privileged admin role in the system.
+-   `build()`: This function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata encoded for the user's governance model. This calldata can then be proposed on the Governance contract, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function as a privileged admin role in the system.
 
     ```solidity
     function build() public virtual {}
@@ -194,7 +176,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `_validateAction() internal virtual`: It ensures there are no duplicate actions. This method can be further override to include custom checks for a action.
+-   `_validateAction()`: It ensures there are no duplicate actions. This method can be further override to include custom checks for a action.
 
     ```solidity
     function _validateAction(
@@ -219,17 +201,13 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `_validateActions() internal virtual`: This method can be overridden to add custom checks on all actions of proposals. For example, there must be a single action, the first action should be an approval call, etc.
+-   `_validateActions()`: This method can be overridden to add custom checks on all actions of proposals. For example, there must be a single action, the first action should be an approval call, etc.
 
--   `function getProposalActions() public`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
+-   `getProposalActions()`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
 
--   `function getCalldata() public`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract.
+-   `getCalldata()`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract.
 
--   `function simulate() public`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function. On the Proposal contract, this function is empty.
-
-    ```solidity
-    function simulate() public virtual {}
-    ```
+-   `simulate()`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function.
 
     This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. Here we will take a look at the Governor Bravo type example. In this example, we have a proposer address that proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, and now the proposal is in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
 
@@ -299,11 +277,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
     Without calling `build` first, the `simulate` function would be a no-op as there would be no predefined actions to execute.
 
--   `function validate() public`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly. In the `Proposal` contract, this function is empty.
-
-    ```solidity
-    function validate() public virtual {}
-    ```
+-   `validate()`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly.
 
     This function is overridden at the proposal-specific contract. For example, we can take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
 
@@ -352,7 +326,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 <a id="#run-function"></a>
 
--   `function run() public`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
+-   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
 
     ```solidity
     function run() public virtual {
@@ -402,9 +376,9 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
--   `function checkOnChainCalldata() public`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal tyoe.
+-   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal contract level as it is already overridden in the proposal type contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal tyoe.
 
--   `function print() public`: Print proposal description, actions, and calldata. No need to override.
+-   `print()`: Print proposal description, actions, and calldata. No need to override.
 
 <a id="#flexibility"></a>
 The actions in FPS are designed to be loosely coupled for flexible implementation, with the exception of the build and simulate functions, which require sequential execution. This design choice offers developers significant flexibility and power in tailoring the system to their specific needs. For example, a developer may choose to only execute the deploy and validate functions, bypassing the others. This could be suitable in situations where only initial deployment and final validation are necessary, without the need for intermediate steps. Alternatively, a developer might opt to simulate a proposal by executing only the build and simulate functions, omitting the deploy step if there is no need to deploy new contracts. FPS empowers developers with the ability to pick and choose functions from a proposal for integration tests, deployment scripts, and governance proposal creation as it becomes easy to access whichever part of a governance proposal that is needed exactly how it will be run in production.

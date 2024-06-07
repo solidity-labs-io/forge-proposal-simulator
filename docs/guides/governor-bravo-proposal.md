@@ -2,9 +2,7 @@
 
 ## Overview
 
-Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`, whitelist `Token` on `Vault`, approve and deposit all tokens into `Vault`. These contracts can be found in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo before continuing the tutorial.
-
-This proposal entails transferring ownership of both contracts to Governor Bravo's timelock, alongside whitelisting the token, minting tokens to the timelock, and depositing tokens into the vault.
+Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal for Governor Bravo contract.
 
 ## Proposal Contract
 
@@ -287,8 +285,6 @@ Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the
 ```sh
 forge script src/proposals/simple-vault-bravo/BravoProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
-
-Before executing the proposal script, ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the `Addresses.json` file. Failure to align these will result in script execution failure.
 
 The script will output the following:
 

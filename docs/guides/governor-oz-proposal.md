@@ -2,9 +2,7 @@
 
 ## Overview
 
-After adding FPS to project dependencies, the next step is creating the first Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`, whitelist `Token` on `Vault`, approve and deposit all tokens into `Vault`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo before continuing the tutorial.
-
-This proposal involves transferring ownership of both contracts to Governor OZ's timelock, along with whitelisting the token, minting tokens to the timelock, and having the timelock deposit tokens into the vault.
+Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal for Governor OZ contract.
 
 ## Proposal Contract
 
@@ -249,8 +247,6 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ```sh
 forge script src/proposals/simple-vault-governor-oz/GovernorOZProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
-
-Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
 
 The script will output the following:
 

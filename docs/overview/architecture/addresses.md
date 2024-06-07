@@ -37,7 +37,7 @@ Deployed contract addresses are registered along with their respective names and
 ]
 ```
 
-FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected.
+FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks same address is not set for two different names on same network.
 
 ## Functions
 
@@ -155,7 +155,8 @@ addresses.isAddressContract("CONTRACT_NAME");
 
 ## Usage
 
-When writing a proposal, pass the addresses path to the proposal constructor. [Proposal.sol](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/main/proposals/Proposal.sol) will load the addresses from the path and make them available to the proposal. Use the `addresses` object to add, update, retrieve, and remove addresses.
+When writing a proposal, set the `addresses` object using the `setAddresses` method. Ensure the correct path for `Addresses.json` file is passed inside the constructor while creating the `addresses` object. Use the `addresses` object to add, update, retrieve, and remove addresses.
+Hack: A single `addresses` object can also be set to more than one proposal to reflect changes from one proposal into another.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -168,8 +169,6 @@ import { MyContract } from "@path/to/MyContract.sol";
 contract PROPOSAL_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
-
     function deploy() public override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract
@@ -178,6 +177,13 @@ contract PROPOSAL_01 is MultisigProposal {
             /// Interact with the Addresses object, adding the new contract address
             addresses.addAddress("CONTRACT_NAME", address(myContract), true);
         }
+    }
+
+    function run() {
+        // Set addresses object for the proposal
+        setAddresses(new Addresses(ADDRESSES_PATH));
+
+        super.run();
     }
 }
 ```

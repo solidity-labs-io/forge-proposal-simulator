@@ -2,9 +2,7 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the first Proposal contract. This example serves as a guide for drafting a proposal to deploy new instances of `Vault.sol` and `Token`, whitelist `Token` on `Vault`, approve and deposit all tokens into `Vault`. These contracts are located in the fps-example-repo [mocks](https://github.com/solidity-labs-io/fps-example-repo/tree/main/src/mocks). Clone the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/) repo before continuing the tutorial.
-
-This proposal includes the transfer of ownership of both contracts to multisig, along with the whitelisting of the token, minting of tokens to the multisig, and multisig depositing tokens into the vault.
+Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal for Multisig contract.
 
 ## Proposal contract
 
@@ -218,8 +216,6 @@ Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Sa
 forge script src/proposals/simple-vault-multisig/MultisigProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
 ```
 
-Before you execute the proposal script, double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. If these don't align, the script execution will fail.
-
 The script will output the following:
 
 ```sh
@@ -273,4 +269,4 @@ If a password was provided to the wallet, the script will prompt for the passwor
 
 A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 
-The proposal script will deploy the contracts in the deploy() method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send command along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send command along with the calldata generated above.
