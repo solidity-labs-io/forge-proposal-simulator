@@ -6,7 +6,7 @@ Following the addition of FPS to project dependencies, the subsequent step invol
 
 ## Proposal Contract
 
-Here we are using the GovernorOZProposal_01 proposal present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-governor-oz/GovernorOZProposal_01.sol). We will use this contract as a reference for the tutorial.
+The `GovernorOZProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-governor-oz/GovernorOZProposal_01.sol). This contract is used as a reference for this tutorial.
 
 Let's go through each of the overridden functions.
 
@@ -129,6 +129,103 @@ Let's go through each of the overridden functions.
     }
     ```
 
+-   `simulate()`: For governor OZ proposal, this function is defined in the governance specific contract and needs not to be overridden. This function executes the proposal actions outlined in the `build()` step. First required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then the time is skipped by the voting delay, proposer casts vote and the proposal is queued. Next, time is skipped by the timelock delay and then finally the proposal is executed. Check the code snippet below with inline comments to get a better idea.
+
+    ```solidity
+    /// @notice Simulate governance proposal
+    function simulate() public virtual override {
+        address proposerAddress = address(1);
+        IVotes governanceToken = IVotes(
+            IGovernorVotes(address(governor)).token()
+        );
+        {
+            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            uint256 quorumVotes = governor.quorum(block.number - 1);
+            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 votingPower = quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
+            deal(address(governanceToken), proposerAddress, votingPower);
+            vm.roll(block.number - 1);
+            // Delegate proposer's votes to itself
+            vm.prank(proposerAddress);
+            IVotes(governanceToken).delegate(proposerAddress);
+            vm.roll(block.number + 2);
+        }
+
+        bytes memory proposeCalldata = getCalldata();
+
+        // Register the proposal
+        vm.prank(proposerAddress);
+        bytes memory data = address(governor).functionCall(proposeCalldata);
+
+        uint256 returnedProposalId = abi.decode(data, (uint256));
+
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
+
+        // Check that the proposal was registered correctly
+        uint256 proposalId = governor.hashProposal(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(returnedProposalId == proposalId, "Proposal id mismatch");
+
+        // Check proposal is in Pending state
+        require(governor.state(proposalId) == IGovernor.ProposalState.Pending);
+
+        // Roll to Active state (voting period)
+        vm.roll(block.number + governor.votingDelay() + 1);
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Active);
+
+        // Vote YES
+        vm.prank(proposerAddress);
+        governor.castVote(proposalId, 1);
+
+        // Roll to allow proposal state transitions
+        vm.roll(block.number + governor.votingPeriod());
+
+        require(
+            governor.state(proposalId) == IGovernor.ProposalState.Succeeded
+        );
+
+        vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
+
+        // Queue the proposal
+        governor.queue(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Queued);
+
+        // Warp to allow proposal execution on timelock
+        ITimelockController timelock = ITimelockController(
+            IGovernorTimelockControl(address(governor)).timelock()
+        );
+        vm.warp(block.timestamp + timelock.getMinDelay());
+
+        // Execute the proposal
+        governor.execute(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Executed);
+    }
+    ```
+
 -   `validate()`: This final step validates the system in its post-execution state. It ensures that the Governor oz's timelock is the new owner of the Vault and token, the tokens were transferred to Governor oz's timelock, and the token was whitelisted on the Vault contract.
 
     ```solidity
@@ -183,11 +280,11 @@ Let's go through each of the overridden functions.
 
 ### Deploying a Governor OZ on Testnet
 
-You'll need a Governor OZ contract set up on the testnet before running the proposal.
+A Governor OZ contract is needed to be set up on the testnet before running the proposal.
 
-We have a script [DeployGovernorOz](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorOz.s.sol) to facilitate this process.
+This script [DeployGovernorOz](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorOz.s.sol) facilitates this process.
 
-Before running the script, you must add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
 ```json
 [
@@ -296,8 +393,6 @@ payload
   0x7d5e81e20000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001800000000000000000000000000000000000000000000000000000000000000380000000000000000000000000000000000000000000000000000000000000000300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a0500000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b476f7665726e6f72206f7a2070726f706f73616c206d6f636b20310000000000
 
 ```
-
-If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
 
 A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 

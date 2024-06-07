@@ -24,6 +24,6 @@ The Forge Proposal Simulator (FPS) offers a framework for creating secure govern
 
 ## Get Started
 
-{% content-ref url="./fundamentals/getting-set-up.md" %}
-[Getting Set Up](./fundamentals/getting-set-up.md)
+{% content-ref url="./guides/introduction.md" %}
+[Introduction](./guides/introduction.md)
 {% endcontent-ref %}

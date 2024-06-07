@@ -53,13 +53,9 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 -   `build()`: This function is where most of the FPS magic happens. It utilizes foundry cheat codes to automatically transform plain solidity code into calldata encoded for the user's governance model. This calldata can then be proposed on the Governance contract, signed by the multisig signers, or scheduled on the Timelock. For instance, an action might involve pointing a proxy to a new implementation address after deploying the implementation in the 'deploy' function as a privileged admin role in the system.
 
-    ```solidity
-    function build() public virtual {}
-    ```
-
     The `buildModifier` must be implemented when overriding so that FPS can store the actions to be used later on in the calldata generation. This modifier runs the `_startBuild()` function before `build()` and the `endBuild()` function after. This modifier also takes `toPrank` as a parameter, which represents the address used as the caller for the actions in the proposal, such as the multisig address or timelock address.
 
-    In the `startBuild()` function, we set the prank to the caller address and take a snapshot of the initial state using Foundry's `vm.snapshot()` cheat code. Then, we initiate Foundry's `vm.startStateDiffRecording()` to start recording all function calls made after this step. The `build()` function is then executed, and all the build steps are recorded. Finally, `endBuild()` stops the state diff recording, retrieves all the call information, stops the prank, reverts the state to the initial snapshot, and filters out the calls made by the caller, ignoring any static calls. This process ensures that only the mutative calls made by the caller are filtered and stored in the actions array.
+    In the `startBuild()` function, set the prank to the caller address and take a snapshot of the initial state using Foundry's `vm.snapshot()` cheat code. Then, initiate Foundry's `vm.startStateDiffRecording()` to start recording all function calls made after this step. The `build()` function is then executed, and all the build steps are recorded. Finally, `endBuild()` stops the state diff recording, retrieves all the call information, stops the prank, reverts the state to the initial snapshot, and filters out the calls made by the caller, ignoring any static calls. This process ensures that only the mutative calls made by the caller are filtered and stored in the actions array.
 
     ```solidity
     modifier buildModifier(address toPrank) {
@@ -142,7 +138,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    For a clearer understanding, we can look at the Bravo proposal example snippet. Here, `build()` has the `buildModifier`, which takes `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function, but only the mutative calls made by the caller will be stored in the actions array. In this example, there are three mutative actions. First, the deployed token is whitelisted on the deployed vault. Second, the vault is approved to transfer some `balance` on behalf of the Bravo timelock contract. Third, the `balance` amount of tokens is deposited in the vault from the Bravo timelock contract.
+    For a clearer understanding, take a look at the Bravo proposal example snippet. Here, `build()` has the `buildModifier`, which takes `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function, but only the mutative calls made by the caller will be stored in the actions array. In this example, there are three mutative actions. First, the deployed token is whitelisted on the deployed vault. Second, the vault is approved to transfer some `balance` on behalf of the Bravo timelock contract. Third, the `balance` amount of tokens is deposited in the vault from the Bravo timelock contract.
 
     ```solidity
     function build()
@@ -209,7 +205,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 -   `simulate()`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function.
 
-    This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. Here we will take a look at the Governor Bravo type example. In this example, we have a proposer address that proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, and now the proposal is in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
+    This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. Take a look at the Governor Bravo type example. In this example, the proposer address proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, and now the proposal is in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
 
     ```solidity
     function simulate() public override {
@@ -279,7 +275,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
 
 -   `validate()`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly.
 
-    This function is overridden at the proposal-specific contract. For example, we can take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
+    This function is overridden at the proposal-specific contract. For example, take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
 
     ```solidity
     function validate() public override {
@@ -349,7 +345,7 @@ The [Proposal.sol](../../../src/proposals/Proposal.sol) file contains a set of f
     }
     ```
 
-    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. We make the state of the `addresses` contract persist across selected fork so that we don't need to set the `addresses` object every time we `selectFork`. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
+    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. The state of the `addresses` contract persists across selected fork so that there is no need to set the `addresses` object every time fork is selected using `selectFork`. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
 
     ```solidity
     function run() public override {

@@ -6,7 +6,7 @@ Following the addition of FPS to project dependencies, the subsequent step invol
 
 ## Proposal Contract
 
-Here, we utilize the BravoProposal_01 proposal available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). We'll use this contract as a reference for the tutorial.
+The `BravoProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). This contract is used as a reference for this tutorial.
 
 Let's go through each of the overridden functions.
 
@@ -122,6 +122,73 @@ Let's go through each of the overridden functions.
     }
     ```
 
+-   `simulate()`: For governor bravo proposal, this function is defined in the governance specific contract and needs not to be overridden. This function executes the proposal actions outlined in the `build()` step. First required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then the time is skipped by the voting delay, proposer casts vote and the proposal is queued. Next, time is skipped by the timelock delay and then finally the proposal is executed. Check the code snippet below with inline comments to get a better idea.
+
+    ```solidity
+    /// @notice Simulate governance proposal
+    function simulate() public override {
+        address proposerAddress = address(1);
+        IERC20VotesComp governanceToken = governor.comp();
+        {
+            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            uint256 quorumVotes = governor.quorumVotes();
+            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 votingPower = quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
+            deal(address(governanceToken), proposerAddress, votingPower);
+            // Delegate proposer's votes to itself
+            vm.prank(proposerAddress);
+            IERC20VotesComp(governanceToken).delegate(proposerAddress);
+            vm.roll(block.number + 1);
+        }
+
+        bytes memory proposeCalldata = getCalldata();
+
+        // Register the proposal
+        vm.prank(proposerAddress);
+        bytes memory data = address(governor).functionCall(proposeCalldata);
+        uint256 proposalId = abi.decode(data, (uint256));
+
+        // Check proposal is in Pending state
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Pending
+        );
+
+        // Roll to Active state (voting period)
+        vm.roll(block.number + governor.votingDelay() + 1);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Active
+        );
+
+        // Vote YES
+        vm.prank(proposerAddress);
+        governor.castVote(proposalId, 1);
+
+        // Roll to allow proposal state transitions
+        vm.roll(block.number + governor.votingPeriod());
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Succeeded
+        );
+
+        // Queue the proposal
+        governor.queue(proposalId);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Queued
+        );
+
+        // Warp to allow proposal execution on timelock
+        ITimelockBravo timelock = ITimelockBravo(governor.timelock());
+        vm.warp(block.timestamp + timelock.delay());
+
+        // Execute the proposal
+        governor.execute(proposalId);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Executed
+        );
+    }
+    ```
+
 -   `validate()`: This final step validates the system in its post-execution state. It ensures that Governor Bravo's timelock is the new owner of the Vault and token, the tokens were transferred to Governor Bravo's timelock, and the token was whitelisted on the Vault contract.
 
     ```solidity
@@ -171,9 +238,9 @@ Let's go through each of the overridden functions.
 
 ### Deploying a Governor Bravo on Testnet
 
-You'll need a Governor Bravo contract set up on the testnet before running the proposal.
+A Governor Bravo contract is needed to be set up on the testnet before running the proposal.
 
-We have a script [DeployGovernorBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorBravo.s.sol) to facilitate this process.
+This script [DeployGovernorBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorBravo.s.sol) facilitates this process.
 
 Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
@@ -334,8 +401,6 @@ payload
   0xda95691a00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000004800000000000000000000000000000000000000000000000000000000000000003000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013427261766f2070726f706f73616c206d6f636b00000000000000000000000000
 
 ```
-
-If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
 A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 

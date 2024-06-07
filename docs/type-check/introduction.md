@@ -22,7 +22,7 @@ echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
 
 ### Step 3: Addresses File
 
-Create a JSON file following the structure defined in [Addresses](../overview/architecture/addresses.md). We recommend keeping the addresses file in a separate folder, for example `./addresses/addresses.json`. Add all contracts to `Addresses.json`.
+Create a JSON file following the structure defined in [Addresses](../overview/architecture/addresses.md). Keeping the addresses file in a separate folder for example `./addresses/addresses.json` is recommended. Add all contracts to `Addresses.json`.
 
 ### Step 4: TypeCheckAddresses File
 

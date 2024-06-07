@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a mainnet example of FPS where FPS is used to make proposals for the Optimism Multisig on mainnet. This example upgrades the L1 NFT Bridge contract. The Optimism Multisig calls `upgrade` on the proxy contract to upgrade the implementation to a new `MockUpgrade`.
+This is an example of FPS where FPS is used to make proposals for the Optimism Multisig on mainnet. This example upgrades the L1 NFT Bridge contract. The Optimism Multisig calls `upgrade` on the proxy contract to upgrade the implementation to a new `MockUpgrade`.
 
 The following contract is present in the [mocks/](../../mocks/) folder.
 

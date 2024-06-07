@@ -6,7 +6,7 @@ Following the addition of FPS to project dependencies, the subsequent step invol
 
 ## Proposal contract
 
-Here we are using the MultisigProposal_01 proposal that is present in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). We will use this contract as a reference for the tutorial.
+The `MultisigProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). This contract is used as a reference for this tutorial.
 
 Let's go through each of the functions that are overridden.
 
@@ -181,11 +181,11 @@ Let's go through each of the functions that are overridden.
 
 ### Deploying a Gnosis Safe Multisig on Testnet
 
-To kick off this tutorial, you'll need a Gnosis Safe Multisig contract set up on the testnet.
+To kick off this tutorial, a Gnosis Safe Multisig contract is needed to be set up on the testnet.
 
-1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet (we're using Sepolia for this tutorial). Follow the on-screen instructions to generate a new Safe Account.
+1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet (Sepolia is used for this tutorial). Follow the on-screen instructions to generate a new Safe Account.
 
-2. After setting up your Safe, you'll find the address in the details section of your Safe Account. Make sure to copy this address and keep it handy for later steps.
+2. After setting up of Safe, address can be found in the details section of the Safe Account. Make sure to copy this address and keep it handy for later steps.
 
 ### Setting Up the Addresses JSON
 
@@ -264,8 +264,6 @@ payload
 ------------------ Proposal Calldata ------------------
   0x174dea7100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001600000000000000000000000000000000000000000000000000000000000000260000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
-
-If a password was provided to the wallet, the script will prompt for the password before broadcasting the proposal.
 
 A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This example showcases how FPS can be utilized for simulating proposals for the Arbitrum timelock on L1. Specifically, it upgrades the WETH gateway on L1. The proposal involves deploying a new implementation contract `ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION` and a governance action contract `ARBITRUM_GAC_UPGRADE_WETH_GATEWAY`. Then, the timelock employs `upgradeExecutor` to upgrade the WETH gateway. The proposer for the L1 timelock should always be the Arbitrum bridge.
+This example showcases how FPS can be utilized for simulating proposals for the Arbitrum timelock on mainnet. Specifically, it upgrades the WETH gateway on L1. The proposal involves deploying a new implementation contract `ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION` and a governance action contract `ARBITRUM_GAC_UPGRADE_WETH_GATEWAY`. Then, the timelock employs `upgradeExecutor` to upgrade the WETH gateway. The proposer for the L1 timelock should always be the Arbitrum bridge.
 
 The relevant contract can be found in the [mocks folder](../../mocks/MockTimelockProposal.sol).
 

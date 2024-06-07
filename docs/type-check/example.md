@@ -50,7 +50,7 @@ contract ExampleTypeCheck {
 
 The contract constructor arguments appear complex for this example; luckily, we already have the constructor arguments ready for you.
 
-In the file `TypeCheckAddresses.json`, which you have already created in the setup, add another object in the JSON file for the above contract:
+In the file `TypeCheckAddresses.json`, which has already been created in the setup, add another object in the JSON file for the above contract:
 
 ```json
 {
@@ -73,9 +73,9 @@ Now, add the following object in `Addresses.json`:
 }
 ```
 
-The above contract is already deployed on the Sepolia testnet, and we will ensure the correct contract is deployed by verifying the bytecode of the Sepolia contract with the local bytecode of the `ExampleTypeCheck` contract.
+The above contract is already deployed on the Sepolia testnet, and it will check that the correct contract is deployed by verifying the bytecode of the Sepolia contract with the local bytecode of the `ExampleTypeCheck` contract.
 
-Assuming you have already installed npm packages and added environment variables in the [Setup guide](./introduction.md#setting-up).
+Assuming npm packages are already installed and environment variables are added in the [Setup guide](./introduction.md#setting-up).
 
 Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json`, and the `artifact` folder inside `foundry.toml`.
 

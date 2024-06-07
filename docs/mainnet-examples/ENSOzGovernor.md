@@ -2,7 +2,7 @@
 
 ## Overview
 
-This example on mainnet demonstrates FPS being utilized to simulate proposals for the ENS Governor on L1. The proposal involves setting up a new DNSSEC on the ENS root on L1. It entails deploying a new DNSSEC contract named `UPGRADE_DNSSEC_SUPPORT`. Subsequently, the timelock sets the newly deployed DNSSEC contract as the controller for the ENS Root.
+This example on mainnet demonstrates FPS being utilized to simulate proposals for the ENS Governor on mainnet. The proposal involves setting up a new DNSSEC on the ENS root. It entails deploying a new DNSSEC contract named `UPGRADE_DNSSEC_SUPPORT`. Subsequently, the timelock sets the newly deployed DNSSEC contract as the controller for the ENS Root.
 
 The contract for this proposal is located in the [mocks folder](../../mocks/MockOZGovernorProposal.sol).
 
