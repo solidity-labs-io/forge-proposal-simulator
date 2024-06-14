@@ -2,7 +2,7 @@
 
 ## Overview
 
-Following the addition of FPS to project dependencies, the subsequent step involves creating the initial Proposal contract. This example serves as a guide for drafting a proposal for Multisig contract.
+Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for Multisig contract.
 
 ## Proposal contract
 
@@ -65,7 +65,7 @@ Let's go through each of the functions that are overridden.
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then multisig approves token for vault and deposits all tokens into the vault. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. `buildModifier` is necessary modifier for `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the multisig approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. The `buildModifier` is necessary modifier for `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -100,7 +100,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading `addresses.json` file.
+-   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the `Addresses.json` file.
 
     ```solidity
     function run() public override {
@@ -121,6 +121,7 @@ Let's go through each of the functions that are overridden.
     ```
 
 -   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step. Multicall contract is used to execute all of the actions together in a single safe action. This is done by batching all the build actions together using the `aggregate3Value` multicall3 function. The single safe action is a delegate call to the multicall3 contract as the caller for all the batched actions should be the multisig contract and not the multicall3 contract.
+
     ```solidity
     function simulate() public override {
         // Get multisig address

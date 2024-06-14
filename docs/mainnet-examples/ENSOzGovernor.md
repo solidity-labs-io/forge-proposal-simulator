@@ -42,7 +42,7 @@ Let's review each of the overridden functions:
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
+-   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. The `buildModifier` is a necessary modifier for the `build` function and will not function without it.
 
     ```solidity
     function build()
@@ -65,7 +65,7 @@ Let's review each of the overridden functions:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {

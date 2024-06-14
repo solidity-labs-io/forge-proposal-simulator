@@ -44,6 +44,7 @@ Choose a model that fits your needs:
 -   [Multisig Proposal](docs/guides/multisig-proposal.md)
 -   [Timelock Proposal](docs/guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](docs/guides/governor-bravo-proposal.md)
+-   [Governor OZ proposal](docs/guides/governor-oz-proposal.md)
 
 #### Step 5: Implement Scripts and Tests
 

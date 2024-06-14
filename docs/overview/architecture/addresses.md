@@ -43,7 +43,7 @@ FPS allows contracts with identical names as long as they are deployed on differ
 
 ### Adding
 
-Addresses can be added to the object during a proposal or test by calling the `addAddress` function with the name to be saved in storage and the address of the contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
+Addresses can be added to the object during a proposal or test by calling the `addAddress` function with the name to be saved in storage, the address of the contract to be stored with that name and whether the address is a contract. Calling this function without a chain id will save the contract and name to the current chain id.
 
 ```solidity
 addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);

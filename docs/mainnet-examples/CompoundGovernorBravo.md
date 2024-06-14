@@ -25,7 +25,7 @@ Let's examine each of the functions that are overridden:
     }
     ```
 
--   `build()`: Add actions to the proposal contract. [See build function](../overview/architecture/proposal-functions.md#build-function). In this instance, borrow and supply kink are set through the configurator by Bravo's timelock. The actions should be written in Solidity code and in the order they are intended to be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The The `caller` address is passed into `buildModifier`, which will call actions in `build`. In this example, the caller is Governor's timelock. `buildModifier` is a necessary modifier for the `build` function and will not function without it.
+-   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this instance, borrow and supply kink are set through the configurator by Bravo's timelock. The actions should be written in Solidity code and in the order they are intended to be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier`, which will call actions in `build`. In this example, the caller is Governor's timelock. The `buildModifier` is a necessary modifier for the `build` function and will not function without it.
 
     ```solidity
     function build()
@@ -53,7 +53,7 @@ Let's examine each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
