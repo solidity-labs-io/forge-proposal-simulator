@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
+The Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution. Additionally, this contract contains important safety checks such as checking bytecode and providing error messages when non-existent addresses are queried.
 
 ## Structure
 
@@ -37,7 +37,7 @@ Deployed contract addresses are registered along with their respective names and
 ]
 ```
 
-FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks same address is not set for two different names on same network.
+FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks that the same address is not set under two different names on the same network.
 
 ## Functions
 
@@ -63,7 +63,7 @@ FPS has the following type checks implemented for the function `addAddress`:
 -   Address must be a contract in the specified chain if `isContract` is set to `true`.
 -   Address must not be a contract in the specified chain if `isContract` is set to `false`.
 
-Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment, the `getRecordedAddresses` function will return all of the newly deployed addresses and their respective names and chain ids.
+Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment, the `getRecordedAddresses` function will return all of the newly deployed addresses and their respective names and chain id's.
 
 ### Updating
 
@@ -89,7 +89,7 @@ FPS has the following type checks implemented for the function `changeAddress`:
 -   Address must be different from the existing address.
 -   An address for the specified name must already exist.
 
-After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain ids.
+After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain id's.
 
 ### Removing
 

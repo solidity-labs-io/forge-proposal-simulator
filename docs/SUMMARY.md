@@ -16,7 +16,7 @@
 -   [Timelock Proposal](guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
 -   [Governor OZ Proposal](guides/governor-oz-proposal.md)
--   [Customizing Proposal](guides/customizing-proposal.md)
+-   [Customizing A Proposal](guides/customizing-proposal.md)
 -   Mainnet examples
     -   [Arbitrum Timelock](mainnet-examples/ArbitrumTimelock.md)
     -   [Compound Governor Bravo](mainnet-examples/CompoundGovernorBravo.md)

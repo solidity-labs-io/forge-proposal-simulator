@@ -182,7 +182,7 @@ To kick off this tutorial, a Gnosis Safe Multisig contract is needed to be set u
 
 1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet (Sepolia is used for this tutorial). Follow the on-screen instructions to generate a new Safe Account.
 
-2. After setting up of Safe, address can be found in the details section of the Safe Account. Make sure to copy this address and keep it handy for later steps.
+2. After setting up the Safe, its address can be found in the details section of the Safe Account. Make sure to copy this address and keep it handy for later steps.
 
 ### Setting Up the Addresses JSON
 

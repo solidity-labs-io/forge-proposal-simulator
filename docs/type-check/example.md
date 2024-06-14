@@ -1,6 +1,6 @@
 # Example Type Check
 
-After adding FPS to the project dependencies and setting up through the [Setup guide](./introduction.md#setting-up), it's time to go through an example contract to understand how type checking works.
+After adding FPS to the project dependencies and following the [setup guide](./introduction.md#setting-up), it's time to go through an example contract to understand how type checking works.
 
 ## Example Contracts
 
@@ -62,7 +62,7 @@ In the file `TypeCheckAddresses.json`, which has already been created in the set
 
 Note: The default artifact folder is `out`. If it is different in your project in `foundry.toml`, change the above artifact path accordingly.
 
-Now, add the following object in `Addresses.json`:
+Now, add the following object to `Addresses.json`:
 
 ```json
 {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `TypeCheckAddresses.json` file is a JSON file used for verifying the bytecode of already deployed contracts on any chain. This file contains a list of objects, where each object stores the `name`, `constructorArgs`, and `artifactPath` for all the contracts that needs to be type checked. The `name` should be the same as the `name` in `Addresses.json` as it links both JSONs together. The `constructorArgs` should be in comma-separated array format. For `Address`, `bytes`, and `string`, double quotes should be used. Tuples, on the other hand, are passed like arrays `[]`. Additionally, each `"` in JSON is escaped using `\` since it is a special character in the JSON file.
+The `TypeCheckAddresses.json` file is a JSON file used for verifying the bytecode of already deployed contracts on any chain. This file contains a list of objects, where each object stores the `name`, `constructorArgs`, and `artifactPath` for all the contracts that needs to be type checked. The `name` should be the same as the `name` in `Addresses.json` as it links both JSONs together. The `constructorArgs` should be in comma-separated array format. For `address`, `bytes`, and `string`, double quotes should be used. Tuples, on the other hand, are passed like arrays `[]`. Additionally, each `"` in JSON is escaped using `\` since it is a special character in the JSON file.
 
 ## Structure
 

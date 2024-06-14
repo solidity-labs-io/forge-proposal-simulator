@@ -92,7 +92,7 @@ To create the workflow, follow these steps:
 2. Change the `PROPOSALS_FOLDER` to the folder where the proposals are located.
 3. Add the Forge Proposal Simulator path before the `run-proposal.sh` script: `lib/forge-proposal-simulator/run-proposal.sh`.
 4. In case the proposal names are different from `*Proposal_1.sol`, copy the [script](https://github.com/solidity-labs-io/fps-example-repo/blob/main/run-proposal.sh) into your repository and customize it as needed. Update the path in step 3 to `./run-proposal.sh`.
-5. Check the repository settings and make sure Read and Write Permissions are enabled in the Workflow Permissions section.
+5. Check the Github repository settings and make sure Read and Write Permissions are enabled in the Workflow Permissions section.
 
 Whenever a Pull Request that involves a proposal is created, the action will automatically execute and display the output of the proposal in a comment on the PR. This enables the developer to locally run the proposal and validate whether the output corresponds with the one shown on the PR.
 

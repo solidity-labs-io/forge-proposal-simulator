@@ -4,7 +4,7 @@ The framework is compatible with OpenZeppelin Timelock, Compound Governor Bravo,
 
 ### OpenZeppelin Timelock Controller
 
-The [Timelock Proposal type](../guides/timelock-proposal.md) facilitates the creation of the scheduling and execution of calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from submission to execution, using foundry cheat codes to bypass the delay period.
+The [Timelock Proposal](../guides/timelock-proposal.md) facilitates the creation of the scheduling and execution of calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from submission to execution, using foundry cheat codes to bypass the delay period.
 
 ### Gnosis Safe Multisig
 
@@ -12,8 +12,8 @@ The [Multisig Proposal](../guides/multisig-proposal.md) generates and simulates 
 
 ### Compound Governor Bravo
 
-[Governor Bravo Proposal](../guides/governor-bravo-proposal.md) facilitates the creation of the governor `propose` calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from proposing, voting, queuing, and finally executing. 
+The [Governor Bravo Proposal](../guides/governor-bravo-proposal.md) facilitates the creation of the governor `propose` calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from proposing, voting, queuing, and finally executing. 
 
 ### Governor OZ
 
-Similar to Compound Governor Bravo, FPS simulates the entire proposal lifecycle for the governor with a timelock controller extension. View the [Governor OZ Proposal](../guides/governor-oz-proposal.md) documentation to learn how to integrate with Governor OZ contracts.
+Similar to Compound Governor Bravo, [Governor OZ Proposal](../guides/governor-oz-proposal.md) simulates the entire proposal lifecycle for the governor with a timelock controller extension.

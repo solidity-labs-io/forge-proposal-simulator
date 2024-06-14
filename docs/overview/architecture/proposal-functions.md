@@ -57,7 +57,7 @@ FPS is flexible enough so that for any different governance model, governance pr
 
     The `buildModifier` must be implemented when overriding so that FPS can store the actions to be used later on in the calldata generation. This modifier runs the `_startBuild()` function before `build()` and the `endBuild()` function after. This modifier also takes `toPrank` as a parameter, which represents the address used as the caller for the actions in the proposal, such as the multisig address or timelock address.
 
-    In the `startBuild()` function, set the prank to the caller address and take a snapshot of the initial state using Foundry's `vm.snapshot()` cheat code. Then, initiate Foundry's `vm.startStateDiffRecording()` to start recording all function calls made after this step. The `build()` function is then executed, and all the build steps are recorded. Finally, `endBuild()` stops the state diff recording, retrieves all the call information, stops the prank, reverts the state to the initial snapshot, and filters out the calls made by the caller, ignoring any static calls. This process ensures that only the mutative calls made by the caller are filtered and stored in the actions array.
+    The `startBuild()` function pranks as the caller address, and takes a snapshot of the initial state using Foundry's `vm.snapshot()` cheat code. Then, it initiates a call to Foundry's `vm.startStateDiffRecording()` cheatcode to record all function calls made after this step. The `build()` function is then executed, and all the build steps are recorded. Finally, the `endBuild()` function is called which stops the state diff recording, retrieves all the call information, stops the prank and reverts the state to the initial snapshot. It then filters out the calls to only ones made by the specified caller address, ignoring any static calls and calls made to Foundry's Vm contract. This process ensures that only mutative calls made by the caller are filtered and stored in the actions array.
 
     ```solidity
     modifier buildModifier(address toPrank) {
@@ -69,7 +69,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     /// kick off the process of creating a governance proposal by:
     ///  1). taking a snapshot of the current state of the contract
     ///  2). starting prank as the caller
-    ///  3). starting a $recording of all calls created during the proposal
+    ///  3). starting a recording of all calls created during the proposal
     /// @param toPrank the address that will be used as the caller for the
     /// actions, e.g., multisig address, timelock address, etc.
     function _startBuild(address toPrank) private {
@@ -140,7 +140,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
-    For a clearer understanding, take a look at the Bravo proposal example snippet. Here, `build()` has the `buildModifier`, which takes `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function, but only the mutative calls made by the caller will be stored in the actions array. In this example, there are three mutative actions. First, the deployed token is whitelisted on the deployed vault. Second, the vault is approved to transfer some `balance` on behalf of the Bravo timelock contract. Third, the `balance` amount of tokens is deposited in the vault from the Bravo timelock contract.
+    For a clearer understanding, take a look at the Bravo proposal example snippet. Here, `build()` has the `buildModifier`, which takes the address of `PROTOCOL_TIMELOCK_BRAVO` as the caller. Multiple calls are made in the `build()` function, but only the mutative calls made by the caller will be stored in the actions array. In this example, there are three mutative actions. First, the deployed token is whitelisted on the deployed vault. Second, the vault is approved to transfer some `balance` on behalf of the Bravo timelock contract. Third, the `balance` amount of tokens is deposited in the vault from the Bravo timelock contract.
 
     ```solidity
     function build()
@@ -174,7 +174,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `_validateAction()`: It ensures there are no duplicate actions. This method can be further overridden to include custom checks for a action.
+-   `_validateAction()`: Hook that reviews a single proposal action. In this example, it ensures the action being added to the proposal is not a duplicate. This method can be further overridden to include additional checks for all proposal actions.
 
     ```solidity
     function _validateAction(
@@ -200,7 +200,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `_validateActions()`: This method can be overridden to add custom checks on all actions of proposals. For example, there must be a single action, the first action should be an approval call, etc.
+-   `_validateActions()`: This method checks all proposal actions based on user defined checks. It can be overridden to add custom checks on all actions of proposals. As an example, checks performed could be that if a certain function is called, the next three actions should be a predefined set of actions, and if they are not, then revert.
 
 -   `getProposalActions()`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
 
@@ -323,11 +323,11 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
-    Without calling `build` first, the `simulate` function would be a no-op as there would be no predefined actions to execute.
+    Without calling `build` first, the `simulate` function would be a no-op as there would be no defined actions to execute.
 
--   `validate()`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build were simulated correctly.
+-   `validate()`: Validates the system state post-proposal simulation. This allows checking that the contract's variables and newly deployed contracts are set up correctly and that the actions in the build function were applied correctly to the system.
 
-    This function is overridden at the proposal-specific contract. For example, take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the build actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
+    This function is overridden at the proposal-specific contract. For example, take a look at the Governor Bravo `validate()` method. It checks the deployment by ensuring the total supply is 10 million and Bravo Timelock is the owner of the deployed token and vault, as the ownership of these contracts was transferred from the deployer EOA to the Bravo Timelock in the `deploy()` method for this proposal. It checks the proposal actions simulation by ensuring that the token was successfully whitelisted on the vault and the vault's token balance is equal to the Bravo Timelock's deposit in the vault.
 
     ```solidity
     function validate() public override {
@@ -377,4 +377,4 @@ FPS is flexible enough so that for any different governance model, governance pr
 -   `print()`: Print proposal description, actions, and calldata. No need to override.
 
 <a id="#flexibility"></a>
-The actions in FPS are designed to be loosely coupled for flexible implementation, with the exception of the build and simulate functions, which require sequential execution. This design choice offers developers significant flexibility and power in tailoring the system to their specific needs. For example, a developer may choose to only execute the deploy and validate functions, bypassing the others. This could be suitable in situations where only initial deployment and final validation are necessary, without the need for intermediate steps. Alternatively, a developer might opt to simulate a proposal by executing only the build and simulate functions, omitting the deploy step if there is no need to deploy new contracts. FPS empowers developers with the ability to pick and choose functions from a proposal for integration tests, deployment scripts, and governance proposal creation as it becomes easy to access whichever part of a governance proposal that is needed exactly how it will be run in production.
+The actions in FPS are designed to be loosely coupled for flexible implementation, with the exception of the build and simulate functions, which require sequential execution. This design choice offers developers significant flexibility and power in tailoring the system to their specific needs. For example, a developer may choose to only execute the deploy and validate functions, bypassing the others. This could be suitable in situations where only initial deployment and final validation are necessary, without the need for intermediate steps. Alternatively, a developer might opt to simulate a proposal by executing only the build and simulate functions, omitting the deploy step if there is no need to deploy new contracts. FPS empowers developers with the ability to pick and choose functions from a proposal for integration tests, deployment scripts, and governance proposal creation as it becomes easy to access whichever part of a governance proposal that is needed and test it locally in as close to production conditions as possible.
