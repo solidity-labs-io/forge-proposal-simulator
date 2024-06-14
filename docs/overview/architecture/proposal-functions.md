@@ -231,7 +231,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
-    This function is overridden at the proposal-specific contract. For example, let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. The Bravo governor specific contract requires setting the Bravo governor contract address as it is required in `simulate()` and `checkOnChainCalldata()` functions. Finally, `run()` sets the Bravo governor address and calls `super.run()`.
+    This function is overridden at the proposal-specific contract. Let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract using `super.run()`. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. Finally `governor` is set using `setGovernor()` method which is required in `simulate()` and `checkOnChainCalldata()` functions.
 
     ```solidity
     function run() public override {
@@ -372,7 +372,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal tyoe.
+-   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal type. This function is not implemented for a multisig proposal as it is not possible to check the state of a gnosis safe transaction on chain. This method reverts with "Not implemented" message for multisig proposals.
 
 -   `print()`: Print proposal description, actions, and calldata. No need to override.
 

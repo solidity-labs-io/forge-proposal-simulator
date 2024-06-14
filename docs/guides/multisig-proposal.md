@@ -120,8 +120,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
-
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step. Multicall contract is used to execute all of the actions together in a single safe action. This is done by batching all the build actions together using the `aggregate3Value` multicall3 function. The single safe action is a delegate call to the multicall3 contract as the caller for all the batched actions should be the multisig contract and not the multicall3 contract.
     ```solidity
     function simulate() public override {
         // Get multisig address
