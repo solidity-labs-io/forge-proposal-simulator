@@ -61,7 +61,7 @@ Let's go through each of the overridden functions.
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor Bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor Bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it.
 
     ```solidity
     function build()
@@ -95,7 +95,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor Bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -119,7 +119,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `simulate()`: For governor bravo proposal, this function is defined in the governance specific contract and needs not to be overridden. This function executes the proposal actions outlined in the `build()` step. First required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then the time is skipped by the voting delay, proposer casts vote and the proposal is queued. Next, time is skipped by the timelock delay and then finally the proposal is executed. Check the code snippet below with inline comments to get a better idea.
+-   `simulate()`: For Governor Bravo proposals, this function is defined in the governance specific contract and needs not be overridden. This function executes the proposal actions outlined in the `build()` step. The following steps are run when simulating a proposal. First, the required number of governance tokens are minted to the proposer address. Second, the proposer delegates votes to himself and proposes the proposal. Then the time is skipped by the voting delay, proposer casts votes and the proposal is queued. Next, time is skipped by the timelock delay and then finally, the proposal is executed in the timelock. View the code snippet below with inline comments for an example.
 
     ```solidity
     /// @notice Simulate governance proposal
@@ -307,7 +307,7 @@ forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --
 
 ### Setting Up the Addresses JSON
 
-Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `Addresses.json` file. The final `Addresses.json` file should be something like this:
+Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `Addresses.json` file. The final `Addresses.json` file should follow this structure:
 
 ```json
 [

@@ -53,7 +53,7 @@ Let's examine each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The Governor bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The Governor Bravo contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -106,7 +106,7 @@ Let's examine each of the functions that are overridden:
 forge script mocks/MockBravoProposal.sol --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
 
 The script will output the following:
 

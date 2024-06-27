@@ -2,7 +2,7 @@
 
 ## Overview
 
-Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for Multisig contract.
+Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for a Multisig contract.
 
 ## Proposal contract
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Addresses contract plays a pivotal role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution. Additionally, this contract contains important safety checks such as checking bytecode and providing error messages when non-existent addresses are queried.
+The Addresses contract plays an important role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution. Additionally, this contract contains important safety checks such as checking bytecode and providing error messages when non-existent addresses are queried.
 
 ## Structure
 

@@ -21,7 +21,7 @@ It is worth noting that the Arbitrum governance process has its own specificatio
 
 The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/arbitrum/ArbitrumProposal.sol) demonstrates the framework's flexibility. Let's go through each of its functions:
 
--   `setEthForkId()`: used to create the Ethereum fork using Foundry as the Arbitrum Governance is a cross-chain governance. This function will be set by the child proposal.
+-   `setEthForkId(uint256)`: used to create the Ethereum fork using Foundry as Arbitrum Governance is cross-chain. This function will be set by the child proposal.
 
     ```solidity
     /// @notice set eth fork id
@@ -30,7 +30,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `afterDeployMock()`: deploys the `MockOutBox` contract and points on the `Arbitrum Bridge` with the help of the `vm.store` foundry cheatcode. Additionally, it embeds the `MockArbSys` bytecode at the `Arbitrum sys` contract address. As previously mentioned in the overview section, the calldata for the L2 proposal needs to be a call to the `sendTxToL1` on the ArbSys precompiled contract. This call requires the L1 timelock contract address as the first parameter and the L1 timelock schedule calldata as the second parameter. The `MockArbOutbox` is employed to replicate off-chain actions. The bridge ensures that the schedule was initiated by the L2 timelock by calling `l1ToL2Sender` in the outbox contract . This ensures that the bridge verification is successful, even though no genuine off-chain actions have been executed. These two mock functionalities are crucial for the arbitrum proposal flow, and here, it can be observed how FPS simplifies the simulation of such a complex proposal flow.
+-   `afterDeployMock()`: deploys the `MockOutBox` contract and points on the `Arbitrum Bridge` with the help of the `vm.store` foundry cheatcode. Additionally, it embeds the `MockArbSys` bytecode at the `Arbitrum sys` contract address. As previously mentioned in the overview section, the calldata for the L2 proposal needs to be a call to the `sendTxToL1` on the ArbSys precompiled contract. This call requires the L1 timelock contract address as the first parameter and the L1 timelock schedule calldata as the second parameter. The `MockArbOutbox` is employed to replicate off-chain actions. The bridge ensures that the schedule was initiated by the L2 timelock by calling `l1ToL2Sender` in the outbox contract. This ensures that the bridge verification is successful, even though no genuine off-chain actions have been executed. These two mock functionalities are crucial for the arbitrum proposal flow, and here, it can be observed how FPS simplifies the simulation of such a complex proposal flow.
 
     ```solidity
     /// @title MockArbSys
@@ -105,7 +105,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `getScheduleTimelockCaldata()`: This function returns calldata to schedule proposal actions on L1 timelock. The calldata is generated based on the execution chain where the proposal will be executed. If the execution chain is L1 chain then the build target is the target contract but if the execution chain is L2 chain then target is `RETRYABLE_TICKET_MAGIC` contract and the build target is encoded in the calldata along with inbox contract address.
+-   `getScheduleTimelockCaldata()`: This function returns calldata to schedule proposal actions on the L1 timelock. Calldata is generated based on the execution chain where the proposal will be executed. If the execution chain is the L1, then the build target is the target contract but if the execution chain is L2 chain then target is `RETRYABLE_TICKET_MAGIC` contract and the build target is encoded in the calldata along with the inbox contract address.
 
     ```solidity
     /// @notice get the calldata to schedule the timelock on L1
@@ -151,7 +151,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `getProposalActions()`: This function returns proposal actions to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the l1 timelock schedule calldata.
+-   `getProposalActions()`: This function returns proposal actions to propose on arbitrum governor. Arbitrum proposals must have a single action which must be a call to ArbSys address with the L1 timelock schedule calldata.
 
     ```solidity
     /// @notice get proposal actions
@@ -389,7 +389,7 @@ Two proposals were added to the fps-example-repo. First, [ArbitrumPorposal_01](h
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that gateway proxy is upgraded to new implementation on L1. Only proxy owner can call `implementation()` method to check implementation.
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that gateway proxy is upgraded to new implementation on L1. Only the proxy owner can call `implementation()` method to check its implementation address.
 
     ```solidity
     function validate() public override {
@@ -486,7 +486,7 @@ Now let's have a look at `ArbitrumProposal_02`:
     }
     ```
 
--   `run()`: Serves as the entrypoint for executing the proposal by `forge script`.  For more in-depth information on how this process operates behind the scenes, please refer to [run function](../overview/architecture/proposal-functions.md#run-function). In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is established using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal.
+-   `run()`: Serves as the entrypoint for executing the proposal by `forge script`.  For more in-depth information on how this process operates behind the scenes, please refer to the [run function](../overview/architecture/proposal-functions.md#run-function). In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is established using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal.
 
     ```solidity
     function run() public override {
@@ -663,6 +663,6 @@ payload
   0x7d5e81e2000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000004c00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000344928c169a000000000000000000000000e6841d92b0c345144506576ec13ecf5103ac7f49000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000002c401d5062a000000000000000000000000a723c008e76e379c55599d2e4d93879beafda79c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000009c33e8e47a5438b554b45b782bed73248b78e26754b37292265f0b4a3ede7874000000000000000000000000000000000000000000000000000000000003f48000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000004dbd4fc535ac27206064b68ffcf827b0a60bab3f000000000000000000000000cf57572261c7c2bcf21ffd220ea7d1a27d40a82700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000e41cff79cd000000000000000000000000a98dec0c8e0326756c956033bbf091081986d0ed00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064e17f52e9000000000000000000000000d570ace65c43af47101fc6250fd6fc63d1c22a860000000000000000000000006c411ad3e74de3e7bd422b94a27770f5b86c623b0000000000000000000000006801e4888a91180238a8c36594ec65797ec2dddf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a546869732070726f706f73616c20757067726164657320746865204c322077657468206761746577617900000000000000000000000000000000000000000000
 ```
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.

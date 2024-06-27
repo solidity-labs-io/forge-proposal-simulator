@@ -18,7 +18,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `deploy()`: This function is empty in the Proposal contract. Override this function when there are deployments to be made in the proposal. Here is an example from a [governor bravo proposal](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/6815ce32b86b60cb4bec7d3cb34ad9f15cbbe8dd/docs/guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
+-   `deploy()`: This function is empty in the Proposal contract. Override this function when there are deployments to be made in the proposal. Here is an example from a [Governor Bravo Proposal](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/6815ce32b86b60cb4bec7d3cb34ad9f15cbbe8dd/docs/guides/governor-bravo-proposal.md) demonstrating how to deploy two contracts, Vault and Token, if they are not already deployed.
 
     ```solidity
     function deploy() public override {
@@ -47,7 +47,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
-    Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs](https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for further assistance. Alternatively, when proposals are executed through `forge script,` the deployer address is the proposal contract itself.
+    Deployments are done by `DEPLOYER_EOA` when running through a proposal `forge script,` and therefore, an address with this exact name must exist in the Addresses.json file. Foundry can be leveraged to actually broadcast the deployments when using the `broadcast` flag combined with `--account` flag. Please refer to the [foundry docs](https://book.getfoundry.sh/tutorials/best-practices?highlight=broadcast#scripts) for more information. Alternatively, when proposals are executed through `forge script,` the deployer address is the proposal contract itself.
 
 -   `afterDeployMock()`: Post-deployment mock actions. Such actions can include pranking, etching, etc. Example: In [Arbitrum Timelock](../../mainnet-examples/ArbitrumTimelock.md) this method is used to set a new `outBox` for `Arbitrum bridge` using `vm.store` foundry cheatcode.
 
@@ -257,7 +257,7 @@ FPS is flexible enough so that for any different governance model, governance pr
 
 -   `simulate()`: Executes the previously saved actions during the `build` step. This function's execution depends on the successful execution of the `build` function.
 
-    This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. Take a look at the Governor Bravo type example. In this example, the proposer address proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, and now the proposal is in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
+    This function can be overridden at the governance-specific contract or the proposal-specific contract, depending on the type of proposal. For example, the Governor Bravo type overrides this function at the governance-specific contract, while the Timelock type overrides it at the proposal-specific contract. In the Governor Bravo example, the proposer address proposes the proposal to the governance contract. It first transfers and delegates governance tokens that meet the minimum proposal threshold and quorum votes to itself. Then it registers the proposal, rolls the proposal to the Active state so that voting can begin, votes yes to the proposal, rolls to the block where the voting period has ended, putting the proposal in the Succeeded state. Then it queues the proposal in the governance Timelock contract, warps to the end of the timelock delay period, and finally executes the proposal, thus simulating the complete proposal on the local fork.
 
     ```solidity
     function simulate() public override {

@@ -53,14 +53,14 @@ Ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet
 
 ## Validated Governance Models
 
-This framework have been validated through successful integration with leading governance models. FPS has been tested and confirmed to be compatible with governance models specified below. Guides below explain how FPS can be used to simulate governance proposals.
+This framework has been validated through successful integration with leading governance models. FPS has been tested and confirmed to be compatible with governance models specified below. Guides below explain how FPS can be used to simulate governance proposals.
 
 1. [Gnosis Safe Multisig](./multisig-proposal.md)
 2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
 3. [Governor Bravo](./governor-bravo-proposal.md)
 4. [Governor OZ](./governor-oz-proposal.md)
 
-Each guide drafts a proposal to perform following steps:
+Each guide drafts a proposal to perform the following steps:
 
 1. deploy new instances of `Vault` and `Token`
 2. mint tokens to governance contract
