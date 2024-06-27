@@ -286,7 +286,7 @@ Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json
 ```json
 [
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
@@ -310,25 +310,25 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "GOVERNOR_OZ_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNOR_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_OZ",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
         "name": "GOVERNOR_OZ_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false

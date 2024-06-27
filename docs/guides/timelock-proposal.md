@@ -179,7 +179,7 @@ Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json
 ```json
 [
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
@@ -198,18 +198,18 @@ Ensure that the ${wallet_name} and ${wallet_address} accurately correspond to th
 
 ### Setting Up the Addresses JSON
 
-Add the Timelock Controller address to the JSON file. The structure should resemble this:
+Add the Timelock Controller address to the JSON file. The file should follow this structure:
 
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false

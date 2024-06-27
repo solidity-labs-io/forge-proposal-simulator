@@ -244,7 +244,7 @@ Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json
 ```json
 [
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
@@ -266,25 +266,25 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNOR_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
@@ -312,31 +312,31 @@ Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNOR_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_GOVERNOR_ALPHA_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ALPHA_ADDRESS>",
         "name": "GOVERNOR_BRAVO_ALPHA",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false

@@ -231,7 +231,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
-    This function is overridden at the proposal-specific contract. Let's take a look at the Governor Bravo `run()` method. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract using `super.run()`. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. Finally `governor` is set using `setGovernor()` method which is required in `simulate()` and `checkOnChainCalldata()` functions.
+    This function is overridden at the proposal-specific contract. Looking at the `run()` function in governor bravo explains how this function works. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract using `super.run()`. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. Finally `governor` is set using `setGovernor()` method which is required in `simulate()` and `checkOnChainCalldata()` functions.
 
     ```solidity
     function run() public override {

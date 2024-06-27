@@ -191,13 +191,13 @@ Set up Addresses.json file and add the Gnosis Safe address and deployer address 
 ```json
 [
     {
-        "addr": "YOUR_GNOSIS_SAFE_ADDRESS",
+        "addr": "0x<YOUR_GNOSIS_SAFE_ADDRESS>",
         "name": "DEV_MULTISIG",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_DEV_EOA",
+        "addr": "0x<YOUR_DEV_EOA",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
