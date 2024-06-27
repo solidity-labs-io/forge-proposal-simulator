@@ -15,7 +15,7 @@ At its core, the FPS features a [Proposal.sol](../../../src/proposals/Proposal.s
 
 ## Governance Specific Contracts
 
-FPS supports different Governance types (e.g., Timelock, Multisig, Governor Bravo, Governor OZ) through proposal contract types inheriting from [Proposal.sol](../../../src/proposals/Proposal.sol), customizing their functions to unique governance requirements. New proposal types can be included to support different governance contracts.
+FPS supports different Governance types (e.g., Timelock, Multisig, Governor Bravo, OZ Governor) through proposal contract types inheriting from [Proposal.sol](../../../src/proposals/Proposal.sol), customizing their functions to unique governance requirements. New proposal types can be included to support different governance contracts.
 
 ## Proposal Specific Contract
 

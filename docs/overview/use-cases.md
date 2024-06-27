@@ -12,8 +12,8 @@ The [Multisig Proposal](../guides/multisig-proposal.md) generates and simulates 
 
 ### Compound Governor Bravo
 
-The [Governor Bravo Proposal](../guides/governor-bravo-proposal.md) facilitates the creation of the governor `propose` calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from proposing, voting, queuing, and finally executing. 
+The [Governor Bravo Proposal](../guides/governor-bravo-proposal.md) facilitates the creation of the governor `propose` calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from proposing, voting, queuing, and finally executing.
 
-### Governor OZ
+### OZ Governor
 
-Similar to Compound Governor Bravo, [Governor OZ Proposal](../guides/governor-oz-proposal.md) simulates the entire proposal lifecycle for the governor with a timelock controller extension.
+Similar to Compound Governor Bravo, [OZ Governor Proposal](../guides/oz-governor-proposal.md) simulates the entire proposal lifecycle for the governor with a timelock controller extension.

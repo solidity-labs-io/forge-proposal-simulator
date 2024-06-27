@@ -208,7 +208,7 @@ FPS is flexible enough so that for any different governance model, governance pr
 
 <a id="#run-function"></a>
 
--   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
+-   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public virtual {
@@ -372,7 +372,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [Governor OZ Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal type. This function is not implemented for a multisig proposal as it is not possible to check the state of a gnosis safe transaction on chain. This method reverts with "Not implemented" message for multisig proposals.
+-   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [OZ Governor Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal type. This function is not implemented for a multisig proposal as it is not possible to check the state of a gnosis safe transaction on chain. This method reverts with "Not implemented" message for multisig proposals.
 
 -   `print()`: Print proposal description, actions, and calldata. No need to override.
 

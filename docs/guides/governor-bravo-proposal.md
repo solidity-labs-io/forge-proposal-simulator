@@ -30,7 +30,7 @@ Let's go through each of the overridden functions.
 
     ```solidity
     function deploy() public override {
-        // Set governor bravo's timelock as the owner for the vault and token
+        // Set Governor Bravo's timelock as the owner for the vault and token
         address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
 
         // Deploy the vault address if not already deployed and transfer ownership to the timelock
@@ -61,7 +61,7 @@ Let's go through each of the overridden functions.
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor Bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor Bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor Bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor Bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
     function build()
@@ -95,7 +95,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor Bravo address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal. This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor Bravo contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -110,7 +110,7 @@ Let's go through each of the overridden functions.
             )
         );
 
-        // Set governor bravo. This address is used for proposal simulation and check on
+        // Set Governor Bravo. This address is used for proposal simulation and check on
         // chain proposal state.
         setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
 
@@ -261,7 +261,7 @@ forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
 
 Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`.
 
-Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should look like this:
+Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should follow this structure:
 
 ```json
 [
@@ -399,6 +399,6 @@ payload
 
 ```
 
-A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
 The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using the cast send along with the calldata generated above.

@@ -1,8 +1,8 @@
-# Governor OZ Proposal
+# OZ Governor Proposal
 
 ## Overview
 
-Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for Governor OZ contract.
+Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for OZ Governor contract.
 
 ## Proposal Contract
 
@@ -22,7 +22,7 @@ Let's go through each of the overridden functions.
 
     ```solidity
     function description() public pure override returns (string memory) {
-        return "Governor oz proposal mock 1";
+        return "OZ Governor proposal mock 1";
     }
     ```
 
@@ -30,7 +30,7 @@ Let's go through each of the overridden functions.
 
     ```solidity
     function deploy() public override {
-        // Set Governor oz's timelock as the owner for vault and token.
+        // Set OZ Governor's timelock as the owner for vault and token.
         address owner = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
 
         // Deploy vault address if not already deployed and transfer ownership to timelock.
@@ -69,7 +69,7 @@ Let's go through each of the overridden functions.
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor oz's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor oz's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the OZ Governor's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the OZ Governor's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
     function build()
@@ -85,7 +85,7 @@ Let's go through each of the overridden functions.
         // Get token address
         address token = addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN");
 
-        // Get Governor oz timelock's token balance.
+        // Get OZ Governor timelock's token balance.
         uint256 balance = Token(token).balanceOf(
             addresses.getAddress("GOVERNOR_OZ_TIMELOCK")
         );
@@ -103,7 +103,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and `governor` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the `Addresses.json` file. The OZ Governor address to simulate the proposal through is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal.
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `governor` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the `Addresses.json` file. The OZ Governor contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -118,7 +118,7 @@ Let's go through each of the overridden functions.
             )
         );
 
-        // Set Governor oz. This address is used for proposal simulation and checking on-chain proposal state.
+        // Set OZ Governor. This address is used for proposal simulation and checking on-chain proposal state.
         setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
 
         // Call the run function of the parent contract 'Proposal.sol'.
@@ -126,7 +126,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `simulate()`: For governor OZ proposal, this function is defined in the governance specific contract and needs not to be overridden. This function executes the proposal actions outlined in the `build()` step. First required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then the time is skipped by the voting delay, proposer casts vote and the proposal is queued. Next, time is skipped by the timelock delay and then finally the proposal is executed. Check the code snippet below with inline comments to get a better idea.
+-   `simulate()`: For OZ Governor proposal, this function is defined in the governance specific contract and needs not to be overridden. This function executes the proposal actions outlined in the `build()` step. First required number of governance tokens are minted to the proposer address. Proposer delegates votes to himself and then proposes the proposal. Then the time is skipped by the voting delay, proposer casts vote and the proposal is queued. Next, time is skipped by the timelock delay and then finally the proposal is executed. Check the code snippet below with inline comments to get a better idea.
 
     ```solidity
     /// @notice Simulate governance proposal
@@ -223,7 +223,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the Governor oz's timelock is the new owner of the Vault and token, the tokens were transferred to Governor oz's timelock, and the token was whitelisted on the Vault contract.
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that the OZ Governor's timelock is the new owner of the Vault and token, the tokens were transferred to OZ Governor's timelock, and the token was whitelisted on the Vault contract.
 
     ```solidity
     function validate() public override {
@@ -235,7 +235,7 @@ Let's go through each of the overridden functions.
         // Get the token address
         Token token = Token(addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN"));
 
-        // Get Governor oz's timelock address
+        // Get OZ Governor's timelock address
         address timelock = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
 
         // Ensure the token total supply is 10 million
@@ -275,9 +275,9 @@ Let's go through each of the overridden functions.
 
 ## Proposal Simulation
 
-### Deploying a Governor OZ on Testnet
+### Deploying a OZ Governor on Testnet
 
-A Governor OZ contract is needed to be set up on the testnet before running the proposal.
+A OZ Governor contract is needed to be set up on the testnet before running the proposal.
 
 This script [DeployGovernorOz](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorOz.s.sol) facilitates this process.
 
@@ -305,7 +305,7 @@ Double-check that the ${wallet_name} and ${wallet_address} accurately match the 
 
 ### Setting Up the Addresses JSON
 
-Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should look like this:
+Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should follow this structure:
 
 ```json
 [
@@ -363,7 +363,7 @@ The script will output the following:
 }
 
 ---------------- Proposal Description ----------------
-  Governor oz proposal mock 1
+  OZ Governor proposal mock 1
 
 ------------------ Proposal Actions ------------------
   1). calling 0x69A5DfCD97eF074108b480e369CecfD9335565A2 with 0 eth and 0x0ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001 data.
@@ -391,6 +391,6 @@ payload
 
 ```
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using `cast send` along with the calldata generated above.

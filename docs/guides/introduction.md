@@ -58,7 +58,7 @@ This framework has been validated through successful integration with leading go
 1. [Gnosis Safe Multisig](./multisig-proposal.md)
 2. [Openzeppelin Timelock Controller](./timelock-proposal.md)
 3. [Governor Bravo](./governor-bravo-proposal.md)
-4. [Governor OZ](./governor-oz-proposal.md)
+4. [OZ Governor](./oz-governor-proposal.md)
 
 Each guide drafts a proposal to perform the following steps:
 

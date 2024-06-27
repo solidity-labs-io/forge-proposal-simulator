@@ -65,7 +65,7 @@ Let's go through each of the functions that are overridden.
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, an ERC20 token is whitelisted on the Vault contract. Then the multisig approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. The `buildModifier` is necessary modifier for `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the multisig approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. The `buildModifier` is necessary modifier for `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
     function build()
@@ -100,7 +100,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the `Addresses.json` file.
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the `Addresses.json` file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -186,7 +186,7 @@ To kick off this tutorial, a Gnosis Safe Multisig contract is needed to be set u
 
 ### Setting Up the Addresses JSON
 
-Set up Addresses.json file and add the Gnosis Safe address and deployer address to it. The file should look like this:
+Set up Addresses.json file and add the Gnosis Safe address and deployer address to it. The file should follow this structure:
 
 ```json
 [
@@ -264,4 +264,4 @@ payload
 
 A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
 
-The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using the cast send command along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using `cast send` command along with the calldata generated above.

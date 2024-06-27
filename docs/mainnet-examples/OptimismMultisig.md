@@ -42,7 +42,7 @@ Let's go through each of the functions that are overridden:
 
     Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
--   `build()`: Add actions to the proposal contract. [See the build function](../overview/architecture/proposal-functions.md#build-function). In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it.
+-   `build()`: Add actions to the proposal contract. In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
     function build()
@@ -63,7 +63,7 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. [See the run function](../overview/architecture/proposal-functions.md#run-function). This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the `Addresses.json` file.
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the `Addresses.json` file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -121,7 +121,7 @@ Let's go through each of the functions that are overridden:
 forge script mocks/MockMultisigProposal.sol --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these don't align, the script execution will fail.
+All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
 
 The script will output the following:
 

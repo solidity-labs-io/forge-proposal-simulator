@@ -2,7 +2,7 @@
 
 ## Overview
 
-The framework is designed to be flexible and loosely coupled, as explained at the end of [proposal functions](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where the Governor OZ proposal type is customized to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
+The framework is designed to be flexible and loosely coupled, as explained at the end of [proposal functions](../overview/architecture/proposal-functions.md#flexibility). However, in some cases, additional customization may be required. Currently, FPS supports four types of proposals, each of which can be further customized to meet specific requirements. This guide will explore an example where the OZ Governor proposal type is customized to implement Arbitrum cross-chain proposals. Arbitrum's governance process involves the use of an OZ governor with a timelock extension on Arbitrum L2 and a simple timelock on L1. The proposal's path is determined by whether it is targeting L1 or L2. Regardless of whether its final destination is an L2 contract, every Arbitrum proposal must go through a settlement process on Layer 1.
 
 The following steps from 1 to 5 are equal no matter which chain the proposal final contract target is deployed:
 
@@ -15,7 +15,7 @@ The following steps from 1 to 5 are equal no matter which chain the proposal fin
 
 Read more about Arbitrum Governance [here](https://docs.arbitrum.foundation/gentle-intro-dao-governance).
 
-It is worth noting that the Arbitrum governance process has its own specifications and is not a straightforward implementation of the OZ Governor contract. Therefore, it is not possible to directly use the Governor OZ proposal type to simulate an Arbitrum proposal. Customization is needed to accommodate FPS for creating and testing Arbitrum proposals. Thanks to FPS flexibility, this is possible without much extra effort.
+It is worth noting that the Arbitrum governance process has its own specifications and is not a straightforward implementation of the OZ Governor contract. Therefore, it is not possible to directly use the OZ Governor proposal type to simulate an Arbitrum proposal. Customization is needed to accommodate FPS for creating and testing Arbitrum proposals. Thanks to FPS flexibility, this is possible without much extra effort.
 
 ## Extending FPS for accommodate Arbitrum Governance
 
@@ -189,7 +189,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `simulate()`: Executes the proposal actions outlined in the `build()` step. Initial steps to simulate a proposal are the same as `simulate()` method in [GovernorOZProposal](./governor-oz-proposal.md) as Arbitrum also uses governor OZ with timelock for L2 governance. `super.simulate()` is called at the start of the method. Next, further steps for the proposal simulation are added. These steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
+-   `simulate()`: Executes the proposal actions outlined in the `build()` step. Initial steps to simulate a proposal are the same as `simulate()` method in [GovernorOZProposal](./oz-governor-proposal.md) as Arbitrum also uses OZ Governor with timelock for L2 governance. `super.simulate()` is called at the start of the method. Next, further steps for the proposal simulation are added. These steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
 
     ```solidity
     /// @notice override the GovernorOZProposal simulate function to handle
@@ -364,7 +364,7 @@ Two proposals were added to the fps-example-repo. First, [ArbitrumPorposal_01](h
     }
     ```
 
--   `run()`: Serves as the entrypoint for executing the proposal by `forge script`.  For more in-depth information on how this process operates behind the scenes, please refer to [run function](../overview/architecture/proposal-functions.md#run-function). In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is established using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal.
+-   `run()`: Serves as the entrypoint for executing the proposal by `forge script`. In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is set using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -486,7 +486,7 @@ Now let's have a look at `ArbitrumProposal_02`:
     }
     ```
 
--   `run()`: Serves as the entrypoint for executing the proposal by `forge script`.  For more in-depth information on how this process operates behind the scenes, please refer to the [run function](../overview/architecture/proposal-functions.md#run-function). In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is established using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal.
+-   `run()`: Serves as the entrypoint for executing the proposal by `forge script`. In this example, 'primaryForkId' is configured as 'Arbitrum' to execute the proposal on L2. Subsequently, 'ethForkId' is also set as every Arbitrum proposal must undergo a settlement process on L1, regardless of the final execution chain target. The address of the Arbitrum L2 governor's contract is set using 'setGovernor' to simulate the proposal. This address will be used later to verify on-chain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -530,7 +530,7 @@ Now let's have a look at `ArbitrumProposal_02`:
 
 ### Setting Up the Addresses JSON
 
-Copy all address arbitrum address from [Addresses.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/Addresses.json). Your addresses.json file should look like:
+Copy all address arbitrum address from [Addresses.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/Addresses.json). Your addresses.json file should follow this structure:
 
 ```json
 [
@@ -665,4 +665,4 @@ payload
 
 A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
-The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using `cast send` with the calldata generated above.
