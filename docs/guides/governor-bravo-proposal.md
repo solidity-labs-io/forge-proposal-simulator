@@ -401,4 +401,4 @@ payload
 
 A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
-The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using the cast send along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using `cast send` along with the calldata generated above.
