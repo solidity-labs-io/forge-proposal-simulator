@@ -200,11 +200,90 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `_validateActions()`: This method checks all proposal actions based on user defined checks. It can be overridden to add custom checks on all actions of proposals. As an example, checks performed could be that if a certain function is called, the next three actions should be a predefined set of actions, and if they are not, then revert.
+-   `_validateActions()`: This method checks all proposal actions based on user defined checks. It can be overridden to add custom checks on all actions of proposals. As an example, checks performed could be that if a certain function is called, the next three actions should be a predefined set of actions, and if they are not, then revert. In this example, it ensures there is single action in proposal, target is not zero address, args and value cannot be zero and value must be zero if execution chain is L2.
 
--   `getProposalActions()`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases.
+    ```solidity
+    function _validateActions() internal view override {
+        uint256 actionsLength = actions.length;
 
--   `getCalldata()`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract.
+        require(
+            actionsLength == 1,
+            "Arbitrum proposals must have a single action"
+        );
+
+        require(actions[0].target != address(0), "Invalid target for proposal");
+        /// if there are no args and no eth, the action is not valid
+        require(
+            (actions[0].arguments.length == 0 && actions[0].value > 0) ||
+                actions[0].arguments.length > 0,
+            "Invalid arguments for proposal"
+        );
+
+        // Value is ignored on L2 proposals
+        if (executionChain == ProposalExecutionChain.ARB_ONE) {
+            require(actions[0].value == 0, "Value must be 0 for L2 execution");
+        }
+    }
+    ```
+
+-   `getProposalActions()`: Retrieves the sequence of actions for a proposal. This function should not be overridden in most cases. It return targets, values and arguments for all the actions.
+
+    ```solidity
+    function getProposalActions()
+        public
+        view
+        virtual
+        override
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory arguments
+        )
+    {
+        uint256 actionsLength = actions.length;
+        require(actionsLength > 0, "No actions found");
+
+        targets = new address[](actionsLength);
+        values = new uint256[](actionsLength);
+        arguments = new bytes[](actionsLength);
+
+        for (uint256 i; i < actionsLength; i++) {
+            require(
+                actions[i].target != address(0),
+                "Invalid target for proposal"
+            );
+            /// if there are no args and no eth, the action is not valid
+            require(
+                (actions[i].arguments.length == 0 && actions[i].value > 0) ||
+                    actions[i].arguments.length > 0,
+                "Invalid arguments for proposal"
+            );
+            targets[i] = actions[i].target;
+            arguments[i] = actions[i].arguments;
+            values[i] = actions[i].value;
+        }
+    }
+    ```
+
+-   `getCalldata()`: Retrieves any generated governance proposal calldata. This function should not be overridden at the proposal contract level as it is already overridden in the proposal type contract. In this example, it returns propose calldata for the actions.
+
+    ```solidity
+    function getCalldata() public virtual override returns (bytes memory data) {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
+
+        data = abi.encodeWithSignature(
+            "propose(address[],uint256[],bytes[],string)",
+            targets,
+            values,
+            calldatas,
+            description()
+        );
+    }
+    ```
 
 <a id="#run-function"></a>
 
@@ -372,7 +451,7 @@ FPS is flexible enough so that for any different governance model, governance pr
     }
     ```
 
--   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [OZ Governor Proposal](../../../src/proposals/GovernorOZProposal.sol) to get implementation details for each proposal type. This function is not implemented for a multisig proposal as it is not possible to check the state of a gnosis safe transaction on chain. This method reverts with "Not implemented" message for multisig proposals.
+-   `checkOnChainCalldata()`: Check if there are any on-chain proposals that match the proposal calldata. There is no need to override this function at the proposal specific contract as it is already overridden in the governance specific contract. Check [Timelock Proposal](../../../src/proposals/TimelockProposal.sol), [Governor Bravo Proposal](../../../src/proposals/GovernorBravoProposal.sol) and [OZ Governor Proposal](../../../src/proposals/OZGovernorProposal.sol) to get implementation details for each proposal type. This function is not implemented for a multisig proposal as it is not possible to check the state of a gnosis safe transaction on chain. This method reverts with "Not implemented" message for multisig proposals.
 
 -   `print()`: Print proposal description, actions, and calldata. No need to override.
 

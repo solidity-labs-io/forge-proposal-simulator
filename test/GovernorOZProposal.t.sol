@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
-import {GovernorOZProposal} from "@proposals/GovernorOZProposal.sol";
+import {OZGovernorProposal} from "@proposals/OZGovernorProposal.sol";
 import {MockOZGovernorProposal} from "@mocks/MockOZGovernorProposal.sol";
 
-contract GovernorOZProposalIntegrationTest is Test {
+contract OZGovernorProposalIntegrationTest is Test {
     Addresses public addresses;
-    GovernorOZProposal public proposal;
+    OZGovernorProposal public proposal;
 
     function setUp() public {
         // Instantiate the Addresses contract
@@ -17,7 +17,7 @@ contract GovernorOZProposalIntegrationTest is Test {
         vm.makePersistent(address(addresses));
 
         // Instantiate the OZ Proposal contract
-        proposal = GovernorOZProposal(new MockOZGovernorProposal());
+        proposal = OZGovernorProposal(new MockOZGovernorProposal());
 
         // Select the primary fork
         // ENS Governor is not cross chain so there is only a fork and should be mainnet

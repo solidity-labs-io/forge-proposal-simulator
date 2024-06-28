@@ -6,7 +6,7 @@ Following the addition of FPS to project dependencies, the next step is creating
 
 ## Proposal Contract
 
-The `GovernorOZProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-governor-oz/GovernorOZProposal_01.sol). This contract is used as a reference for this tutorial.
+The `OZGovernorProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-governor-oz/OZGovernorProposal_01.sol). This contract is used as a reference for this tutorial.
 
 Let's go through each of the overridden functions.
 
@@ -14,7 +14,7 @@ Let's go through each of the overridden functions.
 
     ```solidity
     function name() public pure override returns (string memory) {
-        return "GOVERNOR_OZ_PROPOSAL";
+        return "OZ_GOVERNOR_PROPOSAL";
     }
     ```
 
@@ -31,26 +31,26 @@ Let's go through each of the overridden functions.
     ```solidity
     function deploy() public override {
         // Set OZ Governor's timelock as the owner for vault and token.
-        address owner = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
+        address owner = addresses.getAddress("OZ_GOVERNOR_TIMELOCK");
 
         // Deploy vault address if not already deployed and transfer ownership to timelock.
-        if (!addresses.isAddressSet("GOVERNOR_OZ_VAULT")) {
-            Vault governorOZVault = new Vault();
+        if (!addresses.isAddressSet("OZ_GOVERNOR_VAULT")) {
+            Vault OZGovernorVault = new Vault();
 
             addresses.addAddress(
-                "GOVERNOR_OZ_VAULT",
-                address(governorOZVault),
+                "OZ_GOVERNOR_VAULT",
+                address(OZGovernorVault),
                 true
             );
-            governorOZVault.transferOwnership(owner);
+            OZGovernorVault.transferOwnership(owner);
         }
 
         // Deploy token address if not already deployed, transfer ownership to timelock
         // and transfer all initial minted tokens from the deployer to the timelock.
-        if (!addresses.isAddressSet("GOVERNOR_OZ_VAULT_TOKEN")) {
+        if (!addresses.isAddressSet("OZ_GOVERNOR_VAULT_TOKEN")) {
             Token token = new Token();
             addresses.addAddress(
-                "GOVERNOR_OZ_VAULT_TOKEN",
+                "OZ_GOVERNOR_VAULT_TOKEN",
                 address(token),
                 true
             );
@@ -75,31 +75,31 @@ Let's go through each of the overridden functions.
     function build()
         public
         override
-        buildModifier(addresses.getAddress("GOVERNOR_OZ_TIMELOCK"))
+        buildModifier(addresses.getAddress("OZ_GOVERNOR_TIMELOCK"))
     {
         /// STATICCALL -- non-mutative and hence not recorded for the run stage
 
         // Get vault address
-        address governorOZVault = addresses.getAddress("GOVERNOR_OZ_VAULT");
+        address OZGovernorVault = addresses.getAddress("OZ_GOVERNOR_VAULT");
 
         // Get token address
-        address token = addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN");
+        address token = addresses.getAddress("OZ_GOVERNOR_VAULT_TOKEN");
 
         // Get OZ Governor timelock's token balance.
         uint256 balance = Token(token).balanceOf(
-            addresses.getAddress("GOVERNOR_OZ_TIMELOCK")
+            addresses.getAddress("OZ_GOVERNOR_TIMELOCK")
         );
 
         /// CALLS -- mutative and recorded
 
         // Whitelists the deployed token on the deployed vault.
-        Vault(governorOZVault).whitelistToken(token, true);
+        Vault(OZGovernorVault).whitelistToken(token, true);
 
         // Approve the token for the vault.
-        Token(token).approve(governorOZVault, balance);
+        Token(token).approve(OZGovernorVault, balance);
 
         // Deposit all tokens into the vault.
-        Vault(governorOZVault).deposit(token, balance);
+        Vault(OZGovernorVault).deposit(token, balance);
     }
     ```
 
@@ -228,15 +228,15 @@ Let's go through each of the overridden functions.
     ```solidity
     function validate() public override {
         // Get the vault address
-        Vault governorOZVault = Vault(
-            addresses.getAddress("GOVERNOR_OZ_VAULT")
+        Vault OZGovernorVault = Vault(
+            addresses.getAddress("OZ_GOVERNOR_VAULT")
         );
 
         // Get the token address
-        Token token = Token(addresses.getAddress("GOVERNOR_OZ_VAULT_TOKEN"));
+        Token token = Token(addresses.getAddress("OZ_GOVERNOR_VAULT_TOKEN"));
 
         // Get OZ Governor's timelock address
-        address timelock = addresses.getAddress("GOVERNOR_OZ_TIMELOCK");
+        address timelock = addresses.getAddress("OZ_GOVERNOR_TIMELOCK");
 
         // Ensure the token total supply is 10 million
         assertEq(token.totalSupply(), 10_000_000e18);
@@ -245,19 +245,19 @@ Let's go through each of the overridden functions.
         assertEq(token.owner(), address(timelock));
 
         // Ensure the timelock is the owner of the deployed vault
-        assertEq(governorOZVault.owner(), address(timelock));
+        assertEq(OZGovernorVault.owner(), address(timelock));
 
         // Ensure the vault is not paused
-        assertFalse(governorOZVault.paused());
+        assertFalse(OZGovernorVault.paused());
 
         // Ensure the token is whitelisted on the vault
-        assertTrue(governorOZVault.tokenWhitelist(address(token)));
+        assertTrue(OZGovernorVault.tokenWhitelist(address(token)));
 
         // Get the vault's token balance
-        uint256 balance = token.balanceOf(address(governorOZVault));
+        uint256 balance = token.balanceOf(address(OZGovernorVault));
 
         // Get the timelock deposits in the vault
-        (uint256 amount, ) = governorOZVault.deposits(
+        (uint256 amount, ) = OZGovernorVault.deposits(
             address(token),
             address(timelock)
         );
@@ -267,7 +267,7 @@ Let's go through each of the overridden functions.
 
         // Ensure all minted tokens are deposited into the vault
         assertEq(
-            token.balanceOf(address(governorOZVault)),
+            token.balanceOf(address(OZGovernorVault)),
             token.totalSupply()
         );
     }
@@ -279,7 +279,7 @@ Let's go through each of the overridden functions.
 
 A OZ Governor contract is needed to be set up on the testnet before running the proposal.
 
-This script [DeployGovernorOz](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorOz.s.sol) facilitates this process.
+This script [DeployOZGovernor](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployOZGovernor.s.sol) facilitates this process.
 
 Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
 
@@ -297,7 +297,7 @@ Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json
 After adding the address, run the script:
 
 ```sh
-forge script script/DeployGovernorOz.s.sol --rpc-url sepolia --broadcast
+forge script script/DeployOZGovernor.s.sol --rpc-url sepolia --broadcast
 -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
@@ -311,13 +311,13 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 [
     {
         "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
-        "name": "GOVERNOR_OZ_TIMELOCK",
+        "name": "OZ_GOVERNOR_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
-        "name": "GOVERNOR_OZ",
+        "name": "OZ_GOVERNOR",
         "chainId": 11155111,
         "isContract": true
     },
@@ -325,7 +325,7 @@ Copy the addresses of the timelock, governor, and governance token from the scri
         "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
-        "name": "GOVERNOR_OZ_GOVERNANCE_TOKEN"
+        "name": "OZ_GOVERNOR_GOVERNANCE_TOKEN"
     },
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
@@ -339,7 +339,7 @@ Copy the addresses of the timelock, governor, and governance token from the scri
 ### Running the Proposal
 
 ```sh
-forge script src/proposals/simple-vault-governor-oz/GovernorOZProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
+forge script src/proposals/simple-vault-governor-oz/OZGovernorProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
 The script will output the following:
@@ -353,13 +353,13 @@ The script will output the following:
           'addr': '0x69A5DfCD97eF074108b480e369CecfD9335565A2',
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'GOVERNOR_OZ_VAULT'
+          'name': 'OZ_GOVERNOR_VAULT'
 },
   {
           'addr': '0x541234b61c081eaAE62c9EF52A633cD2aaf92A05',
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'GOVERNOR_OZ_VAULT_TOKEN'
+          'name': 'OZ_GOVERNOR_VAULT_TOKEN'
 }
 
 ---------------- Proposal Description ----------------

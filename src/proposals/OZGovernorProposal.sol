@@ -5,14 +5,14 @@ import "@forge-std/console.sol";
 
 import {IGovernor, IGovernorTimelockControl, IGovernorVotes} from "@interface/IGovernor.sol";
 import {IVotes} from "@interface/IVotes.sol";
-import {ITimelockController } from "@interface/ITimelockController.sol";
+import {ITimelockController} from "@interface/ITimelockController.sol";
 
 // TODO move utils to inside src
 import {Address} from "@utils/Address.sol";
 
 import {Proposal} from "./Proposal.sol";
 
-abstract contract GovernorOZProposal is Proposal {
+abstract contract OZGovernorProposal is Proposal {
     using Address for address;
 
     /// @notice Governor contract
@@ -25,12 +25,7 @@ abstract contract GovernorOZProposal is Proposal {
     }
 
     /// @notice Getter function for `IGovernor.propose()` calldata
-    function getCalldata()
-        public
-        virtual
-        override
-        returns (bytes memory data)
-    {
+    function getCalldata() public virtual override returns (bytes memory data) {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -60,25 +55,27 @@ abstract contract GovernorOZProposal is Proposal {
             bytes[] memory calldatas
         ) = getProposalActions();
 
-            uint256 proposalId = governor.hashProposal(
-                targets,
-                values,
-                calldatas,
-                keccak256(abi.encodePacked(description()))
-            );
+        uint256 proposalId = governor.hashProposal(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
 
-            // proposal exist if state call doesn't revert
-            try governor.state(proposalId) {
-                return true;
-            } catch {
-                return false;
-            }
+        // proposal exist if state call doesn't revert
+        try governor.state(proposalId) {
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     /// @notice Simulate governance proposal
     function simulate() public virtual override {
         address proposerAddress = address(1);
-        IVotes governanceToken = IVotes(IGovernorVotes(address(governor)).token());
+        IVotes governanceToken = IVotes(
+            IGovernorVotes(address(governor)).token()
+        );
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorum(block.number - 1);
@@ -110,25 +107,21 @@ abstract contract GovernorOZProposal is Proposal {
 
         // Check that the proposal was registered correctly
         uint256 proposalId = governor.hashProposal(
-                targets,
-                values,
-                calldatas,
-                keccak256(abi.encodePacked(description()))
-            );
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
+        );
 
         require(returnedProposalId == proposalId, "Proposal id mismatch");
 
         // Check proposal is in Pending state
-        require(
-            governor.state(proposalId) == IGovernor.ProposalState.Pending
-        );
+        require(governor.state(proposalId) == IGovernor.ProposalState.Pending);
 
         // Roll to Active state (voting period)
         vm.roll(block.number + governor.votingDelay() + 1);
 
-        require(
-            governor.state(proposalId) == IGovernor.ProposalState.Active
-        );
+        require(governor.state(proposalId) == IGovernor.ProposalState.Active);
 
         // Vote YES
         vm.prank(proposerAddress);
@@ -141,25 +134,32 @@ abstract contract GovernorOZProposal is Proposal {
             governor.state(proposalId) == IGovernor.ProposalState.Succeeded
         );
 
-
         vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
 
         // Queue the proposal
-        governor.queue(targets, values, calldatas, keccak256(abi.encodePacked(description())));
-
-        require(
-            governor.state(proposalId) == IGovernor.ProposalState.Queued
+        governor.queue(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
         );
 
+        require(governor.state(proposalId) == IGovernor.ProposalState.Queued);
+
         // Warp to allow proposal execution on timelock
-        ITimelockController timelock = ITimelockController(IGovernorTimelockControl(address(governor)).timelock());
+        ITimelockController timelock = ITimelockController(
+            IGovernorTimelockControl(address(governor)).timelock()
+        );
         vm.warp(block.timestamp + timelock.getMinDelay());
 
         // Execute the proposal
-        governor.execute(targets, values, calldatas, keccak256(abi.encodePacked(description())));
-
-        require(
-            governor.state(proposalId) == IGovernor.ProposalState.Executed
+        governor.execute(
+            targets,
+            values,
+            calldatas,
+            keccak256(abi.encodePacked(description()))
         );
+
+        require(governor.state(proposalId) == IGovernor.ProposalState.Executed);
     }
 }
