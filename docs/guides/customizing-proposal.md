@@ -189,7 +189,7 @@ The [Arbitrum Proposal Type](https://github.com/solidity-labs-io/fps-example-rep
     }
     ```
 
--   `simulate()`: Executes the proposal actions outlined in the `build()` step. Initial steps to simulate a proposal are the same as `simulate()` method in [GovernorOZProposal](./oz-governor-proposal.md) as Arbitrum also uses OZ Governor with timelock for L2 governance. `super.simulate()` is called at the start of the method. Next, further steps for the proposal simulation are added. These steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
+-   `simulate()`: Executes the proposal actions outlined in the `build()` step. Initial steps to simulate a proposal are the same as `simulate()` method in [OZ Governor Proposal](./oz-governor-proposal.md) as Arbitrum also uses OZ Governor with timelock for L2 governance. `super.simulate()` is called at the start of the method. Next, further steps for the proposal simulation are added. These steps can be understood by going through the overview section of this guide and the code snippet below with inline comments.
 
     ```solidity
     /// @notice override the GovernorOZProposal simulate function to handle
