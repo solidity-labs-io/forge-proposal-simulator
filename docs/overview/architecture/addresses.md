@@ -2,8 +2,7 @@
 
 ## Overview
 
-The Addresses contract plays a pivotal role in managing and storing the
-addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution.
+The Addresses contract plays an important role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution. Additionally, this contract contains important safety checks such as checking bytecode and providing error messages when non-existent addresses are queried.
 
 ## Structure
 
@@ -38,18 +37,13 @@ Deployed contract addresses are registered along with their respective names and
 ]
 ```
 
-FPS allows contracts with identical names as long as they are deployed on
-different networks. However, duplicates on the same network are not
-permitted. The `Addresses.sol` contract enforces this rule by reverting during
-construction if such a duplicate is detected.
+FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks that the same address is not set under two different names on the same network.
 
 ## Functions
 
 ### Adding
 
-Addresses can be added to the object during a proposal or test by calling the
-`addAddress` function with the name to be saved in storage and the address of the
-contract to be stored with that name. Calling this function without a chain id will save the contract and name to the current chain id.
+Addresses can be added to the object during a proposal or test by calling the `addAddress` function with the name to be saved in storage, the address of the contract to be stored with that name and whether the address is a contract. Calling this function without a chain id will save the contract and name to the current chain id.
 
 ```solidity
 addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);
@@ -69,7 +63,7 @@ FPS has the following type checks implemented for the function `addAddress`:
 -   Address must be a contract in the specified chain if `isContract` is set to `true`.
 -   Address must not be a contract in the specified chain if `isContract` is set to `false`.
 
-Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment the `getRecordedAddresses` function will return all of the newly deployed addresses, and their respective names and chain id's.
+Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment, the `getRecordedAddresses` function will return all of the newly deployed addresses and their respective names and chain id's.
 
 ### Updating
 
@@ -131,10 +125,17 @@ Addresses changed during the proposals executions can be retrieved by calling th
 addresses.getChangedAddresses();
 ```
 
+### Print Added and Changed Addressses
+
+Addresses that are changed or newly added during the proposal's execution can be retrieved by calling the `printJSONChanges` method. It prints the changes in JSON format, making it easy for users to add them to `Addresses.json`.
+
+```solidity
+addresses.printJSONChanges();
+```
+
 ### Address exists
 
-The `isAddressSet` function checks if an address exists in the Addresses
-contract storage.
+The `isAddressSet` function checks if an address exists in the Addresses contract storage.
 
 ```solidity
 addresses.isAddressSet("CONTRACT_NAME");
@@ -146,10 +147,7 @@ addresses.isAddressSet("CONTRACT_NAME", chainId);
 
 ### Address is a contract
 
-The `isAddressContract` function determines whether an address on the execution chain
-represents a contract. This is useful for distinguishing between contract and
-non-contract addresses, helping to avoid runtime errors when attempting to
-interact with non-existent contracts or contracts not deployed on the current chain.
+The `isAddressContract` function determines whether an address on the execution chain represents a contract. This is useful for distinguishing between contract and non-contract addresses, helping to avoid runtime errors when attempting to interact with non-existent contracts or contracts not deployed on the current chain.
 
 ```solidity
 addresses.isAddressContract("CONTRACT_NAME");
@@ -157,10 +155,7 @@ addresses.isAddressContract("CONTRACT_NAME");
 
 ## Usage
 
-When writing a proposal, pass the addresses path to the proposal constructor.
-[Proposal.sol](https://github.com/solidity-labs-io/forge-proposal-simulator/blob/main/proposals/Proposal.sol)
-will load the addresses from the path and make them available to the proposal.
-Use the `addresses` object to add, update, retrieve, and remove addresses.
+When writing a proposal, set the `addresses` object using the `setAddresses` method. Ensure the correct path for `Addresses.json` file is passed inside the constructor while creating the `addresses` object. Use the `addresses` object to add, update, retrieve, and remove addresses.
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -173,8 +168,6 @@ import { MyContract } from "@path/to/MyContract.sol";
 contract PROPOSAL_01 is MultisigProposal {
     string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
 
-    constructor() Proposal(ADDRESSES_PATH, "DEV_MULTISIG") {}
-
     function deploy() public override {
         if (!addresses.isAddressSet("CONTRACT_NAME")) {
             /// Deploy a new contract
@@ -183,6 +176,13 @@ contract PROPOSAL_01 is MultisigProposal {
             /// Interact with the Addresses object, adding the new contract address
             addresses.addAddress("CONTRACT_NAME", address(myContract), true);
         }
+    }
+
+    function run() {
+        // Set addresses object for the proposal
+        setAddresses(new Addresses(ADDRESSES_PATH));
+
+        super.run();
     }
 }
 ```

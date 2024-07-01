@@ -1,14 +1,12 @@
-# Example Type check
+# Example Type Check
 
-After adding FPS into project dependencies and setting up through [Setup guide](./introduction.md#setting-up), its time to go through an example contract to understand how type checking works.
+After adding FPS to the project dependencies and following the [setup guide](./introduction.md#setting-up), it's time to go through an example contract to understand how type checking works.
 
 ## Example Contracts
 
-The [folder](../../src/type-check) includes contracts used in the guide mentioned
-below for demonstration purposes. Examples include [ExampleTypeCheck.sol](../../src/type-check/ExampleTypeCheck.sol)
-and [ExampleTypeCheck_02.sol](../../src/type-check/ExampleTypeCheck_02.sol).
+The [folder](../../src/type-check) includes contracts used in the guide mentioned below for demonstration purposes. Examples include [ExampleTypeCheck.sol](../../src/type-check/ExampleTypeCheck.sol) and [ExampleTypeCheck_02.sol](../../src/type-check/ExampleTypeCheck_02.sol).
 
-Add file `ExampleTypeCheck.sol` in `src` of root repository:
+Add the file `ExampleTypeCheck.sol` to the `src` folder of the root repository:
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0
@@ -50,9 +48,9 @@ contract ExampleTypeCheck {
 }
 ```
 
-The contract constructor arguments looks complex for this example, luckily, we already have the constructor arguments ready for you.
+The contract constructor arguments appear complex for this example; luckily, we already have the constructor arguments ready.
 
-In the file `TypeCheckAddresses.json` that you have already made in setup, add another object in json file for the above contract:
+In the file `TypeCheckAddresses.json`, which has already been created in the setup, add another object in the JSON file for the above contract:
 
 ```json
 {
@@ -62,24 +60,24 @@ In the file `TypeCheckAddresses.json` that you have already made in setup, add a
 }
 ```
 
-Note: Default artifact folder is `out`. If it is different in your prooject in `foundry.toml`, change the above artifact path accordingly.
+Note: The default artifact folder is `out`. If it is different in your project in `foundry.toml`, change the above artifact path accordingly.
 
-Now add the below object in `Addresses.json`:
+Now, add the following object to `Addresses.json`:
 
 ```json
 {
-        "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
-        "chainId": 11155111,
-        "name": "ExampleTypeCheck",
-        "isContract": true
-    },
+    "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
+    "chainId": 11155111,
+    "name": "ExampleTypeCheck",
+    "isContract": true
+}
 ```
 
-The above contract is already deployed on sepolia testnet and we will ensure the correct contract is deployed by verifying bytecode of sepolia contract with the local bytecode of `ExampleTypeCheck` contract.
+The above contract is already deployed on the Sepolia testnet, and it will check that the correct contract is deployed by verifying the bytecode of the Sepolia contract with the local bytecode of the `ExampleTypeCheck` contract.
 
-Assuming you have already installed npm packages and added environment variables in [Setup guide](./introduction.md#setting-up).
+Check that npm packages are already installed and environment variables are added. If they aren't, see the [setup guide](./introduction.md#setting-up) for instructions.
 
-Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` and `artifact` folder inside of `foundry.toml`.
+Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json`, and the `artifact` folder inside `foundry.toml`.
 
 ```toml
 [profile.default]
@@ -87,13 +85,13 @@ Make sure to allow read access to `Addresses.json`, `TypeCheckAddresses.json` an
 fs_permissions = [{ access = "read", path = "./"}]
 ```
 
-Run the following command on the root repo to type check all contracts added in `TypeCheckAddresses.json`.
+Run the following command on the root repo to type-check all contracts added in `TypeCheckAddresses.json`:
 
 ```bash
 forge script lib/forge-proposal-simulator/script/TypeCheck.s.sol:TypeCheck --ffi --fork-url "https://ethereum-sepolia-rpc.publicnode.com"
 ```
 
-The script should run successfully that the deployed contract is correct. The command should create the following output, as shown below:
+The script should run successfully, confirming that the deployed contract is correct. The command should create the following output, as shown below:
 
 ```txt
 Script ran successfully.

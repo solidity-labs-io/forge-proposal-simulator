@@ -6,9 +6,18 @@ STAGED_SOL_FILES=$(mktemp)
 STAGED_FILES=$(mktemp)
 
 # List staged .sol files ignoring deleted files
-git diff --cached --name-status -- '*.sol' | grep -v '^D' | cut -f2- > "$STAGED_SOL_FILES"
+
+# List only renamed .sol files
+git diff --cached --name-status -- '*.sol' | grep -v '^D' | grep -E '^R' | cut -f3 > "$STAGED_SOL_FILES"
+# Append .sol files ignoring renamed and deleted files
+git diff --cached --name-status -- '*.sol' | grep -v '^D' | grep -E '^[^R]' | cut -f2 >> "$STAGED_SOL_FILES"
+
 # List all staged files ignoring deleted files
-git diff --cached --name-status | grep -v '^D' | cut -f2- > "$STAGED_FILES"
+
+# List only renamed files
+git diff --cached --name-status | grep -v '^D' | grep -E '^R' | cut -f3 > "$STAGED_FILES"
+# Append all staged files ignoring renamed and deleted files
+git diff --cached --name-status | grep -v '^D' | grep -E '^[^R]' | cut -f2 >> "$STAGED_FILES"
 
 # Run Solhint on staged .sol files, if any
 if [ -s "$STAGED_SOL_FILES" ]; then

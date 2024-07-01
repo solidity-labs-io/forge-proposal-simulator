@@ -5,7 +5,6 @@ import {Addresses} from "@addresses/Addresses.sol";
 
 import {TimelockProposal} from "@proposals/TimelockProposal.sol";
 
-import {ITimelockController} from "@interface/ITimelockController.sol";
 import {IProxy} from "@interface/IProxy.sol";
 import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 
@@ -53,11 +52,8 @@ contract MockTimelockProposal is TimelockProposal {
         addresses = new Addresses(
             vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
         );
-        vm.makePersistent(address(addresses));
 
-        timelock = ITimelockController(
-            addresses.getAddress("ARBITRUM_L1_TIMELOCK")
-        );
+        setTimelock(addresses.getAddress("ARBITRUM_L1_TIMELOCK"));
 
         super.run();
     }

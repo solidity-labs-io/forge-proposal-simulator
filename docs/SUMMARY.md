@@ -6,14 +6,8 @@
 
 -   [Use cases](overview/use-cases.md)
 -   [Architecture](overview/architecture/README.md)
-    -   [External Functions](overview/architecture/external-functions.md)
-    -   [Internal Functions](overview/architecture/internal-functions.md)
     -   [Addresses](overview/architecture/addresses.md)
-
-## Fundamentals
-
--   [Getting set up](fundamentals/getting-set-up.md)
--   [Compatibility](fundamentals/compatibility.md)
+    -   [Proposal Functions](overview/architecture/proposal-functions.md)
 
 ## Guides
 
@@ -21,6 +15,13 @@
 -   [Multisig Proposal](guides/multisig-proposal.md)
 -   [Timelock Proposal](guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](guides/governor-bravo-proposal.md)
+-   [OZ Governor Proposal](guides/oz-governor-proposal.md)
+-   [Customizing A Proposal](guides/customizing-proposal.md)
+-   Mainnet examples
+    -   [Arbitrum Timelock](mainnet-examples/ArbitrumTimelock.md)
+    -   [Compound Governor Bravo](mainnet-examples/CompoundGovernorBravo.md)
+    -   [Optimism Multisig](mainnet-examples/OptimismMultisig.md)
+    -   [ENS OZ Governor](mainnet-examples/ENSOzGovernor.md)
 
 ## Testing
 

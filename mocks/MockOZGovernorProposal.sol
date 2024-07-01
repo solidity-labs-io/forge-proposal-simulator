@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {GovernorOZProposal} from "@proposals/GovernorOZProposal.sol";
+import {OZGovernorProposal} from "@proposals/OZGovernorProposal.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 
@@ -15,7 +15,7 @@ interface IControllable {
 
 // @notice This is a mock proposal that uses ENS to demostrate OZ Governor proposal type.
 // Inspired on https://www.tally.xyz/gov/ens/proposal/4208408830555077285685632645423534041634535116286721240943655761928631543220
-contract MockOZGovernorProposal is GovernorOZProposal {
+contract MockOZGovernorProposal is OZGovernorProposal {
     function name() public pure override returns (string memory) {
         return "UPGRADE_DNSSEC_SUPPORT";
     }
@@ -33,8 +33,6 @@ contract MockOZGovernorProposal is GovernorOZProposal {
                 vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
             )
         );
-
-        vm.makePersistent(address(addresses));
 
         setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 

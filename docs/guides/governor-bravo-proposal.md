@@ -2,198 +2,298 @@
 
 ## Overview
 
-After adding FPS into project dependencies, the next step is the creation of the
-first Proposal contract. This example provides guidance on writing a proposal
-for deploying new instances of `Vault.sol` and `MockToken`. These contracts are
-located in the [guides section](./introduction.md#example-contracts). The proposal includes the transfer of ownership of both contracts to Governor Bravo's timelock, along with the whitelisting of the token and minting of tokens to the timelock.
+Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for Governor Bravo contract.
 
-The following contract is present in the `examples/governor-bravo` folder. We will use this contract as a reference for the tutorial.
+## Proposal Contract
 
-```solidity
-pragma solidity ^0.8.0;
+The `BravoProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-bravo/BravoProposal_01.sol). This contract is used as a reference for this tutorial.
 
-import { Vault } from "@examples/Vault.sol";
-import { MockToken } from "@examples/MockToken.sol";
-import { GovernorBravoProposal } from "@proposals/GovernorBravoProposal.sol";
-import { Proposal } from "@proposals/Proposal.sol";
+Let's go through each of the overridden functions.
 
-/// BRAVO_01 proposal deploys a Vault contract and an ERC20 token contract
-/// Then the proposal transfers ownership of both Vault and ERC20 to the governor address
-/// Finally the proposal whitelist the ERC20 token in the Vault contract
-contract BRAVO_01 is GovernorBravoProposal {
-    /// @notice Returns the name of the proposal.
-    string public override name = "BRAVO_01";
+-   `name()`: Defines the name of your proposal.
 
-    string public constant ADDRESSES_PATH = "./addresses/Addresses.json";
-
-    /// ADDRESSES_PATH is the path to the Addresses.json file
-    /// PROTOCOL_TIMELOCK is the wallet address that will be used to simulate the proposal actions
-    constructor() Proposal(ADDRESSES_PATH, "PROTOCOL_TIMELOCK") {
-        string memory urlOrAlias = vm.envOr("ETH_RPC_URL", string("sepolia"));
-        primaryForkId = vm.createFork(urlOrAlias);
+    ```solidity
+    function name() public pure override returns (string memory) {
+        return "BRAVO_MOCK";
     }
+    ```
 
-    /// @notice Provides a brief description of the proposal.
+-   `description()`: Provides a detailed description of your proposal.
+
+    ```solidity
     function description() public pure override returns (string memory) {
-        return "Governor Bravo proposal mock";
+        return "Bravo proposal mock";
     }
+    ```
 
-    /// @notice Deploys a vault contract and an ERC20 token contract.
+-   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once deployed, these contracts are added to the `Addresses` contract by calling `addAddress()`.
+
+    ```solidity
     function deploy() public override {
-        if (!addresses.isAddressSet("VAULT")) {
-            Vault timelockVault = new Vault();
-            addresses.addAddress("VAULT", address(timelockVault), true);
+        // Set Governor Bravo's timelock as the owner for the vault and token
+        address owner = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+
+        // Deploy the vault address if not already deployed and transfer ownership to the timelock
+        if (!addresses.isAddressSet("BRAVO_VAULT")) {
+            Vault bravoVault = new Vault();
+
+            addresses.addAddress("BRAVO_VAULT", address(bravoVault), true);
+            bravoVault.transferOwnership(owner);
         }
 
-        if (!addresses.isAddressSet("TOKEN_1")) {
-            MockToken token = new MockToken();
-            addresses.addAddress("TOKEN_1", address(token), true);
+        // Deploy the token address if not already deployed, transfer ownership to the timelock
+        // and transfer all initial minted tokens from the deployer to the timelock
+        if (!addresses.isAddressSet("BRAVO_VAULT_TOKEN")) {
+            Token token = new Token();
+            addresses.addAddress("BRAVO_VAULT_TOKEN", address(token), true);
+            token.transferOwnership(owner);
+
+            // During forge script execution, the deployer of the contracts is
+            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
+            uint256 balance = token.balanceOf(address(this)) > 0
+                ? token.balanceOf(address(this))
+                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
+
+            token.transfer(address(owner), balance);
         }
     }
+    ```
 
-    /// @notice steps:
-    /// 1. Transfers vault ownership to timelock.
-    /// 2. Transfer token ownership to timelock.
-    /// 3. Transfers all tokens to timelock.
-    function afterDeployMock() public override {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
+    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
 
-        timelockVault.transferOwnership(timelock);
-        token.transferOwnership(timelock);
+-   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor Bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor Bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
-        // Make sure that DEV is the address you specify in the --sender flag
-        token.transfer(
-            timelock,
-            token.balanceOf(addresses.getAddress("DEPLOYER_EOA"))
+    ```solidity
+    function build()
+        public
+        override
+        buildModifier(addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO"))
+    {
+        /// STATICCALL -- non-mutative and hence not recorded for the run stage
+
+        // Get the vault address
+        address bravoVault = addresses.getAddress("BRAVO_VAULT");
+
+        // Get the token address
+        address token = addresses.getAddress("BRAVO_VAULT_TOKEN");
+
+        // Get the timelock bravo's token balance
+        uint256 balance = Token(token).balanceOf(
+            addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO")
+        );
+
+        /// CALLS -- mutative and recorded
+
+        // Whitelist the deployed token on the deployed vault
+        Vault(bravoVault).whitelistToken(token, true);
+
+        // Approve the token for the vault
+        Token(token).approve(bravoVault, balance);
+
+        // Deposit all tokens into the vault
+        Vault(bravoVault).deposit(token, balance);
+    }
+    ```
+
+-   `run()`: Sets up the environment for running the proposal. This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor Bravo contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+
+    ```solidity
+    function run() public override {
+        // Create and select sepolia fork for proposal execution.
+        primaryForkId = vm.createFork("sepolia");
+        vm.selectFork(primaryForkId);
+
+        // Set addresses object reading addresses from json file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
+            )
+        );
+
+        // Set Governor Bravo. This address is used for proposal simulation and check on
+        // chain proposal state.
+        setGovernor(addresses.getAddress("PROTOCOL_GOVERNOR"));
+
+        // Call the run function of parent contract 'Proposal.sol'.
+        super.run();
+    }
+    ```
+
+-   `simulate()`: For Governor Bravo proposals, this function is defined in the governance specific contract and needs not be overridden. This function executes the proposal actions outlined in the `build()` step. The following steps are run when simulating a proposal. First, the required number of governance tokens are minted to the proposer address. Second, the proposer delegates votes to himself and proposes the proposal. Then the time is skipped by the voting delay, proposer casts votes and the proposal is queued. Next, time is skipped by the timelock delay and then finally, the proposal is executed in the timelock. View the code snippet below with inline comments for an example.
+
+    ```solidity
+    /// @notice Simulate governance proposal
+    function simulate() public override {
+        address proposerAddress = address(1);
+        IERC20VotesComp governanceToken = governor.comp();
+        {
+            // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
+            uint256 quorumVotes = governor.quorumVotes();
+            uint256 proposalThreshold = governor.proposalThreshold();
+            uint256 votingPower = quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
+            deal(address(governanceToken), proposerAddress, votingPower);
+            // Delegate proposer's votes to itself
+            vm.prank(proposerAddress);
+            IERC20VotesComp(governanceToken).delegate(proposerAddress);
+            vm.roll(block.number + 1);
+        }
+
+        bytes memory proposeCalldata = getCalldata();
+
+        // Register the proposal
+        vm.prank(proposerAddress);
+        bytes memory data = address(governor).functionCall(proposeCalldata);
+        uint256 proposalId = abi.decode(data, (uint256));
+
+        // Check proposal is in Pending state
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Pending
+        );
+
+        // Roll to Active state (voting period)
+        vm.roll(block.number + governor.votingDelay() + 1);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Active
+        );
+
+        // Vote YES
+        vm.prank(proposerAddress);
+        governor.castVote(proposalId, 1);
+
+        // Roll to allow proposal state transitions
+        vm.roll(block.number + governor.votingPeriod());
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Succeeded
+        );
+
+        // Queue the proposal
+        governor.queue(proposalId);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Queued
+        );
+
+        // Warp to allow proposal execution on timelock
+        ITimelockBravo timelock = ITimelockBravo(governor.timelock());
+        vm.warp(block.timestamp + timelock.delay());
+
+        // Execute the proposal
+        governor.execute(proposalId);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Executed
         );
     }
+    ```
 
-    /// @notice Sets up actions for the proposal, in this case, setting the MockToken to active.
-    function build() public override {
-        /// STATICCALL -- not recorded for the run stage
-        address timelockVault = addresses.getAddress("VAULT");
-        address token = addresses.getAddress("TOKEN_1");
+-   `validate()`: This final step validates the system in its post-execution state. It ensures that Governor Bravo's timelock is the new owner of the Vault and token, the tokens were transferred to Governor Bravo's timelock, and the token was whitelisted on the Vault contract.
 
-        /// CALL -- mutative and recorded
-        Vault(timelockVault).whitelistToken(token, true);
-    }
-
-    /// @notice Executes the proposal actions.
-    function simulate() public override {
-        // Call parent _run function to check if there are actions to execute
-        super.simulate();
-
-        address governor = addresses.getAddress("GOVERNOR_BRAVO");
-        address govToken = addresses.getAddress("PROTOCOL_GOVERNANCE_TOKEN");
-        address proposer = addresses.getAddress("DEPLOYER_EOA");
-
-        _simulateActions(governor, govToken, proposer);
-    }
-
-    /// @notice Validates the post-execution state.
+    ```solidity
     function validate() public override {
-        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
-        Vault timelockVault = Vault(addresses.getAddress("VAULT"));
-        MockToken token = MockToken(addresses.getAddress("TOKEN_1"));
+        // Get the vault address
+        Vault bravoVault = Vault(addresses.getAddress("BRAVO_VAULT"));
 
-        assertEq(timelockVault.owner(), timelock);
-        assertTrue(timelockVault.tokenWhitelist(address(token)));
-        assertFalse(timelockVault.paused());
+        // Get the token address
+        Token token = Token(addresses.getAddress("BRAVO_VAULT_TOKEN"));
 
-        assertEq(token.owner(), timelock);
-        assertEq(token.balanceOf(timelock), token.totalSupply());
+        // Get Governor Bravo's timelock address
+        address timelock = addresses.getAddress("PROTOCOL_TIMELOCK_BRAVO");
+
+        // Ensure the token total supply is 10 million
+        assertEq(token.totalSupply(), 10_000_000e18);
+
+        // Ensure the timelock is the owner of the deployed token
+        assertEq(token.owner(), address(timelock));
+
+        // Ensure the timelock is the owner of the deployed vault
+        assertEq(bravoVault.owner(), address(timelock));
+
+        // Ensure the vault is not paused
+        assertFalse(bravoVault.paused());
+
+        // Ensure the token is whitelisted on the vault
+        assertTrue(bravoVault.tokenWhitelist(address(token)));
+
+        // Get the vault's token balance
+        uint256 balance = token.balanceOf(address(bravoVault));
+
+        // Get the timelock deposits in the vault
+        (uint256 amount, ) = bravoVault.deposits(
+            address(token),
+            address(timelock)
+        );
+
+        // Ensure the timelock deposit is the same as the vault's token balance
+        assertEq(amount, balance);
+
+        // Ensure all minted tokens are deposited into the vault
+        assertEq(token.balanceOf(address(bravoVault)), token.totalSupply());
     }
-}
-```
+    ```
 
-Let's go through each of the functions that are overridden.
-
--   `name()`: Define the name of your proposal.
--   `description()`: Provide a detailed description of your proposal.
--   `_deploy()`: Deploy any necessary contracts. This example demonstrates the
-    deployment of Vault and an ERC20 token. Once the contracts are deployed,
-    they are added to the `Addresses` contract by calling `addAddress()`.
--   `_build()`: Set the necessary actions for your proposal. In this example, ERC20 token is whitelisted on the Vault contract. The actions should be
-    written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function.
--   `simulate()`: Execute the proposal actions outlined in the `_build()` step. This
-    function performs a call to `_simulateActions` from the inherited
-    `GovernorBravoProposal` contract. Internally, `_simulateActions()` uses the calldata generated from the actions set up in the build step, and simulates the end-to-end workflow of a successful proposal submission, starting with a call to [propose](https://github.com/compound-finance/compound-governance/blob/5e581ef817464fdb71c4c7ef6bde4c552302d160/contracts/GovernorBravoDelegate.sol#L118).
--   `_validate()`: This final step is crucial for validating the post-execution state. It ensures that the timelock is the new owner of Vault and token, the tokens were transferred to timelock and the token was whitelisted on the Vault contract
-
-Constructor parameters are passed to the `Proposal` contract. The
-`ADDRESSES_PATH` is the path to the `Addresses.json` file, and `PROTOCOL_TIMELOCK` is
-the timelock that will be used to simulate the proposal actions. The
-`primaryForkId` is the RPC URL or alias of the blockchain that will be used to
-simulate the proposal actions and broadcast if any contract deployment is required.
-
-With the first proposal contract prepared, it's time to proceed with execution. There are two options available:
-
-1. **Using `forge test`**: Details on this method can be found in the [integration-tests.md](../testing/integration-tests.md "mention") section.
-2. **Using `forge script`**: This is the chosen method for this tutorial.
-
-## Running the Proposal with `forge script`
-
-### Setting Up Your Deployer Address
-
-The deployer address is the the one you'll use to broadcast the transactions
-deploying the proposal contracts. Ensure your deployer address has enough funds from the faucet to cover deployment costs on the testnet.
-
-We prioritize security when it comes to private key management. To avoid storing
-the private key as an environment variable, we use Foundry's cast tool.
-
-If you're missing a wallet in `~/.foundry/keystores/`, create one by executing:
-
-```sh
-cast wallet import ${wallet_name} --interactive
-```
+## Proposal Simulation
 
 ### Deploying a Governor Bravo on Testnet
 
-You'll need a Bravo Governor contract set up on the testnet before running the proposal.
+A Governor Bravo contract is needed to be set up on the testnet before running the proposal.
 
-We have a script in `script/` folder called `DeployGovernorBravo.s.sol` to facilitate this process.
+This script [DeployGovernorBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorBravo.s.sol) facilitates this process.
+
+Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+
+```json
+[
+    {
+        "addr": "0x<YOUR_DEV_ADDRESS>",
+        "name": "DEPLOYER_EOA",
+        "chainId": 11155111,
+        "isContract": false
+    }
+]
+```
+
+After adding the address, execute the script:
 
 ```sh
 forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
 -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`.
+Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`.
 
-Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file.
+Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should follow this structure:
 
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNOR_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
+    },
+    {
+        "addr": "0x<YOUR_DEV_ADDRESS>",
+        "name": "DEPLOYER_EOA",
+        "chainId": 11155111,
+        "isContract": false
     }
 ]
 ```
 
-After adding the addresses, run the second script to accept ownership of
-the timelock and initialize the governor.
-
-The script is called `InitializeBravo.s.sol` and is located in the `script/` folder.
-Before running the script, get the eta from the queue transaction on the
-previous script and set as a environment variable.
+After adding the addresses, run the second script to accept ownership of the timelock and initialize the governor. The script to facilate this process is [InitializeBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/InitializeBravo.s.sol).
+Before running the script, obtain the eta from the queue transaction on the previous script and set it as an environment variable.
 
 ```sh
 export ETA=123456
@@ -205,42 +305,38 @@ Run the script:
 forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
 
-Copy the _GOVERNOR_BRAVO_ALPHA_ address from the script output and add it to
-the `Addresses.json` file.
-
 ### Setting Up the Addresses JSON
 
-The last step before running the proposal is to add the DEV address
-to Address.json. The final Address.json file should be something like this:
+Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `Addresses.json` file. The final `Addresses.json` file should follow this structure:
 
 ```json
 [
     {
-        "addr": "YOUR_TIMELOCK_ADDRESS",
+        "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNOR_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_GOVERNANCE_TOKEN_ADDRESS",
+        "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
         "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
-        "addr": "YOUR_GOVERNOR_ALPHA_ADDRESS",
+        "addr": "0x<YOUR_GOVERNOR_ALPHA_ADDRESS>",
         "name": "GOVERNOR_BRAVO_ALPHA",
         "chainId": 11155111,
         "isContract": true
     },
     {
-        "addr": "YOUR_DEV_ADDRESS",
+        "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
         "chainId": 11155111,
         "isContract": false
@@ -251,56 +347,58 @@ to Address.json. The final Address.json file should be something like this:
 ### Running the Proposal
 
 ```sh
-forge script examples/governor-bravo/BRAVO_01.sol -vvvv --slow
---sender ${wallet_address} -vvvv --account
-${wallet_name} -g 200
+forge script src/proposals/simple-vault-bravo/BravoProposal_01.sol --slow --sender ${wallet_address} -vvvv --account ${wallet_name} -g 200
 ```
-
-Before you execute the proposal script, double-check that the ${wallet_name} and
-${wallet_address} accurately match the wallet details saved in
-`~/.foundry/keystores/`. It's crucial to ensure ${wallet_address} is correctly
-listed as the deployer address in the Addresses.json file. If these don't align,
-the script execution will fail.
 
 The script will output the following:
 
 ```sh
 == Logs ==
---------- Addresses added after running proposal ---------
+
+
+--------- Addresses added ---------
   {
-          'addr': '0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af',
+          'addr': '0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c',
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'VAULT'
+          'name': 'BRAVO_VAULT'
 },
   {
-          'addr': '0x6CF2d43DCDd27FaC5ef82600270F595c8a134b15',
+          'addr': '0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465',
           'chainId': 11155111,
           'isContract': true ,
-          'name': 'TOKEN_1'
+          'name': 'BRAVO_VAULT_TOKEN'
 }
 
-
 ---------------- Proposal Description ----------------
-  Governor Bravo proposal mock
-
+  Bravo proposal mock
 
 ------------------ Proposal Actions ------------------
-  1). calling 0x0957d5577ea1561e111af0cb7c6949cbd6caf4af with 0 eth and 0ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b150000000000000000000000000000000000000000000000000000000000000001 data.
-  target: 0x0957D5577ea1561e111af0cb7c6949CBd6cAF4af
+  1). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001 data.
+  target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
 payload
-  0x0ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b150000000000000000000000000000000000000000000000000000000000000001
+  0x0ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001
+
+
+  2). calling 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465 with 0 eth and 0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000 data.
+  target: 0x2A2A18A71d0eA4B97ebb18D3820cd3625C3A1465
+payload
+  0x095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a000000
+
+
+  3). calling 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c with 0 eth and 0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000 data.
+  target: 0xF9C26968C2d4E1C2ADA13c6323be31c1067EBB7c
+payload
+  0x47e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000
 
 
 
 
 ------------------ Proposal Calldata ------------------
-  0xda95691a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000024000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000957d5577ea1561e111af0cb7c6949cbd6caf4af000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b15000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c476f7665726e6f7220427261766f2070726f706f73616c206d6f636b00000000
-  0xda95691a00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000024000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000957d5577ea1561e111af0cb7c6949cbd6caf4af000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000006cf2d43dcdd27fac5ef82600270f595c8a134b15000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c476f7665726e6f7220427261766f2070726f706f73616c206d6f636b00000000
+  0xda95691a00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000004800000000000000000000000000000000000000000000000000000000000000003000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b0000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a14650000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000f9c26968c2d4e1c2ada13c6323be31c1067ebb7c000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef240000000000000000000000002a2a18a71d0ea4b97ebb18d3820cd3625c3a1465000000000000000000000000000000000000000000084595161401484a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013427261766f2070726f706f73616c206d6f636b00000000000000000000000000
 
 ```
 
-If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
+A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
 
-A DAO member can check whether the calldata proposed on the governance matches
-the calldata from the script exeuction. It is important to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using `cast send` along with the calldata generated above.

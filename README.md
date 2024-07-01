@@ -20,8 +20,8 @@ forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
 
 Update your remappings.txt to include:
 
-```txt
-@forge-proposal-simulator=lib/forge-proposal-simulator/
+```sh
+echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
 ```
 
 #### Step 3: Create Addresses File
@@ -44,6 +44,7 @@ Choose a model that fits your needs:
 -   [Multisig Proposal](docs/guides/multisig-proposal.md)
 -   [Timelock Proposal](docs/guides/timelock-proposal.md)
 -   [Governor Bravo Proposal](docs/guides/governor-bravo-proposal.md)
+-   [OZ Governor proposal](docs/guides/oz-governor-proposal.md)
 
 #### Step 5: Implement Scripts and Tests
 
