@@ -2,7 +2,6 @@
 @test=test/
 @proposals/=src/proposals/
 @interface/=src/interface/
-@type-check/=src/type-check/
 @addresses/=addresses/
 @utils/=utils/
 @examples/=examples/

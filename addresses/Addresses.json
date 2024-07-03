@@ -96,18 +96,6 @@
         "name": "BRAVO_VAULT_TOKEN"
     },
     {
-        "addr": "0x293cad26033577eb68137603a34d2dbfd05104d8",
-        "chainId": 11155111,
-        "name": "ExampleTypeCheck",
-        "isContract": true
-    },
-    {
-        "addr": "0x9D7A602541230B2bA04D9aA542fad73B8aaBA4ED",
-        "chainId": 11155111,
-        "name": "ExampleTypeCheck_02",
-        "isContract": true
-    },
-    {
         "addr": "0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A",
         "chainId": 1,
         "name": "OPTIMISM_MULTISIG",
