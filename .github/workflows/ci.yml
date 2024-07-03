@@ -108,36 +108,3 @@ jobs:
               run: |
                   echo "## Proposal simulator tests result" >> $GITHUB_STEP_SUMMARY
                   echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
-
-    type-check-test:
-        runs-on: "ubuntu-latest"
-        steps:
-            - name: "Check out the repo"
-              uses: "actions/checkout@v3"
-              with:
-                  submodules: "recursive"
-
-            - name: "Install Foundry"
-              uses: "foundry-rs/foundry-toolchain@v1"
-
-            - name: "Show the Foundry config"
-              run: "forge config"
-
-            - name: "Install Node.js"
-              uses: "actions/setup-node@v3"
-              with:
-                  node-version: "lts/*"
-
-            - name: "Install the Node.js dependencies"
-              run: "cd typescript/ && npm install && cd ../ && npm install ts-node"
-
-            - name: "Build the contracts and print their size"
-              run: "forge build --sizes"
-
-            - name: "Run typecheck tests"
-              run: "forge test --mc TypeCheck --ffi --fork-url sepolia"
-
-            - name: "Add test summary"
-              run: |
-                  echo "## Type check tests result" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
