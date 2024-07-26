@@ -16,6 +16,20 @@ abstract contract Proposal is Test, Script, IProposal {
         string description;
     }
 
+    struct TransferInfo {
+        address from;
+        address to;
+        uint256 value;
+        bool isEthTransfer;
+        address tokenAddress;
+    }
+
+    /// @notice Transfers during proposal execution
+    mapping(address => TransferInfo[]) private proposalTransfers;
+
+    /// @notice Addresses involved in transfers
+    address[] private transferAddresses;
+
     /// @notice starting snapshot of the contract state before the calls are made
     uint256 private _startSnapshot;
 
@@ -186,6 +200,45 @@ abstract contract Proposal is Test, Script, IProposal {
             console.log("\n");
         }
 
+        console.log("\n----------------- Proposal Transfers ---------------");
+        for (uint256 i; i < transferAddresses.length; i++) {
+            address account = transferAddresses[i];
+
+            console.log("\n", vm.getLabel(account), "Transfers :");
+            TransferInfo[] memory transfers = proposalTransfers[account];
+            for (uint256 j; j < transfers.length; j++) {
+                if (transfers[j].isEthTransfer) {
+                    console.log(
+                        string(
+                            abi.encodePacked(
+                                vm.toString(j + 1),
+                                ". Sent ",
+                                vm.toString(transfers[j].value),
+                                " ETH to ",
+                                vm.getLabel(transfers[j].to)
+                            )
+                        )
+                    );
+                } else {
+                    console.log(
+                        string(
+                            abi.encodePacked(
+                                vm.toString(j + 1),
+                                ". ",
+                                vm.getLabel(transfers[j].from),
+                                " tranferred ",
+                                vm.toString(transfers[j].value),
+                                " ",
+                                vm.getLabel(transfers[j].tokenAddress),
+                                " to ",
+                                vm.getLabel(transfers[j].to)
+                            )
+                        )
+                    );
+                }
+            }
+        }
+
         console.log(
             "\n\n------------------ Proposal Calldata ------------------"
         );
@@ -263,6 +316,8 @@ abstract contract Proposal is Test, Script, IProposal {
             "failed to revert back to snapshot, unsafe state to run proposal"
         );
 
+        processTransfers(accountAccesses);
+
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls from the original caller,
             /// static calls are ignored,
@@ -273,8 +328,10 @@ abstract contract Proposal is Test, Script, IProposal {
                 /// ignore calls to vm in the build function
                 accountAccesses[i].accessor != address(addresses) &&
                 accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
+                accountAccesses[i].accessor == caller
             ) {
+                /// caller is correct, not a subcall
+
                 _validateAction(
                     accountAccesses[i].account,
                     accountAccesses[i].value,
@@ -303,5 +360,72 @@ abstract contract Proposal is Test, Script, IProposal {
         }
 
         _validateActions();
+    }
+
+    function processTransfers(
+        VmSafe.AccountAccess[] memory accountAccesses
+    ) internal {
+        for (uint256 i = 0; i < accountAccesses.length; i++) {
+            address from = accountAccesses[i].account;
+            // get eth transfers
+            if (accountAccesses[i].value != 0) {
+                if (proposalTransfers[from].length == 0) {
+                    transferAddresses.push(from);
+                }
+
+                proposalTransfers[from].push(
+                    TransferInfo({
+                        from: from,
+                        to: accountAccesses[i].accessor,
+                        value: accountAccesses[i].value,
+                        isEthTransfer: true,
+                        tokenAddress: address(0)
+                    })
+                );
+            }
+
+            // get ERC20 token transfers
+            bytes memory data = accountAccesses[i].data;
+            if (data.length <= 4) {
+                continue;
+            }
+            bytes4 selector = bytes4(data);
+
+            // get function params
+            bytes memory params = new bytes(data.length - 4);
+            for (uint256 j = 0; j < data.length - 4; j++) {
+                params[j] = data[j + 4];
+            }
+            address to;
+            uint256 value;
+            // Transfer selector in ERC20 token
+            if (selector == 0xa9059cbb) {
+                (to, value) = abi.decode(params, (address, uint256));
+                from = accountAccesses[i].accessor;
+            }
+            // TransferFrom selector in ERC20 token
+            else if (selector == 0x23b872dd) {
+                (from, to, value) = abi.decode(
+                    params,
+                    (address, address, uint256)
+                );
+            } else {
+                continue;
+            }
+
+            if (proposalTransfers[from].length == 0) {
+                transferAddresses.push(from);
+            }
+
+            proposalTransfers[from].push(
+                TransferInfo({
+                    from: from,
+                    to: to,
+                    value: value,
+                    isEthTransfer: false,
+                    tokenAddress: accountAccesses[i].account
+                })
+            );
+        }
     }
 }
