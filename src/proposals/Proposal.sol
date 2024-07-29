@@ -24,11 +24,23 @@ abstract contract Proposal is Test, Script, IProposal {
         address tokenAddress;
     }
 
-    /// @notice Transfers during proposal execution
-    mapping(address => TransferInfo[]) private proposalTransfers;
+    struct StateInfo {
+        bytes32 slot;
+        bytes32 oldValue;
+        bytes32 newValue;
+    }
 
-    /// @notice Addresses involved in transfers
-    address[] private transferAddresses;
+    /// @notice transfers during proposal execution
+    mapping(address => TransferInfo[]) private _proposalTransfers;
+
+    /// @notice state changes during proposal execution
+    mapping(address => StateInfo[]) private _stateInfos;
+
+    /// @notice addresses involved in state changes or token transfers
+    address[] private _proposalAffectedAddresses;
+
+    /// @notice map if an address is affected in proposal execution
+    mapping(address => bool) private _isProposalAffectedAddress;
 
     /// @notice starting snapshot of the contract state before the calls are made
     uint256 private _startSnapshot;
@@ -200,22 +212,29 @@ abstract contract Proposal is Test, Script, IProposal {
             console.log("\n");
         }
 
-        console.log("\n----------------- Proposal Transfers ---------------");
-        for (uint256 i; i < transferAddresses.length; i++) {
-            address account = transferAddresses[i];
+        console.log("\n----------------- Proposal Changes ---------------");
+        for (uint256 i; i < _proposalAffectedAddresses.length; i++) {
+            address account = _proposalAffectedAddresses[i];
 
-            console.log("\n", vm.getLabel(account), "Transfers :");
-            TransferInfo[] memory transfers = proposalTransfers[account];
+            console.log(
+                "\n\n",
+                string(abi.encodePacked(_getAddressLabel(account), ":"))
+            );
+
+            // print token transfers
+            TransferInfo[] memory transfers = _proposalTransfers[account];
+            if (transfers.length > 0) {
+                console.log("\n Transfers:");
+            }
             for (uint256 j; j < transfers.length; j++) {
                 if (transfers[j].isEthTransfer) {
                     console.log(
                         string(
                             abi.encodePacked(
-                                vm.toString(j + 1),
-                                ". Sent ",
+                                "Sent ",
                                 vm.toString(transfers[j].value),
                                 " ETH to ",
-                                vm.getLabel(transfers[j].to)
+                                _getAddressLabel(transfers[j].to)
                             )
                         )
                     );
@@ -223,19 +242,27 @@ abstract contract Proposal is Test, Script, IProposal {
                     console.log(
                         string(
                             abi.encodePacked(
-                                vm.toString(j + 1),
-                                ". ",
-                                vm.getLabel(transfers[j].from),
-                                " tranferred ",
+                                "Sent ",
                                 vm.toString(transfers[j].value),
                                 " ",
-                                vm.getLabel(transfers[j].tokenAddress),
+                                _getAddressLabel(transfers[j].tokenAddress),
                                 " to ",
-                                vm.getLabel(transfers[j].to)
+                                _getAddressLabel(transfers[j].to)
                             )
                         )
                     );
                 }
+            }
+
+            // print state changes
+            StateInfo[] memory stateChanges = _stateInfos[account];
+            if (stateChanges.length > 0) {
+                console.log("\n State Changes:");
+            }
+            for (uint256 j; j < stateChanges.length; j++) {
+                console.log("Slot:", vm.toString(stateChanges[j].slot));
+                console.log("- ", vm.toString(stateChanges[j].oldValue));
+                console.log("+ ", vm.toString(stateChanges[j].newValue));
             }
         }
 
@@ -316,7 +343,7 @@ abstract contract Proposal is Test, Script, IProposal {
             "failed to revert back to snapshot, unsafe state to run proposal"
         );
 
-        processTransfers(accountAccesses);
+        _processTransfersAndStateChanges(accountAccesses);
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls from the original caller,
@@ -331,7 +358,6 @@ abstract contract Proposal is Test, Script, IProposal {
                 accountAccesses[i].accessor == caller
             ) {
                 /// caller is correct, not a subcall
-
                 _validateAction(
                     accountAccesses[i].account,
                     accountAccesses[i].value,
@@ -362,26 +388,50 @@ abstract contract Proposal is Test, Script, IProposal {
         _validateActions();
     }
 
-    function processTransfers(
+    /// @notice helper method to get transfers and state changes of proposal affected addresses
+    function _processTransfersAndStateChanges(
         VmSafe.AccountAccess[] memory accountAccesses
     ) internal {
         for (uint256 i = 0; i < accountAccesses.length; i++) {
-            address from = accountAccesses[i].account;
+            // process state changes
+            _processStateChanges(accountAccesses[i].storageAccesses);
+
+            address account = accountAccesses[i].account;
             // get eth transfers
-            if (accountAccesses[i].value != 0) {
-                if (proposalTransfers[from].length == 0) {
-                    transferAddresses.push(from);
+            if (
+                accountAccesses[i].oldBalance != accountAccesses[i].newBalance
+            ) {
+                if (!_isProposalAffectedAddress[account]) {
+                    _isProposalAffectedAddress[account] = true;
+                    _proposalAffectedAddresses.push(account);
                 }
 
-                proposalTransfers[from].push(
-                    TransferInfo({
-                        from: from,
-                        to: accountAccesses[i].accessor,
-                        value: accountAccesses[i].value,
-                        isEthTransfer: true,
-                        tokenAddress: address(0)
-                    })
-                );
+                if (
+                    accountAccesses[i].oldBalance <
+                    accountAccesses[i].newBalance
+                ) {
+                    _proposalTransfers[account].push(
+                        TransferInfo({
+                            from: accountAccesses[i].accessor,
+                            to: account,
+                            value: accountAccesses[i].newBalance -
+                                accountAccesses[i].oldBalance,
+                            isEthTransfer: true,
+                            tokenAddress: address(0)
+                        })
+                    );
+                } else {
+                    _proposalTransfers[account].push(
+                        TransferInfo({
+                            from: account,
+                            to: accountAccesses[i].accessor,
+                            value: accountAccesses[i].oldBalance -
+                                accountAccesses[i].newBalance,
+                            isEthTransfer: true,
+                            tokenAddress: address(0)
+                        })
+                    );
+                }
             }
 
             // get ERC20 token transfers
@@ -396,14 +446,16 @@ abstract contract Proposal is Test, Script, IProposal {
             for (uint256 j = 0; j < data.length - 4; j++) {
                 params[j] = data[j + 4];
             }
+
+            address from;
             address to;
             uint256 value;
-            // Transfer selector in ERC20 token
+            // 'transfer' selector in ERC20 token
             if (selector == 0xa9059cbb) {
                 (to, value) = abi.decode(params, (address, uint256));
                 from = accountAccesses[i].accessor;
             }
-            // TransferFrom selector in ERC20 token
+            // 'transferFrom' selector in ERC20 token
             else if (selector == 0x23b872dd) {
                 (from, to, value) = abi.decode(
                     params,
@@ -413,11 +465,12 @@ abstract contract Proposal is Test, Script, IProposal {
                 continue;
             }
 
-            if (proposalTransfers[from].length == 0) {
-                transferAddresses.push(from);
+            if (!_isProposalAffectedAddress[account]) {
+                _isProposalAffectedAddress[account] = true;
+                _proposalAffectedAddresses.push(account);
             }
 
-            proposalTransfers[from].push(
+            _proposalTransfers[from].push(
                 TransferInfo({
                     from: from,
                     to: to,
@@ -427,5 +480,68 @@ abstract contract Proposal is Test, Script, IProposal {
                 })
             );
         }
+    }
+
+    /// @notice helper method to get state changes of proposal affected addresses
+    function _processStateChanges(
+        VmSafe.StorageAccess[] memory storageAccess
+    ) internal {
+        for (uint256 i; i < storageAccess.length; i++) {
+            address account = storageAccess[i].account;
+
+            // get only state changes for write storage access
+            if (storageAccess[i].isWrite) {
+                _stateInfos[account].push(
+                    StateInfo({
+                        slot: storageAccess[i].slot,
+                        oldValue: storageAccess[i].previousValue,
+                        newValue: storageAccess[i].newValue
+                    })
+                );
+            }
+
+            if (
+                !_isProposalAffectedAddress[account] &&
+                _stateInfos[account].length != 0
+            ) {
+                _isProposalAffectedAddress[account] = true;
+                _proposalAffectedAddresses.push(account);
+            }
+        }
+    }
+
+    /// @notice helper method to get labels for addresses
+    function _getAddressLabel(
+        address contractAddress
+    ) internal view returns (string memory) {
+        string memory label = vm.getLabel(contractAddress);
+
+        bytes memory prefix = bytes("unlabeled:");
+        bytes memory strBytes = bytes(label);
+
+        if (strBytes.length >= prefix.length) {
+            for (uint256 i = 0; i < prefix.length; i++) {
+                if (strBytes[i] != prefix[i]) {
+                    return
+                        string(
+                            abi.encodePacked(
+                                label,
+                                " @",
+                                vm.toString(contractAddress)
+                            )
+                        );
+                }
+            }
+        } else {
+            return
+                string(
+                    abi.encodePacked(label, " @", vm.toString(contractAddress))
+                );
+        }
+
+        return
+            string(
+                abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
+            );
     }
 }
