@@ -266,10 +266,7 @@ abstract contract Proposal is Test, Script, IProposal {
             }
         }
 
-        console.log(
-            "\n\n------------------ Proposal Calldata ------------------"
-        );
-        console.logBytes(getCalldata());
+        _printProposalCalldata();
     }
 
     /// --------------------------------------------------------------------
@@ -304,6 +301,14 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice validate actions
     function _validateActions() internal virtual {}
+
+    /// @notice print proposal calldata
+    function _printProposalCalldata() internal virtual {
+        console.log(
+            "\n\n------------------ Proposal Calldata ------------------"
+        );
+        console.logBytes(getCalldata());
+    }
 
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
@@ -343,7 +348,7 @@ abstract contract Proposal is Test, Script, IProposal {
             "failed to revert back to snapshot, unsafe state to run proposal"
         );
 
-        _processTransfersAndStateChanges(accountAccesses);
+        _processStateDiffChanges(accountAccesses);
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls from the original caller,
@@ -389,97 +394,90 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice helper method to get transfers and state changes of proposal affected addresses
-    function _processTransfersAndStateChanges(
+    function _processStateDiffChanges(
         VmSafe.AccountAccess[] memory accountAccesses
     ) internal {
         for (uint256 i = 0; i < accountAccesses.length; i++) {
+            // process ETH transfer changes
+            _processETHTransferChanges(accountAccesses[i]);
+
+            // process ERC20 transfer changes
+            _processERC20TransferChanges(accountAccesses[i]);
+
             // process state changes
             _processStateChanges(accountAccesses[i].storageAccesses);
+        }
+    }
 
-            address account = accountAccesses[i].account;
-            // get eth transfers
-            if (
-                accountAccesses[i].oldBalance != accountAccesses[i].newBalance
-            ) {
-                if (!_isProposalAffectedAddress[account]) {
-                    _isProposalAffectedAddress[account] = true;
-                    _proposalAffectedAddresses.push(account);
-                }
-
-                if (
-                    accountAccesses[i].oldBalance <
-                    accountAccesses[i].newBalance
-                ) {
-                    _proposalTransfers[account].push(
-                        TransferInfo({
-                            from: accountAccesses[i].accessor,
-                            to: account,
-                            value: accountAccesses[i].newBalance -
-                                accountAccesses[i].oldBalance,
-                            isEthTransfer: true,
-                            tokenAddress: address(0)
-                        })
-                    );
-                } else {
-                    _proposalTransfers[account].push(
-                        TransferInfo({
-                            from: account,
-                            to: accountAccesses[i].accessor,
-                            value: accountAccesses[i].oldBalance -
-                                accountAccesses[i].newBalance,
-                            isEthTransfer: true,
-                            tokenAddress: address(0)
-                        })
-                    );
-                }
+    /// @notice helper method to get eth transfers of proposal affected addresses
+    function _processETHTransferChanges(
+        VmSafe.AccountAccess memory accountAccess
+    ) internal {
+        address account = accountAccess.account;
+        // get eth transfers
+        if (accountAccess.value != 0) {
+            if (!_isProposalAffectedAddress[accountAccess.accessor]) {
+                _isProposalAffectedAddress[accountAccess.accessor] = true;
+                _proposalAffectedAddresses.push(accountAccess.accessor);
             }
-
-            // get ERC20 token transfers
-            bytes memory data = accountAccesses[i].data;
-            if (data.length <= 4) {
-                continue;
-            }
-            bytes4 selector = bytes4(data);
-
-            // get function params
-            bytes memory params = new bytes(data.length - 4);
-            for (uint256 j = 0; j < data.length - 4; j++) {
-                params[j] = data[j + 4];
-            }
-
-            address from;
-            address to;
-            uint256 value;
-            // 'transfer' selector in ERC20 token
-            if (selector == 0xa9059cbb) {
-                (to, value) = abi.decode(params, (address, uint256));
-                from = accountAccesses[i].accessor;
-            }
-            // 'transferFrom' selector in ERC20 token
-            else if (selector == 0x23b872dd) {
-                (from, to, value) = abi.decode(
-                    params,
-                    (address, address, uint256)
-                );
-            } else {
-                continue;
-            }
-
-            if (!_isProposalAffectedAddress[account]) {
-                _isProposalAffectedAddress[account] = true;
-                _proposalAffectedAddresses.push(account);
-            }
-
-            _proposalTransfers[from].push(
+            _proposalTransfers[accountAccess.accessor].push(
                 TransferInfo({
-                    from: from,
-                    to: to,
-                    value: value,
-                    isEthTransfer: false,
-                    tokenAddress: accountAccesses[i].account
+                    from: accountAccess.accessor,
+                    to: account,
+                    value: accountAccess.value,
+                    isEthTransfer: true,
+                    tokenAddress: address(0)
                 })
             );
         }
+    }
+
+    /// @notice helper method to get ERC20 token transfers of proposal affected addresses
+    function _processERC20TransferChanges(
+        VmSafe.AccountAccess memory accountAccess
+    ) internal {
+        // get ERC20 token transfers
+        bytes memory data = accountAccess.data;
+        if (data.length <= 4) {
+            return;
+        }
+        bytes4 selector = bytes4(data);
+
+        // get function params
+        bytes memory params = new bytes(data.length - 4);
+        for (uint256 j = 0; j < data.length - 4; j++) {
+            params[j] = data[j + 4];
+        }
+
+        address from;
+        address to;
+        uint256 value;
+        // 'transfer' selector in ERC20 token
+        if (selector == 0xa9059cbb) {
+            (to, value) = abi.decode(params, (address, uint256));
+            from = accountAccess.accessor;
+        }
+        // 'transferFrom' selector in ERC20 token
+        else if (selector == 0x23b872dd) {
+            (from, to, value) = abi.decode(params, (address, address, uint256));
+        } else {
+            return;
+        }
+
+        if (!_isProposalAffectedAddress[from]) {
+            _isProposalAffectedAddress[from] = true;
+            _proposalAffectedAddresses.push(from);
+        }
+
+        _proposalTransfers[from].push(
+            TransferInfo({
+                from: from,
+                to: to,
+                value: value,
+                isEthTransfer: false,
+                tokenAddress: accountAccess.account
+            })
+        );
     }
 
     /// @notice helper method to get state changes of proposal affected addresses
