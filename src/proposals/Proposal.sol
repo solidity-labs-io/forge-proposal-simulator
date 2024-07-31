@@ -31,16 +31,17 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice transfers during proposal execution
-    mapping(address => TransferInfo[]) private _proposalTransfers;
+    mapping(address addr => TransferInfo[] transfers)
+        private _proposalTransfers;
 
     /// @notice state changes during proposal execution
-    mapping(address => StateInfo[]) private _stateInfos;
+    mapping(address addr => StateInfo[] stateChanges) private _stateInfos;
 
     /// @notice addresses involved in state changes or token transfers
     address[] private _proposalAffectedAddresses;
 
     /// @notice map if an address is affected in proposal execution
-    mapping(address => bool) private _isProposalAffectedAddress;
+    mapping(address addr => bool isAffected) private _isProposalAffectedAddress;
 
     /// @notice starting snapshot of the contract state before the calls are made
     uint256 private _startSnapshot;
