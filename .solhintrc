@@ -19,6 +19,7 @@
         "no-unused-import": "error",
         "explicit-types": "off",
         "const-name-snakecase": "off",
-        "gas-custom-errors": "off"
+        "gas-custom-errors": "off",
+        "quotes": "off"
     }
 }
