@@ -208,7 +208,10 @@ abstract contract Proposal is Test, Script, IProposal {
         console.log("\n------------------ Proposal Actions ------------------");
         for (uint256 i; i < actions.length; i++) {
             console.log("%d). %s", i + 1, actions[i].description);
-            console.log("target: %s\npayload", actions[i].target);
+            console.log(
+                "target: %s\npayload",
+                _getAddressLabel(actions[i].target)
+            );
             console.logBytes(actions[i].arguments);
             console.log("\n");
         }
@@ -378,7 +381,7 @@ abstract contract Proposal is Test, Script, IProposal {
                         description: string(
                             abi.encodePacked(
                                 "calling ",
-                                vm.toString(accountAccesses[i].account),
+                                _getAddressLabel(accountAccesses[i].account),
                                 " with ",
                                 vm.toString(accountAccesses[i].value),
                                 " eth and ",
