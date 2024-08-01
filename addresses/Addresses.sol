@@ -51,27 +51,33 @@ contract Addresses is IAddresses, Test {
     /// @notice array of addresses deployed during a proposal
     RecordedAddress[] private recordedAddresses;
 
-    // @notice array of addresses changed during a proposal
+    /// @notice array of addresses changed during a proposal
     ChangedAddress[] private changedAddresses;
 
-    constructor(string memory addressesPath) {
+    /// @notice array of saved addresses
+    SavedAddresses[] private savedAddresses;
+
+    string private addressesPath;
+
+    constructor(string memory _addressesPath) {
+        addressesPath = _addressesPath;
         string memory addressesData = string(
             abi.encodePacked(vm.readFile(addressesPath))
         );
 
         bytes memory parsedJson = vm.parseJson(addressesData);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(
+        SavedAddresses[] memory fileAddresses = abi.decode(
             parsedJson,
             (SavedAddresses[])
         );
 
-        for (uint256 i = 0; i < savedAddresses.length; i++) {
+        for (uint256 i = 0; i < fileAddresses.length; i++) {
             _addAddress(
-                savedAddresses[i].name,
-                savedAddresses[i].addr,
-                savedAddresses[i].chainId,
-                savedAddresses[i].isContract
+                fileAddresses[i].name,
+                fileAddresses[i].addr,
+                fileAddresses[i].chainId,
+                fileAddresses[i].isContract
             );
         }
     }
@@ -177,6 +183,16 @@ contract Addresses is IAddresses, Test {
                 oldAddress: data.addr
             })
         );
+
+        for (uint256 i; i < savedAddresses.length; i++) {
+            if (
+                keccak256(abi.encode(savedAddresses[i].name)) ==
+                keccak256(abi.encode(name)) &&
+                savedAddresses[i].chainId == chainId
+            ) {
+                savedAddresses[i].addr = _addr;
+            }
+        }
 
         data.addr = _addr;
         data.isContract = isContract;
@@ -327,6 +343,12 @@ contract Addresses is IAddresses, Test {
         }
     }
 
+    /// @dev Update Address json
+    function updateJson() external {
+        string memory json = constructJson(savedAddresses);
+        vm.writeJson(json, addressesPath);
+    }
+
     /// @notice add an address for a specific chainId
     /// @param name the name of the address
     /// @param addr the address to add
@@ -376,6 +398,15 @@ contract Addresses is IAddresses, Test {
 
         currentAddress.addr = addr;
         currentAddress.isContract = isContract;
+
+        savedAddresses.push(
+            SavedAddresses({
+                name: name,
+                addr: addr,
+                chainId: chainId,
+                isContract: isContract
+            })
+        );
 
         vm.label(addr, name);
     }
@@ -445,6 +476,41 @@ contract Addresses is IAddresses, Test {
         }
     }
 
+    function constructJson(
+        SavedAddresses[] memory dataArray
+    ) internal pure returns (string memory) {
+        string memory json = "[";
+
+        for (uint256 i = 0; i < dataArray.length; i++) {
+            json = string(
+                abi.encodePacked(
+                    json,
+                    "{",
+                    '"addr": "',
+                    addressToString(dataArray[i].addr),
+                    '",',
+                    '"name": "',
+                    dataArray[i].name,
+                    '",',
+                    '"chainId": ',
+                    uintToString(dataArray[i].chainId),
+                    ",",
+                    '"isContract": ',
+                    dataArray[i].isContract ? "true" : "false",
+                    "}"
+                )
+            );
+
+            if (i < dataArray.length - 1) {
+                json = string(abi.encodePacked(json, ","));
+            }
+        }
+
+        json = string(abi.encodePacked(json, "]"));
+
+        return json;
+    }
+
     function addressToString(
         address _addr
     ) internal pure returns (string memory) {
@@ -456,5 +522,24 @@ contract Addresses is IAddresses, Test {
             str[1 + i * 2] = alphabet[uint8(value[i] & 0x0f)];
         }
         return string(abi.encodePacked("0x", str));
+    }
+
+    function uintToString(uint256 _i) internal pure returns (string memory) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 length;
+        while (j != 0) {
+            length++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(length);
+        uint256 k = length;
+        while (_i != 0) {
+            bstr[--k] = bytes1(uint8(48 + (_i % 10)));
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }

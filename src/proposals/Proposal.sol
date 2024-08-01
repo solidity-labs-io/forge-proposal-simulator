@@ -31,6 +31,7 @@ abstract contract Proposal is Test, Script, IProposal {
     bool internal DO_SIMULATE;
     bool internal DO_VALIDATE;
     bool internal DO_PRINT;
+    bool internal DO_UPDATE_ADDRESS_JSON;
 
     /// @notice Addresses contract
     Addresses public addresses;
@@ -57,6 +58,7 @@ abstract contract Proposal is Test, Script, IProposal {
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
+        DO_UPDATE_ADDRESS_JSON = vm.envOr("DO_UPDATE_ADDRESS_JSON", false);
     }
 
     /// @notice proposal name, e.g. "BIP15".
@@ -87,6 +89,7 @@ abstract contract Proposal is Test, Script, IProposal {
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
         if (DO_PRINT) print();
+        if (DO_UPDATE_ADDRESS_JSON) addresses.updateJson();
     }
 
     /// @notice return proposal calldata.

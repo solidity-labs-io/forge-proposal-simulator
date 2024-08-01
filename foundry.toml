@@ -3,7 +3,7 @@ libs = ['lib']
 test = 'test'
 auto_detect_solc = true
 # Require read access for 'addresses' and 'out' folder on root repo for bytecode verification
-fs_permissions = [{ access = "read", path = "./"}]
+fs_permissions = [{ access = "read-write", path = "./"}]
 optimizer = true
 optimizer_runs = 200
 
