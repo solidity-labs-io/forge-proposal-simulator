@@ -17,10 +17,8 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     struct TransferInfo {
-        address from;
         address to;
         uint256 value;
-        bool isEthTransfer;
         address tokenAddress;
     }
 
@@ -231,7 +229,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 console.log("\n Transfers:");
             }
             for (uint256 j; j < transfers.length; j++) {
-                if (transfers[j].isEthTransfer) {
+                if (transfers[j].tokenAddress == address(0)) {
                     console.log(
                         string(
                             abi.encodePacked(
@@ -426,10 +424,8 @@ abstract contract Proposal is Test, Script, IProposal {
             }
             _proposalTransfers[accountAccess.accessor].push(
                 TransferInfo({
-                    from: accountAccess.accessor,
                     to: account,
                     value: accountAccess.value,
-                    isEthTransfer: true,
                     tokenAddress: address(0)
                 })
             );
@@ -475,10 +471,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
         _proposalTransfers[from].push(
             TransferInfo({
-                from: from,
                 to: to,
                 value: value,
-                isEthTransfer: false,
                 tokenAddress: accountAccess.account
             })
         );
@@ -522,8 +516,10 @@ abstract contract Proposal is Test, Script, IProposal {
         bytes memory strBytes = bytes(label);
 
         if (strBytes.length >= prefix.length) {
+            // check if address is unlabeled
             for (uint256 i = 0; i < prefix.length; i++) {
                 if (strBytes[i] != prefix[i]) {
+                    // return "{LABEL} @{ADDRESS}" if address is labeled
                     return
                         string(
                             abi.encodePacked(
@@ -535,12 +531,14 @@ abstract contract Proposal is Test, Script, IProposal {
                 }
             }
         } else {
+            // return "{LABEL} @{ADDRESS}" if address is labeled
             return
                 string(
                     abi.encodePacked(label, " @", vm.toString(contractAddress))
                 );
         }
 
+        // return "UNLABELED @{ADDRESS}" if address is unlabeled
         return
             string(
                 abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
