@@ -385,7 +385,7 @@ contract Addresses is IAddresses, Test {
             string(
                 abi.encodePacked(
                     "Address: ",
-                    addressToString(addr),
+                    vm.toString(addr),
                     " already set on chain: ",
                     vm.toString(chainId)
                 )
@@ -487,13 +487,13 @@ contract Addresses is IAddresses, Test {
                     json,
                     "{",
                     '"addr": "',
-                    addressToString(dataArray[i].addr),
+                    vm.toString(dataArray[i].addr),
                     '",',
                     '"name": "',
                     dataArray[i].name,
                     '",',
                     '"chainId": ',
-                    uintToString(dataArray[i].chainId),
+                    vm.toString(dataArray[i].chainId),
                     ",",
                     '"isContract": ',
                     dataArray[i].isContract ? "true" : "false",
@@ -509,37 +509,5 @@ contract Addresses is IAddresses, Test {
         json = string(abi.encodePacked(json, "]"));
 
         return json;
-    }
-
-    function addressToString(
-        address _addr
-    ) internal pure returns (string memory) {
-        bytes memory alphabet = "0123456789abcdef";
-        bytes20 value = bytes20(_addr);
-        bytes memory str = new bytes(40); // An Ethereum address has 20 bytes, hence 40 characters in hex
-        for (uint256 i = 0; i < 20; i++) {
-            str[i * 2] = alphabet[uint8(value[i] >> 4)];
-            str[1 + i * 2] = alphabet[uint8(value[i] & 0x0f)];
-        }
-        return string(abi.encodePacked("0x", str));
-    }
-
-    function uintToString(uint256 _i) internal pure returns (string memory) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint256 j = _i;
-        uint256 length;
-        while (j != 0) {
-            length++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(length);
-        uint256 k = length;
-        while (_i != 0) {
-            bstr[--k] = bytes1(uint8(48 + (_i % 10)));
-            _i /= 10;
-        }
-        return string(bstr);
     }
 }
