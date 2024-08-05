@@ -54,9 +54,10 @@ contract Addresses is IAddresses, Test {
     /// @notice array of addresses changed during a proposal
     ChangedAddress[] private changedAddresses;
 
-    /// @notice array of saved addresses
+    /// @notice array of all address details
     SavedAddresses[] private savedAddresses;
 
+    /// @notice path of addresses file
     string private addressesPath;
 
     constructor(string memory _addressesPath) {
@@ -345,7 +346,7 @@ contract Addresses is IAddresses, Test {
 
     /// @dev Update Address json
     function updateJson() external {
-        string memory json = constructJson(savedAddresses);
+        string memory json = _constructJson();
         vm.writeJson(json, addressesPath);
     }
 
@@ -476,32 +477,31 @@ contract Addresses is IAddresses, Test {
         }
     }
 
-    function constructJson(
-        SavedAddresses[] memory dataArray
-    ) internal pure returns (string memory) {
+    /// @notice constructs json string data for address json from saved addresses array
+    function _constructJson() private view returns (string memory) {
         string memory json = "[";
 
-        for (uint256 i = 0; i < dataArray.length; i++) {
+        for (uint256 i = 0; i < savedAddresses.length; i++) {
             json = string(
                 abi.encodePacked(
                     json,
                     "{",
                     '"addr": "',
-                    vm.toString(dataArray[i].addr),
+                    vm.toString(savedAddresses[i].addr),
                     '",',
                     '"name": "',
-                    dataArray[i].name,
+                    savedAddresses[i].name,
                     '",',
                     '"chainId": ',
-                    vm.toString(dataArray[i].chainId),
+                    vm.toString(savedAddresses[i].chainId),
                     ",",
                     '"isContract": ',
-                    dataArray[i].isContract ? "true" : "false",
+                    savedAddresses[i].isContract ? "true" : "false",
                     "}"
                 )
             );
 
-            if (i < dataArray.length - 1) {
+            if (i < savedAddresses.length - 1) {
                 json = string(abi.encodePacked(json, ","));
             }
         }
