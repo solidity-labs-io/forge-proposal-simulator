@@ -335,7 +335,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice to be used at the end of the build function to snapshot
     /// the actions performed by the proposal and revert these changes
-    /// then, stop the prank and record the actions that were taken by the proposal.
+    /// then, stop the prank and record the state diffs and actions that
+    /// were taken by the proposal.
     /// @param caller the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _endBuild(address caller) private {
@@ -418,6 +419,7 @@ abstract contract Proposal is Test, Script, IProposal {
         address account = accountAccess.account;
         // get eth transfers
         if (accountAccess.value != 0) {
+            // add address to proposal affected addresses array only if not already added
             if (!_isProposalAffectedAddress[accountAccess.accessor]) {
                 _isProposalAffectedAddress[accountAccess.accessor] = true;
                 _proposalAffectedAddresses.push(accountAccess.accessor);
@@ -436,11 +438,12 @@ abstract contract Proposal is Test, Script, IProposal {
     function _processERC20TransferChanges(
         VmSafe.AccountAccess memory accountAccess
     ) internal {
-        // get ERC20 token transfers
         bytes memory data = accountAccess.data;
         if (data.length <= 4) {
             return;
         }
+
+        // get function selector from calldata
         bytes4 selector = bytes4(data);
 
         // get function params
@@ -464,6 +467,7 @@ abstract contract Proposal is Test, Script, IProposal {
             return;
         }
 
+        // add address to proposal affected addresses array only if not already added
         if (!_isProposalAffectedAddress[from]) {
             _isProposalAffectedAddress[from] = true;
             _proposalAffectedAddresses.push(from);
@@ -496,6 +500,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 );
             }
 
+            // add address to proposal affected addresses array only if not already added
             if (
                 !_isProposalAffectedAddress[account] &&
                 _stateInfos[account].length != 0
