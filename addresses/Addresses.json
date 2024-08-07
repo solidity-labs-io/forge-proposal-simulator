@@ -114,12 +114,6 @@
         "isContract": true
     },
     {
-        "addr": "0xAE2AF01232a6c4a4d3012C5eC5b1b35059caF10d",
-        "chainId": 1,
-        "name": "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
-        "isContract": true
-    },
-    {
         "addr": "0xE6841D92B0C345144506576eC13ECf5103aC7f49",
         "chainId": 1,
         "name": "ARBITRUM_L1_TIMELOCK",
