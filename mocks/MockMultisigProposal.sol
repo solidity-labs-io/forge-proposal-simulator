@@ -22,9 +22,10 @@ contract MockMultisigProposal is MultisigProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-        addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-        );
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+
+        addresses = new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), supportedChainIds);
 
         super.run();
     }
@@ -33,22 +34,12 @@ contract MockMultisigProposal is MultisigProposal {
         if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
             address mockUpgrade = address(new MockUpgrade());
 
-            addresses.addAddress(
-                "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
-                mockUpgrade,
-                true
-            );
+            addresses.addAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION", mockUpgrade, true);
         }
     }
 
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
-    {
-        IProxyAdmin proxy = IProxyAdmin(
-            addresses.getAddress("OPTIMISM_PROXY_ADMIN")
-        );
+    function build() public override buildModifier(addresses.getAddress("OPTIMISM_MULTISIG")) {
+        IProxyAdmin proxy = IProxyAdmin(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
 
         proxy.upgrade(
             addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
@@ -63,15 +54,12 @@ contract MockMultisigProposal is MultisigProposal {
     }
 
     function validate() public override {
-        IProxy proxy = IProxy(
-            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
-        );
+        IProxy proxy = IProxy(addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"));
 
         // implementation() caller must be the owner
         vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
         require(
-            proxy.implementation() ==
-                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+            proxy.implementation() == addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
             "Proxy implementation not set"
         );
         vm.stopPrank();

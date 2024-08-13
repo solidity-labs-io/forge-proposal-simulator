@@ -28,11 +28,10 @@ contract MockOZGovernorProposal is OZGovernorProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-            )
-        );
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+
+        setAddresses(new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), supportedChainIds));
 
         setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
@@ -49,11 +48,7 @@ contract MockOZGovernorProposal is OZGovernorProposal {
         }
     }
 
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("ENS_TIMELOCK"))
-    {
+    function build() public override buildModifier(addresses.getAddress("ENS_TIMELOCK")) {
         /// STATICCALL -- not recorded for the run stage
         IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
         address dnsSec = addresses.getAddress("ENS_DNSSEC");

@@ -16,30 +16,23 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
     }
 
     function description() public pure override returns (string memory) {
-        return
-            "Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet";
+        return "Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet";
     }
 
     function run() public override {
-        addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-        );
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+        addresses = new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), supportedChainIds);
 
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 
         super.run();
     }
 
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO"))
-    {
+    function build() public override buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO")) {
         /// STATICCALL -- not recorded for the run stage
 
-        ICompoundConfigurator configurator = ICompoundConfigurator(
-            addresses.getAddress("COMPOUND_CONFIGURATOR")
-        );
+        ICompoundConfigurator configurator = ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded
