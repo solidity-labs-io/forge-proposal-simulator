@@ -16,6 +16,30 @@ abstract contract Proposal is Test, Script, IProposal {
         string description;
     }
 
+    struct TransferInfo {
+        address to;
+        uint256 value;
+        address tokenAddress;
+    }
+
+    struct StateInfo {
+        bytes32 slot;
+        bytes32 oldValue;
+        bytes32 newValue;
+    }
+
+    /// @notice transfers during proposal execution
+    mapping(address addr => TransferInfo[] transfers) private _proposalTransfers;
+
+    /// @notice state changes during proposal execution
+    mapping(address addr => StateInfo[] stateChanges) private _stateInfos;
+
+    /// @notice addresses involved in state changes or token transfers
+    address[] private _proposalAffectedAddresses;
+
+    /// @notice map if an address is affected in proposal execution
+    mapping(address addr => bool isAffected) private _isProposalAffectedAddress;
+
     /// @notice starting snapshot of the contract state before the calls are made
     uint256 private _startSnapshot;
 
@@ -173,13 +197,60 @@ abstract contract Proposal is Test, Script, IProposal {
         console.log("\n------------------ Proposal Actions ------------------");
         for (uint256 i; i < actions.length; i++) {
             console.log("%d). %s", i + 1, actions[i].description);
-            console.log("target: %s\npayload", actions[i].target);
+            console.log("target: %s\npayload", _getAddressLabel(actions[i].target));
             console.logBytes(actions[i].arguments);
             console.log("\n");
         }
 
-        console.log("\n\n------------------ Proposal Calldata ------------------");
-        console.logBytes(getCalldata());
+        console.log("\n----------------- Proposal Changes ---------------");
+        for (uint256 i; i < _proposalAffectedAddresses.length; i++) {
+            address account = _proposalAffectedAddresses[i];
+
+            console.log("\n\n", string(abi.encodePacked(_getAddressLabel(account), ":")));
+
+            // print token transfers
+            TransferInfo[] memory transfers = _proposalTransfers[account];
+            if (transfers.length > 0) {
+                console.log("\n Transfers:");
+            }
+            for (uint256 j; j < transfers.length; j++) {
+                if (transfers[j].tokenAddress == address(0)) {
+                    console.log(
+                        string(
+                            abi.encodePacked(
+                                "Sent ", vm.toString(transfers[j].value), " ETH to ", _getAddressLabel(transfers[j].to)
+                            )
+                        )
+                    );
+                } else {
+                    console.log(
+                        string(
+                            abi.encodePacked(
+                                "Sent ",
+                                vm.toString(transfers[j].value),
+                                " ",
+                                _getAddressLabel(transfers[j].tokenAddress),
+                                " to ",
+                                _getAddressLabel(transfers[j].to)
+                            )
+                        )
+                    );
+                }
+            }
+
+            // print state changes
+            StateInfo[] memory stateChanges = _stateInfos[account];
+            if (stateChanges.length > 0) {
+                console.log("\n State Changes:");
+            }
+            for (uint256 j; j < stateChanges.length; j++) {
+                console.log("Slot:", vm.toString(stateChanges[j].slot));
+                console.log("- ", vm.toString(stateChanges[j].oldValue));
+                console.log("+ ", vm.toString(stateChanges[j].newValue));
+            }
+        }
+
+        _printProposalCalldata();
     }
 
     /// --------------------------------------------------------------------
@@ -205,6 +276,12 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice validate actions
     function _validateActions() internal virtual {}
 
+    /// @notice print proposal calldata
+    function _printProposalCalldata() internal virtual {
+        console.log("\n\n------------------ Proposal Calldata ------------------");
+        console.logBytes(getCalldata());
+    }
+
     /// --------------------------------------------------------------------
     /// --------------------------------------------------------------------
     /// ------------------------- Private functions ------------------------
@@ -228,7 +305,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice to be used at the end of the build function to snapshot
     /// the actions performed by the proposal and revert these changes
-    /// then, stop the prank and record the actions that were taken by the proposal.
+    /// then, stop the prank and record the state diffs and actions that
+    /// were taken by the proposal.
     /// @param caller the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _endBuild(address caller) private {
@@ -238,6 +316,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
         /// roll back all state changes made during the governance proposal
         require(vm.revertTo(_startSnapshot), "failed to revert back to snapshot, unsafe state to run proposal");
+
+        _processStateDiffChanges(accountAccesses);
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls from the original caller,
@@ -250,7 +330,6 @@ abstract contract Proposal is Test, Script, IProposal {
                     && accountAccesses[i].kind == VmSafe.AccountAccessKind.Call && accountAccesses[i].accessor == caller
             ) {
                 /// caller is correct, not a subcall
-
                 _validateAction(accountAccesses[i].account, accountAccesses[i].value, accountAccesses[i].data);
 
                 actions.push(
@@ -261,7 +340,7 @@ abstract contract Proposal is Test, Script, IProposal {
                         description: string(
                             abi.encodePacked(
                                 "calling ",
-                                vm.toString(accountAccesses[i].account),
+                                _getAddressLabel(accountAccesses[i].account),
                                 " with ",
                                 vm.toString(accountAccesses[i].value),
                                 " eth and ",
@@ -275,5 +354,123 @@ abstract contract Proposal is Test, Script, IProposal {
         }
 
         _validateActions();
+    }
+
+    /// @notice helper method to get transfers and state changes of proposal affected addresses
+    function _processStateDiffChanges(VmSafe.AccountAccess[] memory accountAccesses) internal {
+        for (uint256 i = 0; i < accountAccesses.length; i++) {
+            // process ETH transfer changes
+            _processETHTransferChanges(accountAccesses[i]);
+
+            // process ERC20 transfer changes
+            _processERC20TransferChanges(accountAccesses[i]);
+
+            // process state changes
+            _processStateChanges(accountAccesses[i].storageAccesses);
+        }
+    }
+
+    /// @notice helper method to get eth transfers of proposal affected addresses
+    function _processETHTransferChanges(VmSafe.AccountAccess memory accountAccess) internal {
+        address account = accountAccess.account;
+        // get eth transfers
+        if (accountAccess.value != 0) {
+            // add address to proposal affected addresses array only if not already added
+            if (!_isProposalAffectedAddress[accountAccess.accessor]) {
+                _isProposalAffectedAddress[accountAccess.accessor] = true;
+                _proposalAffectedAddresses.push(accountAccess.accessor);
+            }
+            _proposalTransfers[accountAccess.accessor].push(
+                TransferInfo({to: account, value: accountAccess.value, tokenAddress: address(0)})
+            );
+        }
+    }
+
+    /// @notice helper method to get ERC20 token transfers of proposal affected addresses
+    function _processERC20TransferChanges(VmSafe.AccountAccess memory accountAccess) internal {
+        bytes memory data = accountAccess.data;
+        if (data.length <= 4) {
+            return;
+        }
+
+        // get function selector from calldata
+        bytes4 selector = bytes4(data);
+
+        // get function params
+        bytes memory params = new bytes(data.length - 4);
+        for (uint256 j = 0; j < data.length - 4; j++) {
+            params[j] = data[j + 4];
+        }
+
+        address from;
+        address to;
+        uint256 value;
+        // 'transfer' selector in ERC20 token
+        if (selector == 0xa9059cbb) {
+            (to, value) = abi.decode(params, (address, uint256));
+            from = accountAccess.accessor;
+        }
+        // 'transferFrom' selector in ERC20 token
+        else if (selector == 0x23b872dd) {
+            (from, to, value) = abi.decode(params, (address, address, uint256));
+        } else {
+            return;
+        }
+
+        // add address to proposal affected addresses array only if not already added
+        if (!_isProposalAffectedAddress[from]) {
+            _isProposalAffectedAddress[from] = true;
+            _proposalAffectedAddresses.push(from);
+        }
+
+        _proposalTransfers[from].push(TransferInfo({to: to, value: value, tokenAddress: accountAccess.account}));
+    }
+
+    /// @notice helper method to get state changes of proposal affected addresses
+    function _processStateChanges(VmSafe.StorageAccess[] memory storageAccess) internal {
+        for (uint256 i; i < storageAccess.length; i++) {
+            address account = storageAccess[i].account;
+
+            // get only state changes for write storage access
+            if (storageAccess[i].isWrite) {
+                _stateInfos[account].push(
+                    StateInfo({
+                        slot: storageAccess[i].slot,
+                        oldValue: storageAccess[i].previousValue,
+                        newValue: storageAccess[i].newValue
+                    })
+                );
+            }
+
+            // add address to proposal affected addresses array only if not already added
+            if (!_isProposalAffectedAddress[account] && _stateInfos[account].length != 0) {
+                _isProposalAffectedAddress[account] = true;
+                _proposalAffectedAddresses.push(account);
+            }
+        }
+    }
+
+    /// @notice helper method to get labels for addresses
+    function _getAddressLabel(address contractAddress) internal view returns (string memory) {
+        string memory label = vm.getLabel(contractAddress);
+
+        bytes memory prefix = bytes("unlabeled:");
+        bytes memory strBytes = bytes(label);
+
+        if (strBytes.length >= prefix.length) {
+            // check if address is unlabeled
+            for (uint256 i = 0; i < prefix.length; i++) {
+                if (strBytes[i] != prefix[i]) {
+                    // return "{LABEL} @{ADDRESS}" if address is labeled
+                    return string(abi.encodePacked(label, " @", vm.toString(contractAddress)));
+                }
+            }
+        } else {
+            // return "{LABEL} @{ADDRESS}" if address is labeled
+            return string(abi.encodePacked(label, " @", vm.toString(contractAddress)));
+        }
+
+        // return "UNLABELED @{ADDRESS}" if address is unlabeled
+        return string(abi.encodePacked("UNLABELED @", vm.toString(contractAddress)));
     }
 }
