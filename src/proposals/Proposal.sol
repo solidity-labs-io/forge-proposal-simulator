@@ -26,7 +26,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice debug flag to print internal proposal logs
     bool internal DEBUG;
     bool internal DO_DEPLOY;
-    bool internal DO_AFTER_DEPLOY_MOCK;
+    bool internal DO_PRE_BUILD_MOCK;
     bool internal DO_BUILD;
     bool internal DO_SIMULATE;
     bool internal DO_VALIDATE;
@@ -52,7 +52,7 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = vm.envOr("DEBUG", false);
 
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
-        DO_AFTER_DEPLOY_MOCK = vm.envOr("DO_AFTER_DEPLOY_MOCK", true);
+        DO_PRE_BUILD_MOCK = vm.envOr("DO_PRE_BUILD_MOCK", true);
         DO_BUILD = vm.envOr("DO_BUILD", true);
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
@@ -82,7 +82,7 @@ abstract contract Proposal is Test, Script, IProposal {
             vm.stopBroadcast();
         }
 
-        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
+        if (DO_PRE_BUILD_MOCK) preBuildMock();
         if (DO_BUILD) build();
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
@@ -92,9 +92,9 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @notice return proposal calldata.
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice check if there are any on-chain proposal that matches the
+    /// @notice check and return proposal id if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata() public view virtual returns (bool matches);
+    function getProposalId() public view virtual returns (uint256 proposalId);
 
     /// @notice get proposal actions
     function getProposalActions()
@@ -102,11 +102,7 @@ abstract contract Proposal is Test, Script, IProposal {
         view
         virtual
         override
-        returns (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory arguments
-        )
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments)
     {
         uint256 actionsLength = actions.length;
         require(actionsLength > 0, "No actions found");
@@ -116,14 +112,10 @@ abstract contract Proposal is Test, Script, IProposal {
         arguments = new bytes[](actionsLength);
 
         for (uint256 i; i < actionsLength; i++) {
-            require(
-                actions[i].target != address(0),
-                "Invalid target for proposal"
-            );
+            require(actions[i].target != address(0), "Invalid target for proposal");
             /// if there are no args and no eth, the action is not valid
             require(
-                (actions[i].arguments.length == 0 && actions[i].value > 0) ||
-                    actions[i].arguments.length > 0,
+                (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
                 "Invalid arguments for proposal"
             );
             targets[i] = actions[i].target;
@@ -154,7 +146,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice helper function to mock on-chain data after deployment
     ///         e.g. pranking, etching, etc.
-    function afterDeployMock() public virtual {}
+    function preBuildMock() public virtual {}
 
     /// @notice build the proposal actions
     /// @dev contract calls must be perfomed in plain solidity.
@@ -186,9 +178,7 @@ abstract contract Proposal is Test, Script, IProposal {
             console.log("\n");
         }
 
-        console.log(
-            "\n\n------------------ Proposal Calldata ------------------"
-        );
+        console.log("\n\n------------------ Proposal Calldata ------------------");
         console.logBytes(getCalldata());
     }
 
@@ -200,25 +190,15 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice validate actions inclusion
     /// default implementation check for duplicate actions
-    function _validateAction(
-        address target,
-        uint256 value,
-        bytes memory data
-    ) internal virtual {
+    function _validateAction(address target, uint256 value, bytes memory data) internal virtual {
         uint256 actionsLength = actions.length;
         for (uint256 i = 0; i < actionsLength; i++) {
             // Check if the target, arguments and value matches with other exciting actions.
             bool isDuplicateTarget = actions[i].target == target;
-            bool isDuplicateArguments = keccak256(actions[i].arguments) ==
-                keccak256(data);
+            bool isDuplicateArguments = keccak256(actions[i].arguments) == keccak256(data);
             bool isDuplicateValue = actions[i].value == value;
 
-            require(
-                !(isDuplicateTarget &&
-                    isDuplicateArguments &&
-                    isDuplicateValue),
-                "Duplicated action found"
-            );
+            require(!(isDuplicateTarget && isDuplicateArguments && isDuplicateValue), "Duplicated action found");
         }
     }
 
@@ -252,34 +232,26 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @param caller the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _endBuild(address caller) private {
-        VmSafe.AccountAccess[] memory accountAccesses = vm
-            .stopAndReturnStateDiff();
+        VmSafe.AccountAccess[] memory accountAccesses = vm.stopAndReturnStateDiff();
 
         vm.stopPrank();
 
         /// roll back all state changes made during the governance proposal
-        require(
-            vm.revertTo(_startSnapshot),
-            "failed to revert back to snapshot, unsafe state to run proposal"
-        );
+        require(vm.revertTo(_startSnapshot), "failed to revert back to snapshot, unsafe state to run proposal");
 
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             /// only care about calls from the original caller,
             /// static calls are ignored,
             /// calls to and from Addresses and the vm contract are ignored
             if (
-                accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].account != address(vm) &&
+                accountAccesses[i].account != address(addresses) && accountAccesses[i].account != address(vm)
                 /// ignore calls to vm in the build function
-                accountAccesses[i].accessor != address(addresses) &&
-                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller /// caller is correct, not a subcall
+                && accountAccesses[i].accessor != address(addresses)
+                    && accountAccesses[i].kind == VmSafe.AccountAccessKind.Call && accountAccesses[i].accessor == caller
             ) {
-                _validateAction(
-                    accountAccesses[i].account,
-                    accountAccesses[i].value,
-                    accountAccesses[i].data
-                );
+                /// caller is correct, not a subcall
+
+                _validateAction(accountAccesses[i].account, accountAccesses[i].value, accountAccesses[i].data);
 
                 actions.push(
                     Action({

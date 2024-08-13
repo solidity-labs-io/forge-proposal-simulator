@@ -13,8 +13,11 @@ contract TimelockProposalIntegrationTest is Test {
     TimelockProposal public proposal;
 
     function setUp() public {
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", supportedChainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the TimelockProposal contract
@@ -30,15 +33,9 @@ contract TimelockProposalIntegrationTest is Test {
     }
 
     function test_setUp() public view {
+        assertEq(proposal.name(), string("ARBITRUM_L1_TIMELOCK_MOCK"), "Wrong proposal name");
         assertEq(
-            proposal.name(),
-            string("ARBITRUM_L1_TIMELOCK_MOCK"),
-            "Wrong proposal name"
-        );
-        assertEq(
-            proposal.description(),
-            string("Mock proposal that upgrades the weth gateway"),
-            "Wrong proposal description"
+            proposal.description(), string("Mock proposal that upgrades the weth gateway"), "Wrong proposal description"
         );
     }
 
@@ -48,11 +45,9 @@ contract TimelockProposalIntegrationTest is Test {
         vm.stopPrank();
 
         // calls after deploy mock to mock arbitrum outbox contract
-        proposal.afterDeployMock();
+        proposal.preBuildMock();
 
-        assertTrue(
-            addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
-        );
+        assertTrue(addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"));
         assertTrue(addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"));
     }
 
@@ -64,19 +59,11 @@ contract TimelockProposalIntegrationTest is Test {
 
         proposal.build();
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = proposal.getProposalActions();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
 
         // check that the proposal targets are correct
         assertEq(targets.length, 1, "Wrong targets length");
-        assertEq(
-            targets[0],
-            addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR"),
-            "Wrong target at index 0"
-        );
+        assertEq(targets[0], addresses.getAddress("ARBITRUM_L1_UPGRADE_EXECUTOR"), "Wrong target at index 0");
 
         // check that the proposal values are correct
         assertEq(values.length, 1, "Wrong values length");
@@ -93,9 +80,7 @@ contract TimelockProposalIntegrationTest is Test {
         assertEq(
             calldatas[0],
             abi.encodeWithSignature(
-                "execute(address,bytes)",
-                addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"),
-                innerCalldata
+                "execute(address,bytes)", addresses.getAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"), innerCalldata
             ),
             "Wrong calldata at index 0"
         );
@@ -112,16 +97,10 @@ contract TimelockProposalIntegrationTest is Test {
     function test_getCalldata() public {
         test_build();
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = proposal.getProposalActions();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
 
         bytes32 salt = keccak256(abi.encode(proposal.description()));
-        uint256 delay = ITimelockController(
-            payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
-        ).getMinDelay();
+        uint256 delay = ITimelockController(payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))).getMinDelay();
 
         bytes memory expectedData = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -141,21 +120,12 @@ contract TimelockProposalIntegrationTest is Test {
     function test_getExecuteCalldata() public {
         test_build();
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = proposal.getProposalActions();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
 
         bytes32 salt = keccak256(abi.encode(proposal.description()));
 
         bytes memory expectedData = abi.encodeWithSignature(
-            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
-            targets,
-            values,
-            calldatas,
-            bytes32(0),
-            salt
+            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)", targets, values, calldatas, bytes32(0), salt
         );
 
         bytes memory data = proposal.getExecuteCalldata();
@@ -163,9 +133,17 @@ contract TimelockProposalIntegrationTest is Test {
         assertEq(data, expectedData, "Wrong executeBatch calldata");
     }
 
-    function test_checkOnChainCalldata() public {
+    function test_getProposalId() public {
         test_simulate();
 
-        assertTrue(proposal.checkOnChainCalldata());
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
+
+        bytes32 salt = keccak256(abi.encode(proposal.description()));
+
+        bytes32 hash = ITimelockController(payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))).hashOperationBatch(
+            targets, values, calldatas, bytes32(0), salt
+        );
+
+        assertEq(proposal.getProposalId(), uint256(hash));
     }
 }

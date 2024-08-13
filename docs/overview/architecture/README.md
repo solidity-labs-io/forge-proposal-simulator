@@ -1,6 +1,6 @@
 ---
 description: >-
-    The Forge Proposal Simulator (FPS) offers a versatile solution for protocols with trusted actors to create and validate governance proposals.
+  The Forge Proposal Simulator (FPS) offers a versatile solution for protocols with trusted actors to create and validate governance proposals.
 ---
 
 # Architecture
@@ -19,7 +19,7 @@ FPS supports different Governance types (e.g., Timelock, Multisig, Governor Brav
 
 ## Proposal Specific Contract
 
-Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `afterDeployMock()` for proposals involving new contract deployments. For more details, refer to [proposal functions](proposal-functions.md).
+Protocols using FPS must create their own Proposal Specific Contracts, conforming to FPS standards. These contracts override functions relevant to the particular proposal, such as `deploy()` and `preBuildMock()` for proposals involving new contract deployments. For more details, refer to [proposal functions](proposal-functions.md).
 
 {% content-ref url="proposal-functions.md" %}
 [proposal-functions.md](proposal-functions.md)
