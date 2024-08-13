@@ -12,8 +12,11 @@ contract DuplicatedActionProposalIntegrationTest is Test {
     GovernorBravoProposal public proposal;
 
     function setUp() public {
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", supportedChainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the BravoProposal contract

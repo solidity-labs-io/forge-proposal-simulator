@@ -12,8 +12,11 @@ contract BravoProposalIntegrationTest is Test {
     GovernorBravoProposal public proposal;
 
     function setUp() public {
+        uint256[] memory supportedChainIds = new uint256[](1);
+        supportedChainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", supportedChainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the BravoProposal contract
@@ -29,22 +32,14 @@ contract BravoProposalIntegrationTest is Test {
     }
 
     function test_setUp() public view {
-        assertEq(
-            proposal.name(),
-            string("ADJUST_WETH_IR_CURVE"),
-            "Wrong proposal name"
-        );
+        assertEq(proposal.name(), string("ADJUST_WETH_IR_CURVE"), "Wrong proposal name");
         assertEq(
             proposal.description(),
-            string(
-                "Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet"
-            ),
+            string("Mock proposal that adjust IR Curve for Compound v3 WETH on Mainnet"),
             "Wrong proposal description"
         );
         assertEq(
-            address(proposal.governor()),
-            addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"),
-            "Wrong governor address"
+            address(proposal.governor()), addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"), "Wrong governor address"
         );
     }
 
@@ -54,11 +49,7 @@ contract BravoProposalIntegrationTest is Test {
 
         proposal.build();
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = proposal.getProposalActions();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
 
         address target = addresses.getAddress("COMPOUND_CONFIGURATOR");
         assertEq(targets.length, 2, "Wrong targets length");
@@ -74,21 +65,13 @@ contract BravoProposalIntegrationTest is Test {
         assertEq(calldatas.length, 2);
         assertEq(
             calldatas[0],
-            abi.encodeWithSignature(
-                "setBorrowKink(address,uint64)",
-                addresses.getAddress("COMPOUND_COMET"),
-                kink
-            ),
+            abi.encodeWithSignature("setBorrowKink(address,uint64)", addresses.getAddress("COMPOUND_COMET"), kink),
             "Wrong calldata at index 0"
         );
 
         assertEq(
             calldatas[1],
-            abi.encodeWithSignature(
-                "setSupplyKink(address,uint64)",
-                addresses.getAddress("COMPOUND_COMET"),
-                kink
-            ),
+            abi.encodeWithSignature("setSupplyKink(address,uint64)", addresses.getAddress("COMPOUND_COMET"), kink),
             "Wrong calldata at index 1"
         );
     }
@@ -99,7 +82,7 @@ contract BravoProposalIntegrationTest is Test {
         proposal.simulate();
 
         // check that proposal exists
-        assertTrue(proposal.checkOnChainCalldata());
+        assertTrue(proposal.getProposalId() > 0);
 
         proposal.validate();
     }
@@ -107,11 +90,7 @@ contract BravoProposalIntegrationTest is Test {
     function test_getCalldata() public {
         test_build();
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas
-        ) = proposal.getProposalActions();
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
 
         string[] memory signatures = new string[](targets.length);
 

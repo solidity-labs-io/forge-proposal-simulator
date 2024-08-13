@@ -15,7 +15,7 @@ interface IGovernor {
         Executed
     }
 
-     /**
+    /**
      * @notice module:voting
      * @dev A description of the possible `support` values for {castVote} and the way these votes are counted, meant to
      * be consumed by UIs to show correct vote options and interpret the results. The string is a URL-encoded sequence of
@@ -147,11 +147,10 @@ interface IGovernor {
      * @notice module:reputation
      * @dev Voting power of an `account` at a specific `timepoint` given additional encoded parameters.
      */
-    function getVotesWithParams(
-        address account,
-        uint256 timepoint,
-        bytes memory params
-    ) external view returns (uint256);
+    function getVotesWithParams(address account, uint256 timepoint, bytes memory params)
+        external
+        view
+        returns (uint256);
 
     /**
      * @notice module:voting
@@ -185,12 +184,9 @@ interface IGovernor {
      *
      * Emits a {ProposalQueued} event.
      */
-    function queue(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) external returns (uint256 proposalId);
+    function queue(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash)
+        external
+        returns (uint256 proposalId);
 
     /**
      * @dev Execute a successful proposal. This requires the quorum to be reached, the vote to be successful, and the
@@ -233,35 +229,27 @@ interface IGovernor {
      *
      * Emits a {VoteCast} event.
      */
-    function castVoteWithReason(
-        uint256 proposalId,
-        uint8 support,
-        string calldata reason
-    ) external returns (uint256 balance);
+    function castVoteWithReason(uint256 proposalId, uint8 support, string calldata reason)
+        external
+        returns (uint256 balance);
 
     /**
      * @dev Cast a vote with a reason and additional encoded parameters
      *
      * Emits a {VoteCast} or {VoteCastWithParams} event depending on the length of params.
      */
-    function castVoteWithReasonAndParams(
-        uint256 proposalId,
-        uint8 support,
-        string calldata reason,
-        bytes memory params
-    ) external returns (uint256 balance);
+    function castVoteWithReasonAndParams(uint256 proposalId, uint8 support, string calldata reason, bytes memory params)
+        external
+        returns (uint256 balance);
 
     /**
      * @dev Cast a vote using the voter's signature, including ERC-1271 signature support.
      *
      * Emits a {VoteCast} event.
      */
-    function castVoteBySig(
-        uint256 proposalId,
-        uint8 support,
-        address voter,
-        bytes memory signature
-    ) external returns (uint256 balance);
+    function castVoteBySig(uint256 proposalId, uint8 support, address voter, bytes memory signature)
+        external
+        returns (uint256 balance);
 
     /**
      * @dev Cast a vote with a reason and additional encoded parameters using the voter's signature,
@@ -277,8 +265,7 @@ interface IGovernor {
         bytes memory params,
         bytes memory signature
     ) external returns (uint256 balance);
-
-    }
+}
 
 interface IGovernorTimelockControl {
     /**
@@ -290,4 +277,3 @@ interface IGovernorTimelockControl {
 interface IGovernorVotes {
     function token() external view returns (address);
 }
-
