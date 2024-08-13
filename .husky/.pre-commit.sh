@@ -2,7 +2,7 @@
 
 # Temporary file to hold list of staged .sol files
 STAGED_SOL_FILES=$(mktemp)
-# Temporary file to hold list of all staged files for prettier
+# Temporary file to hold list of all staged files for formatting
 STAGED_FILES=$(mktemp)
 
 # List staged .sol files ignoring deleted files
@@ -36,19 +36,19 @@ if [ -s "$STAGED_SOL_FILES" ]; then
     fi
 fi
 
-# Run Prettier and check for errors on staged files
+# Run forge fmt and check for errors on staged files
 if [ -s "$STAGED_FILES" ]; then
-    # Note: Using `--write` with Prettier to automatically fix formatting
-    PRETTIER_OUTPUT=$(cat "$STAGED_FILES" | xargs npx prettier --ignore-path .prettierignore --write)
-    PRETTIER_EXIT_CODE=$?
+    # Note: Run forge fmt to automatically fix formatting
+    FMT_OUTPUT=$(cat "$STAGED_FILES" | xargs forge fmt)
+    FMT_EXIT_CODE=$?
 
-    if [ $PRETTIER_EXIT_CODE -ne 0 ]; then
-        echo "Prettier formatting errors detected:"
-        echo "$PRETTIER_OUTPUT"
+    if [ $FMT_EXIT_CODE -ne 0 ]; then
+        echo "Forge fmt formatting errors detected:"
+        echo "$FMT_OUTPUT"
         rm "$STAGED_SOL_FILES" "$STAGED_FILES"
-        exit $PRETTIER_EXIT_CODE
+        exit $FMT_EXIT_CODE
     else
-        # Re-add the files to include any formatting changes by Prettier
+        # Re-add the files to include any formatting changes by forge fmt
         cat "$STAGED_FILES" | xargs git add
     fi
 fi

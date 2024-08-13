@@ -18,6 +18,6 @@ If you would like to contribute code or documentation you may do so by forking t
 
 Any non-trivial code contribution must be first discussed with the maintainers in an issue (see [Opening an issue](#opening-an-issue)). Only very minor changes are accepted without prior discussion.
 
-Run linter, prettier and tests to make sure your pull request is good before submitting it.
+Run linter, forge fmt and tests to make sure your pull request is good before submitting it.
 
 If you're looking for a good place to start, look for issues labelled ["good first issue"](https://github.com/solidity-labs-io/forge-proposal-simulator/labels/good%20first%20issue)!
