@@ -275,6 +275,20 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressContract("TEST"), true);
     }
 
+    function test_checkAddressFileUpdate() public {
+        address test = vm.addr(1);
+
+        addresses.addAddress("TEST", test, 123, true);
+
+        addresses.updateJson();
+
+        string memory addressesPath = "./addresses/Addresses.json";
+        addresses = new Addresses(addressesPath);
+
+        // check Addresses.json is updated correctly and TEST address is set
+        addresses.isAddressSet("TEST");
+    }
+
     function addressIsPresent() public {
         address test = vm.addr(1);
 
