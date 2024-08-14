@@ -11,7 +11,7 @@ import {IAddresses} from "@addresses/IAddresses.sol";
 contract Addresses is IAddresses, Test {
     struct Address {
         address addr;
-        bool isContract;
+        string contractType;
     }
 
     /// @notice mapping from contract name to network chain id to address
@@ -29,8 +29,8 @@ contract Addresses is IAddresses, Test {
         address addr;
         /// chain id of network to store for
         uint256 chainId;
-        /// whether the address is a contract
-        bool isContract;
+        /// type of contract to store
+        string contractType;
         /// name of contract to store
         string name;
     }
@@ -71,7 +71,7 @@ contract Addresses is IAddresses, Test {
                 savedAddresses[i].name,
                 savedAddresses[i].addr,
                 savedAddresses[i].chainId,
-                savedAddresses[i].isContract
+                savedAddresses[i].contractType
             );
         }
     }
@@ -95,13 +95,13 @@ contract Addresses is IAddresses, Test {
     /// @notice add an address for the current chainId
     /// @param name the name of the address
     /// @param addr the address to add
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     function addAddress(
         string memory name,
         address addr,
-        bool isContract
+        string memory contractType
     ) public {
-        _addAddress(name, addr, block.chainid, isContract);
+        _addAddress(name, addr, block.chainid, contractType);
 
         recordedAddresses.push(
             RecordedAddress({name: name, chainId: block.chainid})
@@ -112,14 +112,14 @@ contract Addresses is IAddresses, Test {
     /// @param name the name of the address
     /// @param addr the address to add
     /// @param _chainId the chain id
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     function addAddress(
         string memory name,
         address addr,
         uint256 _chainId,
-        bool isContract
+        string memory contractType
     ) public {
-        _addAddress(name, addr, _chainId, isContract);
+        _addAddress(name, addr, _chainId, contractType);
 
         recordedAddresses.push(
             RecordedAddress({name: name, chainId: _chainId})
@@ -130,12 +130,12 @@ contract Addresses is IAddresses, Test {
     /// @param name the name of the address
     /// @param _addr the address to change to
     /// @param chainId the chain id
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     function changeAddress(
         string memory name,
         address _addr,
         uint256 chainId,
-        bool isContract
+        string memory contractType
     ) public {
         Address storage data = _addresses[name][chainId];
 
@@ -168,7 +168,7 @@ contract Addresses is IAddresses, Test {
             )
         );
 
-        _checkAddress(_addr, isContract, name, chainId);
+        _checkAddress(_addr, contractType, name, chainId);
 
         changedAddresses.push(
             ChangedAddress({
@@ -179,20 +179,20 @@ contract Addresses is IAddresses, Test {
         );
 
         data.addr = _addr;
-        data.isContract = isContract;
+        data.contractType = contractType;
         vm.label(_addr, name);
     }
 
     /// @notice change an address for the current chainId
     /// @param name the name of the address
     /// @param addr the address to change to
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     function changeAddress(
         string memory name,
         address addr,
-        bool isContract
+        string memory contractType
     ) public {
-        changeAddress(name, addr, block.chainid, isContract);
+        changeAddress(name, addr, block.chainid, contractType);
     }
 
     /// @notice remove recorded addresses
@@ -259,7 +259,10 @@ contract Addresses is IAddresses, Test {
     /// @notice check if an address is a contract
     /// @param name the name of the address
     function isAddressContract(string memory name) public view returns (bool) {
-        return _addresses[name][block.chainid].isContract;
+        return
+            keccak256(
+                abi.encode(_addresses[name][block.chainid].contractType)
+            ) != keccak256(abi.encode("EOA"));
     }
 
     /// @notice check if an address is set
@@ -292,7 +295,7 @@ contract Addresses is IAddresses, Test {
                 for (uint256 j = 0; j < names.length; j++) {
                     console.log("{\n          'addr': '%s', ", addresses[j]);
                     console.log("        'chainId': %d,", block.chainid);
-                    console.log("        'isContract': %s", true, ",");
+                    console.log("        'contractType': %s", true, ",");
                     console.log(
                         "        'name': '%s'\n}%s",
                         names[j],
@@ -316,7 +319,7 @@ contract Addresses is IAddresses, Test {
                 for (uint256 j = 0; j < names.length; j++) {
                     console.log("{\n          'addr': '%s', ", addresses[j]);
                     console.log("        'chainId': %d,", block.chainid);
-                    console.log("        'isContract': %s", true, ",");
+                    console.log("        'contractType': %s", true, ",");
                     console.log(
                         "        'name': '%s'\n}%s",
                         names[j],
@@ -331,12 +334,12 @@ contract Addresses is IAddresses, Test {
     /// @param name the name of the address
     /// @param addr the address to add
     /// @param chainId the chain id
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     function _addAddress(
         string memory name,
         address addr,
         uint256 chainId,
-        bool isContract
+        string memory contractType
     ) private {
         Address storage currentAddress = _addresses[name][chainId];
 
@@ -372,10 +375,10 @@ contract Addresses is IAddresses, Test {
 
         addressToChainId[addr][chainId] = true;
 
-        _checkAddress(addr, isContract, name, chainId);
+        _checkAddress(addr, contractType, name, chainId);
 
         currentAddress.addr = addr;
-        currentAddress.isContract = isContract;
+        currentAddress.contractType = contractType;
 
         vm.label(addr, name);
     }
@@ -407,29 +410,20 @@ contract Addresses is IAddresses, Test {
 
     /// @notice check if an address is a contract
     /// @param _addr the address to check
-    /// @param isContract whether the address is a contract
+    /// @param contractType whether the address is a contract
     /// @param name the name of the address
     /// @param chainId the chain id
     function _checkAddress(
         address _addr,
-        bool isContract,
+        string memory contractType,
         string memory name,
         uint256 chainId
     ) private view {
         if (chainId == block.chainid) {
-            if (isContract) {
-                require(
-                    _addr.code.length > 0,
-                    string(
-                        abi.encodePacked(
-                            "Address: ",
-                            name,
-                            " is not a contract on chain: ",
-                            vm.toString(chainId)
-                        )
-                    )
-                );
-            } else {
+            if (
+                keccak256(abi.encode(contractType)) ==
+                keccak256(abi.encode("EOA"))
+            ) {
                 require(
                     _addr.code.length == 0,
                     string(
@@ -441,6 +435,39 @@ contract Addresses is IAddresses, Test {
                         )
                     )
                 );
+            } else {
+                require(
+                    _addr.code.length > 0,
+                    string(
+                        abi.encodePacked(
+                            "Address: ",
+                            name,
+                            " is not a contract on chain: ",
+                            vm.toString(chainId)
+                        )
+                    )
+                );
+
+                if (
+                    keccak256(abi.encode(contractType)) ==
+                    keccak256(abi.encode("LOGIC_CONTRACT")) ||
+                    keccak256(abi.encode(contractType)) ==
+                    keccak256(abi.encode("PROXY_CONTRACT"))
+                ) {
+                    bytes32 slotValue = vm.load(_addr, bytes32(uint256(0)));
+                    uint8 isInitialized = uint8(uint256(slotValue));
+                    require(
+                        isInitialized != 0,
+                        string(
+                            abi.encodePacked(
+                                "Logic Address: ",
+                                name,
+                                " is not initialized on chain: ",
+                                vm.toString(chainId)
+                            )
+                        )
+                    );
+                }
             }
         }
     }

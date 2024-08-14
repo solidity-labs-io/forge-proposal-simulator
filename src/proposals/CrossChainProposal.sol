@@ -7,7 +7,8 @@ import "@forge-std/Test.sol";
 /// cross chain calls within the context of a proposal.
 /// Reuse Multisig Proposal contract for readability and to avoid code duplication.
 abstract contract CrossChainProposal is MultisigProposal {
-    uint32 public nonce; /// nonce for wormhole
+    uint32 public nonce;
+    /// nonce for wormhole
 
     /// instant finality on moonbeam https://book.wormhole.com/wormhole/3_coreLayerContracts.html?highlight=consiste#consistency-levels
     uint16 public consistencyLevel = 200;

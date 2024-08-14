@@ -67,7 +67,7 @@ contract MockTimelockProposal is TimelockProposal {
             addresses.addAddress(
                 "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
                 mockUpgrade,
-                true
+                "CONTRACT"
             );
         }
 
@@ -76,7 +76,7 @@ contract MockTimelockProposal is TimelockProposal {
             addresses.addAddress(
                 "ARBITRUM_GAC_UPGRADE_WETH_GATEWAY",
                 gac,
-                true
+                "CONTRACT"
             );
         }
     }

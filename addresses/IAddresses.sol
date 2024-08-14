@@ -23,7 +23,7 @@ interface IAddresses {
     function addAddress(
         string memory name,
         address addr,
-        bool isContract
+        string memory isContract
     ) external;
 
     /// @notice add an address for a specific chainId
@@ -35,7 +35,7 @@ interface IAddresses {
         string memory name,
         address addr,
         uint256 chainId,
-        bool isContract
+        string memory isContract
     ) external;
 
     /// @notice change an address for the current chainId
@@ -45,7 +45,7 @@ interface IAddresses {
     function changeAddress(
         string memory name,
         address addr,
-        bool isContract
+        string memory isContract
     ) external;
 
     /// @notice change an address for a specific chainId
@@ -57,7 +57,7 @@ interface IAddresses {
         string memory name,
         address addr,
         uint256 chainId,
-        bool isContract
+        string memory isContract
     ) external;
 
     /// @notice remove recorded addresses

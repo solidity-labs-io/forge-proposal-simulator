@@ -36,7 +36,7 @@ contract MockMultisigProposal is MultisigProposal {
             addresses.addAddress(
                 "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
                 mockUpgrade,
-                true
+                "CONTRACT"
             );
         }
     }

@@ -45,7 +45,7 @@ contract MockOZGovernorProposal is OZGovernorProposal {
             // deployig the DNSSEC contract instead of using a mock
             address dnsSec = address(new MockUpgrade());
 
-            addresses.addAddress("ENS_DNSSEC", dnsSec, true);
+            addresses.addAddress("ENS_DNSSEC", dnsSec, "CONTRACT");
         }
     }
 
