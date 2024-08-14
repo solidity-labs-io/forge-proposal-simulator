@@ -22,10 +22,10 @@ contract MockBravoProposal is GovernorBravoProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-        uint256[] memory supportedChainIds = new uint256[](1);
-        supportedChainIds[0] = 1;
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
 
-        setAddresses(new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), supportedChainIds));
+        setAddresses(new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds));
 
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
 

@@ -36,7 +36,7 @@ interface IProposal {
     /// @dev contracts calls here are broadcast if the broadcast flag is set.
     function deploy() external;
 
-    /// @notice helper function to mock on-chain data after deployment
+    /// @notice helper function to mock on-chain data before build
     ///         e.g. pranking, etching, etc.
     function preBuildMock() external;
 

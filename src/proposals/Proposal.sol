@@ -168,7 +168,7 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev contracts calls here are broadcast if the broadcast flag is set.
     function deploy() public virtual {}
 
-    /// @notice helper function to mock on-chain data after deployment
+    /// @notice helper function to mock on-chain data before build
     ///         e.g. pranking, etching, etc.
     function preBuildMock() public virtual {}
 

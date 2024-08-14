@@ -21,18 +21,16 @@ contract TestAddresses is Test {
 
     function setUp() public {
         string memory addressesFolderPath = "./addresses";
-        uint256[] memory supportedChainIds = new uint256[](3);
-        supportedChainIds[0] = 1;
-        supportedChainIds[1] = 31337;
-        supportedChainIds[2] = 11155111;
+        uint256[] memory chainIds = new uint256[](3);
+        chainIds[0] = 1;
+        chainIds[1] = 31337;
+        chainIds[2] = 11155111;
 
-        addresses = new Addresses(addressesFolderPath, supportedChainIds);
-        for (uint256 i; i < supportedChainIds.length; i++) {
+        addresses = new Addresses(addressesFolderPath, chainIds);
+        for (uint256 i; i < chainIds.length; i++) {
             string memory addressesData = string(
                 abi.encodePacked(
-                    vm.readFile(
-                        string(abi.encodePacked(addressesFolderPath, "/", vm.toString(supportedChainIds[i]), ".json"))
-                    )
+                    vm.readFile(string(abi.encodePacked(addressesFolderPath, "/", vm.toString(chainIds[i]), ".json")))
                 )
             );
             parsedJsons.push(vm.parseJson(addressesData));
@@ -200,11 +198,11 @@ contract TestAddresses is Test {
     function test_revertDuplicateAddressInJson() public {
         string memory addressesFolderPath = "./test/utils/duplicate-addresses";
 
-        uint256[] memory supportedChainIds = new uint256[](1);
-        supportedChainIds[0] = 31337;
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 31337;
 
         vm.expectRevert("Address with name: DEPLOYER_EOA already set on chain: 31337");
-        new Addresses(addressesFolderPath, supportedChainIds);
+        new Addresses(addressesFolderPath, chainIds);
     }
 
     function test_addAddressCannotBeZero() public {
@@ -291,10 +289,10 @@ contract TestAddresses is Test {
     function test_revertDuplicateAddressInJsonWithDifferentName() public {
         string memory addressesFolderPath = "./test/utils/duplicate-addresses-different-name";
 
-        uint256[] memory supportedChainIds = new uint256[](1);
-        supportedChainIds[0] = 31337;
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 31337;
 
         vm.expectRevert("Address: 0x9679e26bf0c470521de83ad77bb1bf1e7312f739 already set on chain: 31337");
-        new Addresses(addressesFolderPath, supportedChainIds);
+        new Addresses(addressesFolderPath, chainIds);
     }
 }

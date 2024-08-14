@@ -22,10 +22,10 @@ contract MockMultisigProposal is MultisigProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-        uint256[] memory supportedChainIds = new uint256[](1);
-        supportedChainIds[0] = 1;
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
 
-        addresses = new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), supportedChainIds);
+        addresses = new Addresses(vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds);
 
         super.run();
     }
