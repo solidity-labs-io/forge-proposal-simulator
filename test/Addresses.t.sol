@@ -276,17 +276,40 @@ contract TestAddresses is Test {
     }
 
     function test_checkAddressFileUpdate() public {
-        address test = vm.addr(1);
+        address test1 = vm.addr(1);
 
-        addresses.addAddress("TEST", test, 123, true);
+        addresses.addAddress("TEST1", test1, 123, false);
 
+        // update addresses.json file
         addresses.updateJson();
 
         string memory addressesPath = "./addresses/Addresses.json";
         addresses = new Addresses(addressesPath);
 
-        // check Addresses.json is updated correctly and TEST address is set
-        addresses.isAddressSet("TEST");
+        // check Addresses.json is updated correctly and TEST1 address is set
+        addresses.isAddressSet("TEST1");
+        assertEq(addresses.getAddress("TEST1", 123), test1);
+
+        test1 = vm.addr(2);
+        address test2 = vm.addr(3);
+
+        // change TEST1 address
+        addresses.changeAddress("TEST1", test1, 123, false);
+
+        // add TEST2 address
+        addresses.addAddress("TEST2", test2, block.chainid, false);
+
+        // update addresses.json file
+        addresses.updateJson();
+
+        // update addresses object with updated addresses.json
+        addresses = new Addresses(addressesPath);
+
+        // check TEST1 address is updated
+        assertEq(addresses.getAddress("TEST1", 123), test1);
+
+        // check TEST2 address is added
+        assertEq(addresses.getAddress("TEST2"), test2);
     }
 
     function addressIsPresent() public {

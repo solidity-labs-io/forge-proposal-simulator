@@ -23,21 +23,23 @@ abstract contract Proposal is Test, Script, IProposal {
     /// they all follow the same structure
     Action[] public actions;
 
-    /// @notice flag to print internal proposal logs
+    /// @notice flag to print internal proposal logs, default is false
     bool internal DEBUG;
-    /// @notice flag to trigger the deployment of contracts on-chain
+    /// @notice flag to trigger the deployment of contracts on-chain, default is true
     bool internal DO_DEPLOY;
-    /// @notice flag to initiate post-deployment mocking processes
+    /// @notice flag to initiate post-deployment mocking processes, default is true
     bool internal DO_AFTER_DEPLOY_MOCK;
-    /// @notice flag to transform plain solidity code into calldata encoded for the user's governance model
+    /// @notice flag to transform plain solidity code into calldata encoded for the
+    /// user's governance model, default is true
     bool internal DO_BUILD;
-    /// @notice flag to simulate saved actions during the `build` step
+    /// @notice flag to simulate saved actions during the `build` step, default is true
     bool internal DO_SIMULATE;
-    /// @notice flag to validate the system state post-proposal simulation
+    /// @notice flag to validate the system state post-proposal simulation, default is true
     bool internal DO_VALIDATE;
-    /// @notice flag to print proposal description, actions, and calldata
+    /// @notice flag to print proposal description, actions, and calldata, default is true
     bool internal DO_PRINT;
-    /// @notice flag to update the `Addresses.json` file with the newly added and changed addresses
+    /// @notice flag to update the `Addresses.json` file with the newly added and changed
+    /// addresses, default is false
     bool internal DO_UPDATE_ADDRESS_JSON;
 
     /// @notice Addresses contract
