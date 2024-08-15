@@ -18,7 +18,11 @@ abstract contract CrossChainProposal is MultisigProposal {
         nonce = _nonce;
     }
 
-    function getTargetsPayloadsValues() public view returns (address[] memory, uint256[] memory, bytes[] memory) {
+    function getTargetsPayloadsValues()
+        public
+        view
+        returns (address[] memory, uint256[] memory, bytes[] memory)
+    {
         /// target cannot be address 0 as that call will fail
         /// value can be 0
         /// arguments can be 0 as long as eth is sent
@@ -30,11 +34,14 @@ abstract contract CrossChainProposal is MultisigProposal {
         bytes[] memory payloads = new bytes[](proposalLength);
 
         for (uint256 i = 0; i < proposalLength; i++) {
-            require(actions[i].target != address(0), "Invalid target for governance");
+            require(
+                actions[i].target != address(0), "Invalid target for governance"
+            );
 
             /// if there are no args and no eth, the action is not valid
             require(
-                (actions[i].arguments.length == 0 && actions[i].value > 0) || actions[i].arguments.length > 0,
+                (actions[i].arguments.length == 0 && actions[i].value > 0)
+                    || actions[i].arguments.length > 0,
                 "Invalid arguments for governance"
             );
 
@@ -46,8 +53,16 @@ abstract contract CrossChainProposal is MultisigProposal {
         return (targets, values, payloads);
     }
 
-    function getTimelockCalldata(address timelock) public view returns (bytes memory) {
-        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getTargetsPayloadsValues();
+    function getTimelockCalldata(address timelock)
+        public
+        view
+        returns (bytes memory)
+    {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getTargetsPayloadsValues();
 
         return abi.encodeWithSignature(
             "publishMessage(uint32,bytes,uint8)",
@@ -57,7 +72,11 @@ abstract contract CrossChainProposal is MultisigProposal {
         );
     }
 
-    function getArtemisGovernorCalldata(address timelock, address wormholeCore) public view returns (bytes memory) {
+    function getArtemisGovernorCalldata(address timelock, address wormholeCore)
+        public
+        view
+        returns (bytes memory)
+    {
         bytes memory timelockCalldata = getTimelockCalldata(timelock);
 
         address[] memory targets = new address[](1);
@@ -73,7 +92,12 @@ abstract contract CrossChainProposal is MultisigProposal {
         signatures[0] = "";
 
         bytes memory artemisPayload = abi.encodeWithSignature(
-            "propose(address[],uint256[],string[],bytes[],string)", targets, values, signatures, payloads, description()
+            "propose(address[],uint256[],string[],bytes[],string)",
+            targets,
+            values,
+            signatures,
+            payloads,
+            description()
         );
 
         return artemisPayload;
@@ -85,13 +109,18 @@ abstract contract CrossChainProposal is MultisigProposal {
         console.log("timelock governance calldata");
         emit log_bytes(timelockCalldata);
 
-        bytes memory wormholePublishCalldata =
-            abi.encodeWithSignature("publishMessage(uint32,bytes,uint8)", nonce, timelockCalldata, consistencyLevel);
+        bytes memory wormholePublishCalldata = abi.encodeWithSignature(
+            "publishMessage(uint32,bytes,uint8)",
+            nonce,
+            timelockCalldata,
+            consistencyLevel
+        );
 
         console.log("wormhole publish governance calldata");
         emit log_bytes(wormholePublishCalldata);
 
-        bytes memory artemisPayload = getArtemisGovernorCalldata(timelock, wormholeCore);
+        bytes memory artemisPayload =
+            getArtemisGovernorCalldata(timelock, wormholeCore);
 
         console.log("artemis governor queue governance calldata");
         emit log_bytes(artemisPayload);

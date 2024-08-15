@@ -76,7 +76,10 @@ interface ITimelockBravo {
 }
 
 interface IERC20VotesComp {
-    function getPriorVotes(address account, uint256 blockNumber) external view returns (uint96);
+    function getPriorVotes(address account, uint256 blockNumber)
+        external
+        view
+        returns (uint96);
 
     function delegate(address delegatee) external;
 }

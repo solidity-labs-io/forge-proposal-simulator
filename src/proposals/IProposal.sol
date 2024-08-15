@@ -20,7 +20,11 @@ interface IProposal {
     /// @dev this function shoudn't be overriden.
     function getProposalActions()
         external
-        returns (address[] memory targets, uint256[] memory values, bytes[] memory arguments);
+        returns (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory arguments
+        );
 
     /// @notice return proposal calldata
     function getCalldata() external returns (bytes memory data);

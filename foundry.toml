@@ -12,6 +12,9 @@ localhost = "http://127.0.0.1:8545"
 sepolia = "https://sepolia.drpc.org"
 mainnet = "https://mainnet.gateway.tenderly.co" 
 
+[fmt]
+line_length = 80
+
 #[etherscan]
 #sepolia = { key = "${ETHERSCAN_API_KEY}" }
 

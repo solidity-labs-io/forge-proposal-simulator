@@ -23,10 +23,19 @@ abstract contract TimelockProposal is Proposal {
     }
 
     /// @notice get schedule calldata
-    function getCalldata() public view override returns (bytes memory scheduleCalldata) {
+    function getCalldata()
+        public
+        view
+        override
+        returns (bytes memory scheduleCalldata)
+    {
         bytes32 salt = keccak256(abi.encode(description()));
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
 
         uint256 delay = timelock.getMinDelay();
 
@@ -42,27 +51,53 @@ abstract contract TimelockProposal is Proposal {
     }
 
     /// @notice get execute calldata
-    function getExecuteCalldata() public view returns (bytes memory executeCalldata) {
+    function getExecuteCalldata()
+        public
+        view
+        returns (bytes memory executeCalldata)
+    {
         bytes32 salt = keccak256(abi.encode(description()));
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
 
         executeCalldata = abi.encodeWithSignature(
-            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)", targets, values, payloads, predecessor, salt
+            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
+            targets,
+            values,
+            payloads,
+            predecessor,
+            salt
         );
     }
 
     /// @notice Check and return proposal hash if there are any on-chain proposal that matches the
     /// proposal calldata
-    function getProposalId() public view override returns (uint256 proposalId) {
-        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
+    function getProposalId()
+        public
+        view
+        override
+        returns (uint256 proposalId)
+    {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
 
         bytes32 salt = keccak256(abi.encode(description()));
 
-        bytes32 hash = timelock.hashOperationBatch(targets, values, payloads, predecessor, salt);
+        bytes32 hash = timelock.hashOperationBatch(
+            targets, values, payloads, predecessor, salt
+        );
 
         if (DEBUG) {
-            console.log("Proposal calldata matches on-chain calldata with proposal hash: ");
+            console.log(
+                "Proposal calldata matches on-chain calldata with proposal hash: "
+            );
             console.logBytes32(hash);
         }
 
@@ -76,7 +111,9 @@ abstract contract TimelockProposal is Proposal {
     /// @notice simulate timelock proposal
     /// @param proposerAddress account to propose the proposal to the timelock
     /// @param executorAddress account to execute the proposal on the timelock
-    function _simulateActions(address proposerAddress, address executorAddress) internal {
+    function _simulateActions(address proposerAddress, address executorAddress)
+        internal
+    {
         bytes32 salt = keccak256(abi.encode(description()));
 
         if (DEBUG) {
@@ -87,15 +124,25 @@ abstract contract TimelockProposal is Proposal {
         bytes memory scheduleCalldata = getCalldata();
         bytes memory executeCalldata = getExecuteCalldata();
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory payloads) = getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory payloads
+        ) = getProposalActions();
 
-        bytes32 proposalId = timelock.hashOperationBatch(targets, values, payloads, predecessor, salt);
+        bytes32 proposalId = timelock.hashOperationBatch(
+            targets, values, payloads, predecessor, salt
+        );
 
-        if (!timelock.isOperationPending(proposalId) && !timelock.isOperation(proposalId)) {
+        if (
+            !timelock.isOperationPending(proposalId)
+                && !timelock.isOperation(proposalId)
+        ) {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(timelock).functionCall(scheduleCalldata);
+            bytes memory returndata =
+                address(timelock).functionCall(scheduleCalldata);
 
             if (DEBUG && returndata.length > 0) {
                 console.log("schedule calldata return data:");
@@ -113,7 +160,8 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(timelock).functionCall(executeCalldata);
+            bytes memory returndata =
+                address(timelock).functionCall(executeCalldata);
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");
@@ -126,10 +174,14 @@ abstract contract TimelockProposal is Proposal {
 
     /// @notice print schedule and execute calldata
     function _printProposalCalldata() internal view override {
-        console.log("\n\n------------------ Schedule Calldata ------------------");
+        console.log(
+            "\n\n------------------ Schedule Calldata ------------------"
+        );
         console.logBytes(getCalldata());
 
-        console.log("\n\n------------------ Execute Calldata ------------------");
+        console.log(
+            "\n\n------------------ Execute Calldata ------------------"
+        );
         console.logBytes(getExecuteCalldata());
     }
 }
