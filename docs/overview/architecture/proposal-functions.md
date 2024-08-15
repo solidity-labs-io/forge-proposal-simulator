@@ -291,7 +291,7 @@ FPS is flexible enough so that for any different governance model, governance pr
 
     Flags used in `run()` function:
 
-    -   **DO_DEPLOY**: When set to true, triggers the deployment of contracts on-chain. Default value is false.
+    -   **DO_DEPLOY**: When set to true, triggers the deployment of contracts on-chain. Default value is true.
     -   **DO_AFTER_DEPLOY_MOCK**: When set to true, initiates post-deployment mocking processes. Used to simulate an action that has not happened yet for testing such as dealing tokens for testing or simulating scenarios after deployment. Default value is true.
     -   **DO_BUILD**: When set to true, controls the build process and transforms plain solidity code into calldata encoded for the user's governance model. Default value is true.
     -   **DO_SIMULATE**: When set to true, allows for the simulation of saved actions during the `build` step. Default value is true.
