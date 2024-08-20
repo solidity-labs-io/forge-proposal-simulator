@@ -34,9 +34,8 @@ contract MultisigProposal_05 is MultisigProposal {
         override
         buildModifier(addresses.getAddress("PROTOCOL_MULTISIG"))
     {
-        MockSavingContract savingContract = MockSavingContract(
-            addresses.getAddress("SAVING_CONTRACT")
-        );
+        MockSavingContract savingContract =
+            MockSavingContract(addresses.getAddress("SAVING_CONTRACT"));
 
         // actions
         savingContract.deposit{value: 20 ether}(0);

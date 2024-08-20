@@ -42,9 +42,8 @@ contract MultisigProposal_03 is MultisigProposal {
         override
         buildModifier(addresses.getAddress("PROTOCOL_MULTISIG"))
     {
-        MockVotingContract votingContract = MockVotingContract(
-            addresses.getAddress("VOTING_CONTRACT")
-        );
+        MockVotingContract votingContract =
+            MockVotingContract(addresses.getAddress("VOTING_CONTRACT"));
 
         // actions
         votingContract.vote("candidate0");

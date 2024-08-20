@@ -26,11 +26,7 @@ contract MultisigProposal_04 is MultisigProposal {
         vm.deal(addresses.getAddress("PROTOCOL_MULTISIG"), 1000 ether);
 
         // add Voting contract address
-        addresses.addAddress(
-            "AUCTION_CONTRACT",
-            address(auctionContract),
-            true
-        );
+        addresses.addAddress("AUCTION_CONTRACT", address(auctionContract), true);
     }
 
     function build()
@@ -38,9 +34,8 @@ contract MultisigProposal_04 is MultisigProposal {
         override
         buildModifier(addresses.getAddress("PROTOCOL_MULTISIG"))
     {
-        MockAuction auctionContract = MockAuction(
-            addresses.getAddress("AUCTION_CONTRACT")
-        );
+        MockAuction auctionContract =
+            MockAuction(addresses.getAddress("AUCTION_CONTRACT"));
 
         // actions
         auctionContract.bid{value: 10 ether}();

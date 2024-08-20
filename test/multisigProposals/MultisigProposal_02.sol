@@ -27,9 +27,8 @@ contract MultisigProposal_02 is MultisigProposal {
 
         MockToken token = MockToken(addresses.getAddress("TOKEN"));
 
-        MockTokenWrapper tokenWrapper = new MockTokenWrapper(
-            addresses.getAddress("TOKEN")
-        );
+        MockTokenWrapper tokenWrapper =
+            new MockTokenWrapper(addresses.getAddress("TOKEN"));
 
         token.mint(addresses.getAddress("DEPLOYER_EOA"), 1000 ether);
 
@@ -45,14 +44,12 @@ contract MultisigProposal_02 is MultisigProposal {
         override
         buildModifier(addresses.getAddress("PROTOCOL_MULTISIG"))
     {
-        MockTokenWrapper tokenWrapper = MockTokenWrapper(
-            addresses.getAddress("TOKEN_WRAPPER")
-        );
+        MockTokenWrapper tokenWrapper =
+            MockTokenWrapper(addresses.getAddress("TOKEN_WRAPPER"));
 
         // actions
         MockToken(addresses.getAddress("TOKEN")).approve(
-            address(tokenWrapper),
-            60 ether
+            address(tokenWrapper), 60 ether
         );
         tokenWrapper.mint{value: 10 ether}();
         tokenWrapper.redeemTokens(10 ether);

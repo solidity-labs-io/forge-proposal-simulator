@@ -23,8 +23,7 @@ contract MultisigProposal_01 is MultisigProposal {
             MockToken mockERC20 = new MockToken("MOCK_TOKEN", "MTOKEN");
 
             mockERC20.mint(
-                addresses.getAddress("PROTOCOL_MULTISIG"),
-                1000 ether
+                addresses.getAddress("PROTOCOL_MULTISIG"), 1000 ether
             );
 
             addresses.addAddress("TOKEN", address(mockERC20), true);
@@ -45,9 +44,7 @@ contract MultisigProposal_01 is MultisigProposal {
         mockToken.transfer(deployer, 100);
         mockToken.approve(addresses.getAddress("PROTOCOL_MULTISIG"), 200);
         mockToken.transferFrom(
-            addresses.getAddress("PROTOCOL_MULTISIG"),
-            deployer,
-            200
+            addresses.getAddress("PROTOCOL_MULTISIG"), deployer, 200
         );
     }
 }
