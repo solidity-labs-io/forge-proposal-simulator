@@ -21,8 +21,10 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
     }
 
     function run() public override {
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
         addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+            vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
         );
 
         setGovernor(addresses.getAddress("COMPOUND_GOVERNOR_BRAVO"));
@@ -37,9 +39,8 @@ contract MockDuplicatedActionProposal is GovernorBravoProposal {
     {
         /// STATICCALL -- not recorded for the run stage
 
-        ICompoundConfigurator configurator = ICompoundConfigurator(
-            addresses.getAddress("COMPOUND_CONFIGURATOR")
-        );
+        ICompoundConfigurator configurator =
+            ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded

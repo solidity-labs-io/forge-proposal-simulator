@@ -29,9 +29,9 @@ interface IProposal {
     /// @notice return proposal calldata
     function getCalldata() external returns (bytes memory data);
 
-    /// @notice check if there are any on-chain proposal that matches the
+    /// @notice check and return proposal id if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata() external returns (bool);
+    function getProposalId() external returns (uint256);
 
     /// @notice return Addresses object
     function addresses() external view returns (Addresses);
@@ -40,9 +40,9 @@ interface IProposal {
     /// @dev contracts calls here are broadcast if the broadcast flag is set.
     function deploy() external;
 
-    /// @notice helper function to mock on-chain data after deployment
+    /// @notice helper function to mock on-chain data before build
     ///         e.g. pranking, etching, etc.
-    function afterDeployMock() external;
+    function preBuildMock() external;
 
     /// @notice build the proposal actions
     /// @dev contract calls must be perfomed in plain solidity.

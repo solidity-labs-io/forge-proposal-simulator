@@ -1,31 +1,29 @@
 {
-    "name": "standard-repo",
-    "description": "Foundry-based library for proposals simulations",
-    "version": "1.0.0",
-    "devDependencies": {
-        "husky": "9.0.10",
-        "prettier": "3.0.0",
-        "prettier-plugin-solidity": "1.2.0",
-        "solhint": "4.5.2"
-    },
-    "keywords": [
-        "blockchain",
-        "ethereum",
-        "forge",
-        "foundry",
-        "smart-contracts",
-        "solidity"
-    ],
-    "scripts": {
-        "prepare": "husky",
-        "clean": "rm -rf cache out",
-        "build": "forge build",
-        "lint": "solhint --config ./.solhintrc --ignore-path .solhintignore '**/*.sol'",
-        "lint:write": "solhint --config ./.solhintrc  --fix '**/*.sol'",
-        "prettier": "prettier --ignore-path .prettierignore --list-different './**/*'",
-        "prettier:write": "prettier --ignore-path .prettierignore --write './**/*'",
-        "test": "forge test",
-        "test:coverage": "forge coverage",
-        "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
-    }
+  "name": "standard-repo",
+  "description": "Foundry-based library for proposals simulations",
+  "version": "1.0.0",
+  "devDependencies": {
+    "husky": "9.0.10",
+    "solhint": "4.5.2"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "forge",
+    "foundry",
+    "smart-contracts",
+    "solidity"
+  ],
+  "scripts": {
+    "prepare": "husky",
+    "clean": "rm -rf cache out",
+    "build": "forge build",
+    "lint": "solhint --config ./.solhintrc --ignore-path .solhintignore '**/*.sol'",
+    "lint:write": "solhint --config ./.solhintrc  --fix '**/*.sol'",
+    "fmt": "forge fmt --check",
+    "fmt:write": "forge fmt",
+    "test": "forge test",
+    "test:coverage": "forge coverage",
+    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
+  }
 }

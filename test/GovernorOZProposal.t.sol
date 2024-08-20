@@ -12,8 +12,11 @@ contract OZGovernorProposalIntegrationTest is Test {
     OZGovernorProposal public proposal;
 
     function setUp() public {
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", chainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the OZ Proposal contract
@@ -100,7 +103,7 @@ contract OZGovernorProposalIntegrationTest is Test {
         proposal.simulate();
 
         // check that proposal exists
-        assertTrue(proposal.checkOnChainCalldata());
+        assertTrue(proposal.getProposalId() > 0);
 
         proposal.validate();
     }

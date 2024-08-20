@@ -74,13 +74,13 @@ abstract contract TimelockProposal is Proposal {
         );
     }
 
-    /// @notice Check if there are any on-chain proposal that matches the
+    /// @notice Check and return proposal hash if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata()
+    function getProposalId()
         public
         view
         override
-        returns (bool calldataExist)
+        returns (uint256 proposalId)
     {
         (
             address[] memory targets,
@@ -91,11 +91,7 @@ abstract contract TimelockProposal is Proposal {
         bytes32 salt = keccak256(abi.encode(description()));
 
         bytes32 hash = timelock.hashOperationBatch(
-            targets,
-            values,
-            payloads,
-            predecessor,
-            salt
+            targets, values, payloads, predecessor, salt
         );
 
         if (DEBUG) {
@@ -105,16 +101,19 @@ abstract contract TimelockProposal is Proposal {
             console.logBytes32(hash);
         }
 
-        return timelock.isOperation(hash) || timelock.isOperationPending(hash);
+        if (timelock.isOperation(hash) || timelock.isOperationPending(hash)) {
+            return uint256(hash);
+        } else {
+            return 0;
+        }
     }
 
     /// @notice simulate timelock proposal
     /// @param proposerAddress account to propose the proposal to the timelock
     /// @param executorAddress account to execute the proposal on the timelock
-    function _simulateActions(
-        address proposerAddress,
-        address executorAddress
-    ) internal {
+    function _simulateActions(address proposerAddress, address executorAddress)
+        internal
+    {
         bytes32 salt = keccak256(abi.encode(description()));
 
         if (DEBUG) {
@@ -132,23 +131,18 @@ abstract contract TimelockProposal is Proposal {
         ) = getProposalActions();
 
         bytes32 proposalId = timelock.hashOperationBatch(
-            targets,
-            values,
-            payloads,
-            predecessor,
-            salt
+            targets, values, payloads, predecessor, salt
         );
 
         if (
-            !timelock.isOperationPending(proposalId) &&
-            !timelock.isOperation(proposalId)
+            !timelock.isOperationPending(proposalId)
+                && !timelock.isOperation(proposalId)
         ) {
             vm.prank(proposerAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(timelock).functionCall(
-                scheduleCalldata
-            );
+            bytes memory returndata =
+                address(timelock).functionCall(scheduleCalldata);
 
             if (DEBUG && returndata.length > 0) {
                 console.log("schedule calldata return data:");
@@ -166,9 +160,8 @@ abstract contract TimelockProposal is Proposal {
             vm.prank(executorAddress);
 
             // Perform the low-level call
-            bytes memory returndata = address(timelock).functionCall(
-                executeCalldata
-            );
+            bytes memory returndata =
+                address(timelock).functionCall(executeCalldata);
 
             if (DEBUG && returndata.length > 0) {
                 console.log("returndata");

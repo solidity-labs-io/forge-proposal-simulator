@@ -1,0 +1,42 @@
+[
+    {
+        "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+        "name": "DEPLOYER_EOA",
+        "isContract": false
+    },
+    {
+        "addr": "0x37039662a2364Df8206691c1D1b9ff8d22389290",
+        "isContract": true,
+        "name": "PROTOCOL_TIMELOCK_BRAVO"
+    },
+    {
+        "addr": "0x201CA53059484131D3d8058ec8D9655117E05dC2",
+        "isContract": true,
+        "name": "PROTOCOL_GOVERNANCE_TOKEN"
+    },
+    {
+        "addr": "0xAE96E645c7c7628BA9507B1e91A5fA3Cb1EB5DA1",
+        "isContract": true,
+        "name": "PROTOCOL_TIMELOCK"
+    },
+    {
+        "addr": "0x7D26D5978cD4617C6c7a02C75a42927eF52f405C",
+        "isContract": true,
+        "name": "TIMELOCK_VAULT"
+    },
+    {
+        "addr": "0x861bB12491F453F48fE1A05e9C034588de638262",
+        "isContract": true,
+        "name": "TIMELOCK_TOKEN"
+    },
+    {
+        "addr": "0x0CB10d561C2a273AFBB81E535738BA3095E9dCF2",
+        "isContract": true,
+        "name": "BRAVO_VAULT"
+    },
+    {
+        "addr": "0x76126BDFC0893d9A27336b93824778432cA60808",
+        "isContract": true,
+        "name": "BRAVO_VAULT_TOKEN"
+    }
+]

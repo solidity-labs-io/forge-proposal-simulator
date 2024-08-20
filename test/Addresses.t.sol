@@ -7,14 +7,12 @@ import {Addresses} from "@addresses/Addresses.sol";
 contract TestAddresses is Test {
     Addresses public addresses;
 
-    bytes public parsedJson;
+    bytes[] public parsedJsons;
 
     /// @notice json structure to read addresses into storage from file
     struct SavedAddresses {
         /// address to store
         address addr;
-        /// chain id of network to store for
-        uint256 chainId;
         /// whether the address is a contract
         bool isContract;
         /// name of contract to store
@@ -22,13 +20,30 @@ contract TestAddresses is Test {
     }
 
     function setUp() public {
-        string memory addressesPath = "./addresses/Addresses.json";
-        addresses = new Addresses(addressesPath);
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](3);
+        chainIds[0] = 1;
+        chainIds[1] = 31337;
+        chainIds[2] = 11155111;
 
-        string memory addressesData = string(
-            abi.encodePacked(vm.readFile(addressesPath))
-        );
-        parsedJson = vm.parseJson(addressesData);
+        addresses = new Addresses(addressesFolderPath, chainIds);
+        for (uint256 i; i < chainIds.length; i++) {
+            string memory addressesData = string(
+                abi.encodePacked(
+                    vm.readFile(
+                        string(
+                            abi.encodePacked(
+                                addressesFolderPath,
+                                "/",
+                                vm.toString(chainIds[i]),
+                                ".json"
+                            )
+                        )
+                    )
+                )
+            );
+            parsedJsons.push(vm.parseJson(addressesData));
+        }
     }
 
     function test_getAddress() public view {
@@ -54,9 +69,7 @@ contract TestAddresses is Test {
         addresses.changeAddress("DEPLOYER_EOA", addr, false);
 
         assertEq(
-            addresses.getAddress("DEPLOYER_EOA"),
-            addr,
-            "Not updated correclty"
+            addresses.getAddress("DEPLOYER_EOA"), addr, "Not updated correclty"
         );
     }
 
@@ -185,13 +198,10 @@ contract TestAddresses is Test {
         assertEq(oldAddresses.length, 1);
         assertEq(newAddresses.length, 1);
 
-        SavedAddresses[] memory savedAddresses = abi.decode(
-            parsedJson,
-            (SavedAddresses[])
-        );
+        SavedAddresses[] memory savedAddresses =
+            abi.decode(parsedJsons[0], (SavedAddresses[]));
 
         assertEq(names[0], savedAddresses[0].name);
-        assertEq(chainIds[0], savedAddresses[0].chainId);
         assertEq(oldAddresses[0], savedAddresses[0].addr);
         assertEq(newAddresses[0], addr);
     }
@@ -233,12 +243,15 @@ contract TestAddresses is Test {
     }
 
     function test_revertDuplicateAddressInJson() public {
-        string memory addressesPath = "./addresses/AddressesDuplicated.json";
+        string memory addressesFolderPath = "./test/utils/duplicate-addresses";
+
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 31337;
 
         vm.expectRevert(
             "Address with name: DEPLOYER_EOA already set on chain: 31337"
         );
-        new Addresses(addressesPath);
+        new Addresses(addressesFolderPath, chainIds);
     }
 
     function test_addAddressCannotBeZero() public {
@@ -275,6 +288,48 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressContract("TEST"), true);
     }
 
+    function test_checkAddressFileUpdate() public {
+        address test1 = vm.addr(1);
+
+        addresses.addAddress("TEST1", test1, 11155111, false);
+
+        // update addresses.json file
+        addresses.updateJson();
+
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](3);
+        chainIds[0] = 1;
+        chainIds[1] = 31337;
+        chainIds[2] = 11155111;
+
+        addresses = new Addresses(addressesFolderPath, chainIds);
+
+        // check Addresseses files are updated correctly and TEST1 address is set
+        addresses.isAddressSet("TEST1");
+        assertEq(addresses.getAddress("TEST1", 11155111), test1);
+
+        test1 = vm.addr(2);
+        address test2 = vm.addr(3);
+
+        // change TEST1 address
+        addresses.changeAddress("TEST1", test1, 11155111, false);
+
+        // add TEST2 address
+        addresses.addAddress("TEST2", test2, block.chainid, false);
+
+        // update addresses.json file
+        addresses.updateJson();
+
+        // update addresses object with updated addresses.json
+        addresses = new Addresses(addressesFolderPath, chainIds);
+
+        // check TEST1 address is updated
+        assertEq(addresses.getAddress("TEST1", 11155111), test1);
+
+        // check TEST2 address is added
+        assertEq(addresses.getAddress("TEST2"), test2);
+    }
+
     function addressIsPresent() public {
         address test = vm.addr(1);
 
@@ -305,7 +360,9 @@ contract TestAddresses is Test {
         addresses.addAddress("TEST", vm.addr(1), true);
     }
 
-    function test_checkAddressRevertIfSetIsContractFalseButIsContract() public {
+    function test_checkAddressRevertIfSetIsContractFalseButIsContract()
+        public
+    {
         address test = vm.addr(1);
 
         vm.etch(test, "0x01");
@@ -319,18 +376,21 @@ contract TestAddresses is Test {
         address test = vm.addr(1);
 
         vm.expectRevert(
-            "Address: 0x7e5f4552091a69125d5dfcb7b8c2659029395bdf already set on chain: 123"
+            "Address: 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf already set on chain: 123"
         );
         addresses.addAddress("TEST_2", test, 123, false);
     }
 
     function test_revertDuplicateAddressInJsonWithDifferentName() public {
-        string
-            memory addressesPath = "./addresses/AddressesDuplicatedDifferentName.json";
+        string memory addressesFolderPath =
+            "./test/utils/duplicate-addresses-different-name";
+
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 31337;
 
         vm.expectRevert(
-            "Address: 0x9679e26bf0c470521de83ad77bb1bf1e7312f739 already set on chain: 31337"
+            "Address: 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739 already set on chain: 31337"
         );
-        new Addresses(addressesPath);
+        new Addresses(addressesFolderPath, chainIds);
     }
 }

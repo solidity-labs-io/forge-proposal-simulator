@@ -26,9 +26,7 @@ interface IGovernorBravo {
 
     function timelock() external view returns (ITimelockBravo);
 
-    function getActions(
-        uint256 proposalId
-    )
+    function getActions(uint256 proposalId)
         external
         view
         returns (
@@ -38,50 +36,50 @@ interface IGovernorBravo {
             bytes[] memory calldatas
         );
 
-    function castVote(uint proposalId, uint8 support) external;
+    function castVote(uint256 proposalId, uint8 support) external;
 
-    function queue(uint proposalId) external;
+    function queue(uint256 proposalId) external;
 
-    function execute(uint proposalId) external payable;
+    function execute(uint256 proposalId) external payable;
 
-    function state(uint proposalId) external view returns (ProposalState);
+    function state(uint256 proposalId) external view returns (ProposalState);
 
     function comp() external view returns (IERC20VotesComp);
 }
 
 interface ITimelockBravo {
-    function delay() external view returns (uint);
-    function GRACE_PERIOD() external view returns (uint);
+    function delay() external view returns (uint256);
+    function GRACE_PERIOD() external view returns (uint256);
     function acceptAdmin() external;
     function queuedTransactions(bytes32 hash) external view returns (bool);
     function queueTransaction(
         address target,
-        uint value,
+        uint256 value,
         string calldata signature,
         bytes calldata data,
-        uint eta
+        uint256 eta
     ) external returns (bytes32);
     function cancelTransaction(
         address target,
-        uint value,
+        uint256 value,
         string calldata signature,
         bytes calldata data,
-        uint eta
+        uint256 eta
     ) external;
     function executeTransaction(
         address target,
-        uint value,
+        uint256 value,
         string calldata signature,
         bytes calldata data,
-        uint eta
+        uint256 eta
     ) external payable returns (bytes memory);
 }
 
 interface IERC20VotesComp {
-    function getPriorVotes(
-        address account,
-        uint blockNumber
-    ) external view returns (uint96);
+    function getPriorVotes(address account, uint256 blockNumber)
+        external
+        view
+        returns (uint96);
 
     function delegate(address delegatee) external;
 }

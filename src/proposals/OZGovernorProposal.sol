@@ -3,7 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {IGovernor, IGovernorTimelockControl, IGovernorVotes} from "@interface/IGovernor.sol";
+import {
+    IGovernor,
+    IGovernorTimelockControl,
+    IGovernorVotes
+} from "@interface/IGovernor.sol";
 import {IVotes} from "@interface/IVotes.sol";
 import {ITimelockController} from "@interface/ITimelockController.sol";
 
@@ -25,7 +29,12 @@ abstract contract OZGovernorProposal is Proposal {
     }
 
     /// @notice Getter function for `IGovernor.propose()` calldata
-    function getCalldata() public virtual override returns (bytes memory data) {
+    function getCalldata()
+        public
+        virtual
+        override
+        returns (bytes memory data)
+    {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -43,11 +52,11 @@ abstract contract OZGovernorProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposals that match the
     /// proposal calldata
-    function checkOnChainCalldata()
+    function getProposalId()
         public
         view
         override
-        returns (bool calldataExist)
+        returns (uint256 proposalId)
     {
         (
             address[] memory targets,
@@ -55,7 +64,7 @@ abstract contract OZGovernorProposal is Proposal {
             bytes[] memory calldatas
         ) = getProposalActions();
 
-        uint256 proposalId = governor.hashProposal(
+        proposalId = governor.hashProposal(
             targets,
             values,
             calldatas,
@@ -64,18 +73,17 @@ abstract contract OZGovernorProposal is Proposal {
 
         // proposal exist if state call doesn't revert
         try governor.state(proposalId) {
-            return true;
+            return proposalId;
         } catch {
-            return false;
+            return 0;
         }
     }
 
     /// @notice Simulate governance proposal
     function simulate() public virtual override {
         address proposerAddress = address(1);
-        IVotes governanceToken = IVotes(
-            IGovernorVotes(address(governor)).token()
-        );
+        IVotes governanceToken =
+            IVotes(IGovernorVotes(address(governor)).token());
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorum(block.number - 1);
@@ -130,9 +138,7 @@ abstract contract OZGovernorProposal is Proposal {
         // Roll to allow proposal state transitions
         vm.roll(block.number + governor.votingPeriod());
 
-        require(
-            governor.state(proposalId) == IGovernor.ProposalState.Succeeded
-        );
+        require(governor.state(proposalId) == IGovernor.ProposalState.Succeeded);
 
         vm.warp(block.timestamp + governor.proposalEta(proposalId) + 1);
 

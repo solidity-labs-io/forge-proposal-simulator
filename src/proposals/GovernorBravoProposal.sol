@@ -3,7 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {IGovernorBravo, ITimelockBravo, IERC20VotesComp} from "@interface/IGovernorBravo.sol";
+import {
+    IGovernorBravo,
+    ITimelockBravo,
+    IERC20VotesComp
+} from "@interface/IGovernorBravo.sol";
 
 import {Address} from "@utils/Address.sol";
 
@@ -24,8 +28,8 @@ abstract contract GovernorBravoProposal is Proposal {
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
     function getCalldata()
         public
-        virtual
         view
+        virtual
         override
         returns (bytes memory data)
     {
@@ -48,11 +52,11 @@ abstract contract GovernorBravoProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposals that match the
     /// proposal calldata
-    function checkOnChainCalldata()
+    function getProposalId()
         public
         view
         override
-        returns (bool calldataExist)
+        returns (uint256 proposalId)
     {
         uint256 proposalCount = governor.proposalCount();
 
@@ -82,12 +86,12 @@ abstract contract GovernorBravoProposal is Proposal {
                         proposalCount
                     );
                 }
-                return true;
+                return proposalCount;
             }
 
             proposalCount--;
         }
-        return false;
+        return 0;
     }
 
     /// @notice Simulate governance proposal

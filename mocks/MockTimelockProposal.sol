@@ -11,10 +11,9 @@ import {IProxyAdmin} from "@interface/IProxyAdmin.sol";
 import {MockUpgrade} from "@mocks/MockUpgrade.sol";
 
 interface IUpgradeExecutor {
-    function execute(
-        address upgrader,
-        bytes memory upgradeCalldata
-    ) external payable;
+    function execute(address upgrader, bytes memory upgradeCalldata)
+        external
+        payable;
 }
 
 // Arbitrum upgrades must be done through a delegate call to a GAC deployed contract
@@ -49,8 +48,11 @@ contract MockTimelockProposal is TimelockProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+            vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
         );
 
         setTimelock(addresses.getAddress("ARBITRUM_L1_TIMELOCK"));
@@ -59,29 +61,22 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function deploy() public override {
-        if (
-            !addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION")
-        ) {
+        if (!addresses.isAddressSet("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"))
+        {
             address mockUpgrade = address(new MockUpgrade());
 
             addresses.addAddress(
-                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION",
-                mockUpgrade,
-                true
+                "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION", mockUpgrade, true
             );
         }
 
         if (!addresses.isAddressSet("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY")) {
             address gac = address(new GovernanceActionUpgradeWethGateway());
-            addresses.addAddress(
-                "ARBITRUM_GAC_UPGRADE_WETH_GATEWAY",
-                gac,
-                true
-            );
+            addresses.addAddress("ARBITRUM_GAC_UPGRADE_WETH_GATEWAY", gac, true);
         }
     }
 
-    function afterDeployMock() public override {
+    function preBuildMock() public override {
         address mockOutbox = address(new MockOutbox());
 
         vm.store(
@@ -118,15 +113,14 @@ contract MockTimelockProposal is TimelockProposal {
     }
 
     function validate() public override {
-        IProxy proxy = IProxy(
-            addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY")
-        );
+        IProxy proxy =
+            IProxy(addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_PROXY"));
 
         // implementation() caller must be the owner
         vm.startPrank(addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"));
         require(
-            proxy.implementation() ==
-                addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
+            proxy.implementation()
+                == addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
             "Proxy implementation not set"
         );
         vm.stopPrank();

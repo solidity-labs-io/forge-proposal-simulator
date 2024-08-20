@@ -5,11 +5,16 @@ import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {MultisigProposal_01} from "@test/multisigProposals/MultisigProposal_01.sol";
-import {MultisigProposal_02} from "@test/multisigProposals/MultisigProposal_02.sol";
-import {MultisigProposal_03} from "@test/multisigProposals/MultisigProposal_03.sol";
-import {MultisigProposal_04} from "@test/multisigProposals/MultisigProposal_04.sol";
-import {MultisigProposal_05} from "@test/multisigProposals/MultisigProposal_05.sol";
+import {MultisigProposal_01} from
+    "@test/multisigProposals/MultisigProposal_01.sol";
+import {MultisigProposal_02} from
+    "@test/multisigProposals/MultisigProposal_02.sol";
+import {MultisigProposal_03} from
+    "@test/multisigProposals/MultisigProposal_03.sol";
+import {MultisigProposal_04} from
+    "@test/multisigProposals/MultisigProposal_04.sol";
+import {MultisigProposal_05} from
+    "@test/multisigProposals/MultisigProposal_05.sol";
 
 contract MultisigProposalCalldataTest is Test {
     Addresses public addresses;
@@ -17,7 +22,10 @@ contract MultisigProposalCalldataTest is Test {
 
     function setUp() public {
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 31337;
+        addresses = new Addresses(addressesFolderPath, chainIds);
 
         // Instantiate the MultisigProposal contracts
         address proposal = address(new MultisigProposal_01());
@@ -43,16 +51,14 @@ contract MultisigProposalCalldataTest is Test {
 
     function test_targets() public view {
         for (uint256 i; i < proposals.length; ++i) {
-            (address[] memory targets, , ) = MultisigProposal(proposals[i])
-                .getProposalActions();
+            (address[] memory targets,,) =
+                MultisigProposal(proposals[i]).getProposalActions();
 
-            (address[] memory expectedTargets, , ) = getProposalDetail(i);
+            (address[] memory expectedTargets,,) = getProposalDetail(i);
 
             // check that the proposal targets are correct
             assertEq(
-                targets.length,
-                expectedTargets.length,
-                "Wrong targets length"
+                targets.length, expectedTargets.length, "Wrong targets length"
             );
 
             for (uint256 j; j < targets.length; ++j) {
@@ -63,10 +69,10 @@ contract MultisigProposalCalldataTest is Test {
 
     function test_calldata() public view {
         for (uint256 i; i < proposals.length; ++i) {
-            (, , bytes[] memory calldatas) = MultisigProposal(proposals[i])
-                .getProposalActions();
+            (,, bytes[] memory calldatas) =
+                MultisigProposal(proposals[i]).getProposalActions();
 
-            (, , bytes[] memory expectedCalldatas) = getProposalDetail(i);
+            (,, bytes[] memory expectedCalldatas) = getProposalDetail(i);
 
             // check that the proposal calldatas are correct
             assertEq(
@@ -77,9 +83,7 @@ contract MultisigProposalCalldataTest is Test {
 
             for (uint256 j; j < calldatas.length; ++j) {
                 assertEq(
-                    calldatas[j],
-                    expectedCalldatas[j],
-                    "Incorrect calldata"
+                    calldatas[j], expectedCalldatas[j], "Incorrect calldata"
                 );
             }
         }
@@ -87,16 +91,14 @@ contract MultisigProposalCalldataTest is Test {
 
     function test_value() public view {
         for (uint256 i; i < proposals.length; ++i) {
-            (, uint256[] memory values, ) = MultisigProposal(proposals[i])
-                .getProposalActions();
+            (, uint256[] memory values,) =
+                MultisigProposal(proposals[i]).getProposalActions();
 
-            (, uint256[] memory expectedValues, ) = getProposalDetail(i);
+            (, uint256[] memory expectedValues,) = getProposalDetail(i);
 
             // check that the proposal values are correct
             assertEq(
-                values.length,
-                expectedValues.length,
-                "Wrong values length"
+                values.length, expectedValues.length, "Wrong values length"
             );
 
             for (uint256 j; j < values.length; ++j) {
@@ -105,9 +107,7 @@ contract MultisigProposalCalldataTest is Test {
         }
     }
 
-    function getProposalDetail(
-        uint256 proposalIndex
-    )
+    function getProposalDetail(uint256 proposalIndex)
         public
         view
         returns (
@@ -202,9 +202,7 @@ contract MultisigProposalCalldataTest is Test {
 
         targets[0] = addresses.getAddress("TOKEN");
         calldatas[0] = abi.encodeWithSignature(
-            "approve(address,uint256)",
-            address(tokenWrapper),
-            60 ether
+            "approve(address,uint256)", address(tokenWrapper), 60 ether
         );
         values[0] = 0;
 
@@ -213,10 +211,8 @@ contract MultisigProposalCalldataTest is Test {
         values[1] = 10 ether;
 
         targets[2] = tokenWrapper;
-        calldatas[2] = abi.encodeWithSignature(
-            "redeemTokens(uint256)",
-            10 ether
-        );
+        calldatas[2] =
+            abi.encodeWithSignature("redeemTokens(uint256)", 10 ether);
         values[2] = 0;
 
         targets[3] = tokenWrapper;
@@ -228,10 +224,8 @@ contract MultisigProposalCalldataTest is Test {
         values[4] = 30 ether;
 
         targets[5] = tokenWrapper;
-        calldatas[5] = abi.encodeWithSignature(
-            "redeemTokens(uint256)",
-            50 ether
-        );
+        calldatas[5] =
+            abi.encodeWithSignature("redeemTokens(uint256)", 50 ether);
         values[5] = 0;
 
         targets[6] = tokenWrapper;

@@ -5,15 +5,19 @@ import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {MockDuplicatedActionProposal} from "@mocks/MockDuplicatedActionProposal.sol";
+import {MockDuplicatedActionProposal} from
+    "@mocks/MockDuplicatedActionProposal.sol";
 
 contract DuplicatedActionProposalIntegrationTest is Test {
     Addresses public addresses;
     GovernorBravoProposal public proposal;
 
     function setUp() public {
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", chainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the BravoProposal contract

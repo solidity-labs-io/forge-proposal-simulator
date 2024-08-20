@@ -19,8 +19,11 @@ contract MultisigProposalIntegrationTest is Test {
     }
 
     function setUp() public {
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         // Instantiate the Addresses contract
-        addresses = new Addresses("./addresses/Addresses.json");
+        addresses = new Addresses("./addresses", chainIds);
         vm.makePersistent(address(addresses));
 
         // Instantiate the MultisigProposal contract
@@ -123,8 +126,7 @@ contract MultisigProposalIntegrationTest is Test {
         }
 
         bytes memory expectedData = abi.encodeWithSignature(
-            "aggregate3Value((address,bool,uint256,bytes)[])",
-            calls
+            "aggregate3Value((address,bool,uint256,bytes)[])", calls
         );
 
         bytes memory data = proposal.getCalldata();
@@ -132,8 +134,8 @@ contract MultisigProposalIntegrationTest is Test {
         assertEq(data, expectedData, "Wrong aggregate calldata");
     }
 
-    function test_checkOnChainCalldata() public {
+    function test_getProposalId() public {
         vm.expectRevert("Not implemented");
-        proposal.checkOnChainCalldata();
+        proposal.getProposalId();
     }
 }

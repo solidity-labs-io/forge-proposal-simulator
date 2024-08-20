@@ -23,9 +23,12 @@ contract MockBravoProposal is GovernorBravoProposal {
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         setAddresses(
             new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
             )
         );
 
@@ -40,9 +43,8 @@ contract MockBravoProposal is GovernorBravoProposal {
         buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO"))
     {
         /// STATICCALL -- not recorded for the run stage
-        ICompoundConfigurator configurator = ICompoundConfigurator(
-            addresses.getAddress("COMPOUND_CONFIGURATOR")
-        );
+        ICompoundConfigurator configurator =
+            ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded
@@ -51,13 +53,12 @@ contract MockBravoProposal is GovernorBravoProposal {
     }
 
     function validate() public view override {
-        ICompoundConfigurator configurator = ICompoundConfigurator(
-            addresses.getAddress("COMPOUND_CONFIGURATOR")
-        );
+        ICompoundConfigurator configurator =
+            ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
         address comet = addresses.getAddress("COMPOUND_COMET");
 
-        ICompoundConfigurator.Configuration memory config = configurator
-            .getConfiguration(comet);
+        ICompoundConfigurator.Configuration memory config =
+            configurator.getConfiguration(comet);
         assertEq(config.supplyKink, kink);
         assertEq(config.borrowKink, kink);
     }

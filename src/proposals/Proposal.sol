@@ -29,8 +29,7 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice transfers during proposal execution
-    mapping(address addr => TransferInfo[] transfers)
-        private _proposalTransfers;
+    mapping(address addr => TransferInfo[] transfers) private _proposalTransfers;
 
     /// @notice state changes during proposal execution
     mapping(address addr => StateInfo[] stateChanges) private _stateInfos;
@@ -48,14 +47,24 @@ abstract contract Proposal is Test, Script, IProposal {
     /// they all follow the same structure
     Action[] public actions;
 
-    /// @notice debug flag to print internal proposal logs
+    /// @notice flag to print internal proposal logs, default is false
     bool internal DEBUG;
+    /// @notice flag to trigger the deployment of contracts on-chain, default is true
     bool internal DO_DEPLOY;
-    bool internal DO_AFTER_DEPLOY_MOCK;
+    /// @notice flag to initiate pre-build mocking processes, default is true
+    bool internal DO_PRE_BUILD_MOCK;
+    /// @notice flag to transform plain solidity code into calldata encoded for the
+    /// user's governance model, default is true
     bool internal DO_BUILD;
+    /// @notice flag to simulate saved actions during the `build` step, default is true
     bool internal DO_SIMULATE;
+    /// @notice flag to validate the system state post-proposal simulation, default is true
     bool internal DO_VALIDATE;
+    /// @notice flag to print proposal description, actions, and calldata, default is true
     bool internal DO_PRINT;
+    /// @notice flag to update the `Addresses.json` file with the newly added and changed
+    /// addresses, default is false
+    bool internal DO_UPDATE_ADDRESS_JSON;
 
     /// @notice Addresses contract
     Addresses public addresses;
@@ -77,11 +86,12 @@ abstract contract Proposal is Test, Script, IProposal {
         DEBUG = vm.envOr("DEBUG", false);
 
         DO_DEPLOY = vm.envOr("DO_DEPLOY", true);
-        DO_AFTER_DEPLOY_MOCK = vm.envOr("DO_AFTER_DEPLOY_MOCK", true);
+        DO_PRE_BUILD_MOCK = vm.envOr("DO_PRE_BUILD_MOCK", true);
         DO_BUILD = vm.envOr("DO_BUILD", true);
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
+        DO_UPDATE_ADDRESS_JSON = vm.envOr("DO_UPDATE_ADDRESS_JSON", false);
     }
 
     /// @notice proposal name, e.g. "BIP15".
@@ -107,19 +117,20 @@ abstract contract Proposal is Test, Script, IProposal {
             vm.stopBroadcast();
         }
 
-        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
+        if (DO_PRE_BUILD_MOCK) preBuildMock();
         if (DO_BUILD) build();
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
         if (DO_PRINT) print();
+        if (DO_UPDATE_ADDRESS_JSON) addresses.updateJson();
     }
 
     /// @notice return proposal calldata.
     function getCalldata() public virtual returns (bytes memory data);
 
-    /// @notice check if there are any on-chain proposal that matches the
+    /// @notice check and return proposal id if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata() public view virtual returns (bool matches);
+    function getProposalId() public view virtual returns (uint256 proposalId);
 
     /// @notice get proposal actions
     function getProposalActions()
@@ -142,13 +153,12 @@ abstract contract Proposal is Test, Script, IProposal {
 
         for (uint256 i; i < actionsLength; i++) {
             require(
-                actions[i].target != address(0),
-                "Invalid target for proposal"
+                actions[i].target != address(0), "Invalid target for proposal"
             );
             /// if there are no args and no eth, the action is not valid
             require(
-                (actions[i].arguments.length == 0 && actions[i].value > 0) ||
-                    actions[i].arguments.length > 0,
+                (actions[i].arguments.length == 0 && actions[i].value > 0)
+                    || actions[i].arguments.length > 0,
                 "Invalid arguments for proposal"
             );
             targets[i] = actions[i].target;
@@ -177,9 +187,9 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @dev contracts calls here are broadcast if the broadcast flag is set.
     function deploy() public virtual {}
 
-    /// @notice helper function to mock on-chain data after deployment
+    /// @notice helper function to mock on-chain data before build
     ///         e.g. pranking, etching, etc.
-    function afterDeployMock() public virtual {}
+    function preBuildMock() public virtual {}
 
     /// @notice build the proposal actions
     /// @dev contract calls must be perfomed in plain solidity.
@@ -207,8 +217,7 @@ abstract contract Proposal is Test, Script, IProposal {
         for (uint256 i; i < actions.length; i++) {
             console.log("%d). %s", i + 1, actions[i].description);
             console.log(
-                "target: %s\npayload",
-                _getAddressLabel(actions[i].target)
+                "target: %s\npayload", _getAddressLabel(actions[i].target)
             );
             console.logBytes(actions[i].arguments);
             console.log("\n");
@@ -219,8 +228,7 @@ abstract contract Proposal is Test, Script, IProposal {
             address account = _proposalAffectedAddresses[i];
 
             console.log(
-                "\n\n",
-                string(abi.encodePacked(_getAddressLabel(account), ":"))
+                "\n\n", string(abi.encodePacked(_getAddressLabel(account), ":"))
             );
 
             // print token transfers
@@ -279,23 +287,20 @@ abstract contract Proposal is Test, Script, IProposal {
 
     /// @notice validate actions inclusion
     /// default implementation check for duplicate actions
-    function _validateAction(
-        address target,
-        uint256 value,
-        bytes memory data
-    ) internal virtual {
+    function _validateAction(address target, uint256 value, bytes memory data)
+        internal
+        virtual
+    {
         uint256 actionsLength = actions.length;
         for (uint256 i = 0; i < actionsLength; i++) {
             // Check if the target, arguments and value matches with other exciting actions.
             bool isDuplicateTarget = actions[i].target == target;
-            bool isDuplicateArguments = keccak256(actions[i].arguments) ==
-                keccak256(data);
+            bool isDuplicateArguments =
+                keccak256(actions[i].arguments) == keccak256(data);
             bool isDuplicateValue = actions[i].value == value;
 
             require(
-                !(isDuplicateTarget &&
-                    isDuplicateArguments &&
-                    isDuplicateValue),
+                !(isDuplicateTarget && isDuplicateArguments && isDuplicateValue),
                 "Duplicated action found"
             );
         }
@@ -340,8 +345,8 @@ abstract contract Proposal is Test, Script, IProposal {
     /// @param caller the address that will be used as the caller for the
     /// actions, e.g. multisig address, timelock address, etc.
     function _endBuild(address caller) private {
-        VmSafe.AccountAccess[] memory accountAccesses = vm
-            .stopAndReturnStateDiff();
+        VmSafe.AccountAccess[] memory accountAccesses =
+            vm.stopAndReturnStateDiff();
 
         vm.stopPrank();
 
@@ -358,12 +363,12 @@ abstract contract Proposal is Test, Script, IProposal {
             /// static calls are ignored,
             /// calls to and from Addresses and the vm contract are ignored
             if (
-                accountAccesses[i].account != address(addresses) &&
-                accountAccesses[i].account != address(vm) &&
+                accountAccesses[i].account != address(addresses)
+                    && accountAccesses[i].account != address(vm)
                 /// ignore calls to vm in the build function
-                accountAccesses[i].accessor != address(addresses) &&
-                accountAccesses[i].kind == VmSafe.AccountAccessKind.Call &&
-                accountAccesses[i].accessor == caller
+                && accountAccesses[i].accessor != address(addresses)
+                    && accountAccesses[i].kind == VmSafe.AccountAccessKind.Call
+                    && accountAccesses[i].accessor == caller
             ) {
                 /// caller is correct, not a subcall
                 _validateAction(
@@ -483,9 +488,9 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice helper method to get state changes of proposal affected addresses
-    function _processStateChanges(
-        VmSafe.StorageAccess[] memory storageAccess
-    ) internal {
+    function _processStateChanges(VmSafe.StorageAccess[] memory storageAccess)
+        internal
+    {
         for (uint256 i; i < storageAccess.length; i++) {
             address account = storageAccess[i].account;
 
@@ -502,8 +507,8 @@ abstract contract Proposal is Test, Script, IProposal {
 
             // add address to proposal affected addresses array only if not already added
             if (
-                !_isProposalAffectedAddress[account] &&
-                _stateInfos[account].length != 0
+                !_isProposalAffectedAddress[account]
+                    && _stateInfos[account].length != 0
             ) {
                 _isProposalAffectedAddress[account] = true;
                 _proposalAffectedAddresses.push(account);
@@ -512,9 +517,11 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice helper method to get labels for addresses
-    function _getAddressLabel(
-        address contractAddress
-    ) internal view returns (string memory) {
+    function _getAddressLabel(address contractAddress)
+        internal
+        view
+        returns (string memory)
+    {
         string memory label = vm.getLabel(contractAddress);
 
         bytes memory prefix = bytes("unlabeled:");
@@ -525,28 +532,23 @@ abstract contract Proposal is Test, Script, IProposal {
             for (uint256 i = 0; i < prefix.length; i++) {
                 if (strBytes[i] != prefix[i]) {
                     // return "{LABEL} @{ADDRESS}" if address is labeled
-                    return
-                        string(
-                            abi.encodePacked(
-                                label,
-                                " @",
-                                vm.toString(contractAddress)
-                            )
-                        );
+                    return string(
+                        abi.encodePacked(
+                            label, " @", vm.toString(contractAddress)
+                        )
+                    );
                 }
             }
         } else {
             // return "{LABEL} @{ADDRESS}" if address is labeled
-            return
-                string(
-                    abi.encodePacked(label, " @", vm.toString(contractAddress))
-                );
+            return string(
+                abi.encodePacked(label, " @", vm.toString(contractAddress))
+            );
         }
 
         // return "UNLABELED @{ADDRESS}" if address is unlabeled
-        return
-            string(
-                abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
-            );
+        return string(
+            abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
+        );
     }
 }

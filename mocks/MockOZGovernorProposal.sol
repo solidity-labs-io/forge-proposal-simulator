@@ -22,15 +22,18 @@ contract MockOZGovernorProposal is OZGovernorProposal {
 
     function description() public pure override returns (string memory) {
         return
-            "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
+        "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
     }
 
     function run() public override {
         setPrimaryForkId(vm.createSelectFork("mainnet"));
 
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+
         setAddresses(
             new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
             )
         );
 

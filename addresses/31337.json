@@ -1,0 +1,12 @@
+[
+  {
+    "addr": "0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739",
+    "name": "DEPLOYER_EOA",
+    "isContract": false
+  },
+  {
+    "addr": "0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A",
+    "name": "PROTOCOL_MULTISIG",
+    "isContract": false
+  }
+]

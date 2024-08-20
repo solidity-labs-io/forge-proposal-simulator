@@ -9,10 +9,9 @@ import {Constants} from "@utils/Constants.sol";
 abstract contract MultisigProposal is Proposal {
     using Address for address;
 
-    bytes32 public constant MULTISIG_BYTECODE_HASH =
-        bytes32(
-            0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
-        );
+    bytes32 public constant MULTISIG_BYTECODE_HASH = bytes32(
+        0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
+    );
 
     struct Call3Value {
         address target;
@@ -45,14 +44,13 @@ abstract contract MultisigProposal is Proposal {
 
         /// generate calldata
         data = abi.encodeWithSignature(
-            "aggregate3Value((address,bool,uint256,bytes)[])",
-            calls
+            "aggregate3Value((address,bool,uint256,bytes)[])", calls
         );
     }
 
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
-    function checkOnChainCalldata() public pure override returns (bool) {
+    function getProposalId() public pure override returns (uint256) {
         revert("Not implemented");
     }
 

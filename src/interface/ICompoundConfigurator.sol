@@ -35,9 +35,10 @@ interface ICompoundConfigurator {
         uint128 supplyCap;
     }
 
-    function getConfiguration(
-        address cometProxy
-    ) external view returns (Configuration memory);
+    function getConfiguration(address cometProxy)
+        external
+        view
+        returns (Configuration memory);
 
     function setBorrowKink(address cometProxy, uint64 newBorrowKink) external;
 
