@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {MockToken} from "mocks/MockToken.sol";
 
-import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 contract MultisigProposal_01 is MultisigProposal {

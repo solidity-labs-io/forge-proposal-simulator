@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 contract MockVotingContract {
-    mapping(string => uint) public votesReceived;
+    mapping(string candidate => uint256 votes) public votesReceived;
     string[] public candidateList;
 
     constructor(string[] memory candidateNames) {

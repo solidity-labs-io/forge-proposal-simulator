@@ -11,11 +11,15 @@ contract MockAuction {
 
     function bid() public payable {
         require(msg.value > highestBid, "Bid not high enough");
-        if (highestBidder != address(0)) {
-            payable(highestBidder).transfer(highestBid);
-        }
+        address previousBidder = highestBidder;
+        uint256 previousBid = highestBid;
+
         highestBidder = msg.sender;
         highestBid = msg.value;
+
+        if (previousBidder != address(0)) {
+            payable(previousBidder).transfer(previousBid);
+        }
     }
 
     function endAuction() public {

@@ -4,7 +4,6 @@ import "forge-std/mocks/MockERC20.sol";
 
 import {MockSavingContract} from "mocks/MockSavingContract.sol";
 
-import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 contract MultisigProposal_05 is MultisigProposal {

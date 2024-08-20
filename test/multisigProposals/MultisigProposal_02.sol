@@ -4,7 +4,6 @@ import {MockToken} from "mocks/MockToken.sol";
 
 import {MockTokenWrapper} from "mocks/MockTokenWrapper.sol";
 
-import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
 
 contract MultisigProposal_02 is MultisigProposal {

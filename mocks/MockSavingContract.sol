@@ -6,7 +6,7 @@ contract MockSavingContract {
         uint256 unlockTime;
     }
 
-    mapping(address => Deposit[]) public deposits;
+    mapping(address user => Deposit[] deposits) public deposits;
 
     function deposit(uint256 lockTime) public payable {
         require(msg.value > 0, "Must send some Ether");
