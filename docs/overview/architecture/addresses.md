@@ -153,6 +153,14 @@ The `isAddressContract` function determines whether an address on the execution 
 addresses.isAddressContract("CONTRACT_NAME");
 ```
 
+### Update addresses file
+
+The `updateJson` function updates the `Addresses.json` file with the newly added and changed addresses. This is helpful as a user doesn't need to update the file manually after the proposal run.
+
+```solidity
+addresses.updateJson();
+```
+
 ## Usage
 
 When writing a proposal, set the `addresses` object using the `setAddresses` method. Ensure the correct path for `Addresses.json` file is passed inside the constructor while creating the `addresses` object. Use the `addresses` object to add, update, retrieve, and remove addresses.

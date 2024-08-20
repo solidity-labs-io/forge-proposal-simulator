@@ -287,7 +287,17 @@ FPS is flexible enough so that for any different governance model, governance pr
 
 <a id="#run-function"></a>
 
-- `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `preBuildMock()`, `build()`, `simulate()`, `validate()`, and `print()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+-   `run()`: This function serves as the entry point for proposal execution. It selects the `primaryForkId` which will be used to run the proposal simulation. It executes `deploy()`, `afterDeployMock()`, `build()`, `simulate()`, `validate()`, `print()` and `addresses.updateJson()` in that order if the flag for a function is set to true. `deploy()` is encapsulated in start and stop broadcast. This is done so that contracts can be deployed on-chain.
+
+    Flags used in `run()` function:
+
+    -   **DO_DEPLOY**: When set to true, triggers the deployment of contracts on-chain. Default value is true.
+    -   **DO_AFTER_DEPLOY_MOCK**: When set to true, initiates post-deployment mocking processes. Used to simulate an action that has not happened yet for testing such as dealing tokens for testing or simulating scenarios after deployment. Default value is true.
+    -   **DO_BUILD**: When set to true, controls the build process and transforms plain solidity code into calldata encoded for the user's governance model. Default value is true.
+    -   **DO_SIMULATE**: When set to true, allows for the simulation of saved actions during the `build` step. Default value is true.
+    -   **DO_VALIDATE**: When set to true, validates the system state post-proposal simulation. Default value is true.
+    -   **DO_PRINT**: When set to true, prints proposal description, actions, and calldata. Default value is true.
+    -   **DO_UPDATE_ADDRESS_JSON**: When set to true, updates the `Addresses.json` file with the newly added and changed addresses. Default value is false.
 
   ```solidity
   function run() public virtual {
@@ -302,13 +312,14 @@ FPS is flexible enough so that for any different governance model, governance pr
           vm.stopBroadcast();
       }
 
-      if (DO_PRE_BUILD_MOCK) preBuildMock();
-      if (DO_BUILD) build();
-      if (DO_SIMULATE) simulate();
-      if (DO_VALIDATE) validate();
-      if (DO_PRINT) print();
-  }
-  ```
+        if (DO_AFTER_DEPLOY_MOCK) afterDeployMock();
+        if (DO_BUILD) build();
+        if (DO_SIMULATE) simulate();
+        if (DO_VALIDATE) validate();
+        if (DO_PRINT) print();
+        if (DO_UPDATE_ADDRESS_JSON) addresses.updateJson();
+    }
+    ```
 
   This function is overridden at the proposal-specific contract. The `run()` function in governor bravo explains how this function works. Here, this function sets the environment for proposal execution and then finally simulates the proposal by calling the `run()` of the parent `Proposal` contract using `super.run()`. In this example, first `primaryForkId` is set to `sepolia`. Next, the `addresses` object is set by reading the `Addresses.json` file. Finally `governor` is set using `setGovernor()` method which is required in `simulate()` and `getProposalId()` functions.
 

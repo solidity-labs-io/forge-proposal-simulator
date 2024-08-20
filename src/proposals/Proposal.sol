@@ -47,14 +47,24 @@ abstract contract Proposal is Test, Script, IProposal {
     /// they all follow the same structure
     Action[] public actions;
 
-    /// @notice debug flag to print internal proposal logs
+    /// @notice flag to print internal proposal logs, default is false
     bool internal DEBUG;
+    /// @notice flag to trigger the deployment of contracts on-chain, default is true
     bool internal DO_DEPLOY;
+    /// @notice flag to initiate pre-build mocking processes, default is true
     bool internal DO_PRE_BUILD_MOCK;
+    /// @notice flag to transform plain solidity code into calldata encoded for the
+    /// user's governance model, default is true
     bool internal DO_BUILD;
+    /// @notice flag to simulate saved actions during the `build` step, default is true
     bool internal DO_SIMULATE;
+    /// @notice flag to validate the system state post-proposal simulation, default is true
     bool internal DO_VALIDATE;
+    /// @notice flag to print proposal description, actions, and calldata, default is true
     bool internal DO_PRINT;
+    /// @notice flag to update the `Addresses.json` file with the newly added and changed
+    /// addresses, default is false
+    bool internal DO_UPDATE_ADDRESS_JSON;
 
     /// @notice Addresses contract
     Addresses public addresses;
@@ -81,6 +91,7 @@ abstract contract Proposal is Test, Script, IProposal {
         DO_SIMULATE = vm.envOr("DO_SIMULATE", true);
         DO_VALIDATE = vm.envOr("DO_VALIDATE", true);
         DO_PRINT = vm.envOr("DO_PRINT", true);
+        DO_UPDATE_ADDRESS_JSON = vm.envOr("DO_UPDATE_ADDRESS_JSON", false);
     }
 
     /// @notice proposal name, e.g. "BIP15".
@@ -111,6 +122,7 @@ abstract contract Proposal is Test, Script, IProposal {
         if (DO_SIMULATE) simulate();
         if (DO_VALIDATE) validate();
         if (DO_PRINT) print();
+        if (DO_UPDATE_ADDRESS_JSON) addresses.updateJson();
     }
 
     /// @notice return proposal calldata.

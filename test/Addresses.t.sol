@@ -288,6 +288,48 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressContract("TEST"), true);
     }
 
+    function test_checkAddressFileUpdate() public {
+        address test1 = vm.addr(1);
+
+        addresses.addAddress("TEST1", test1, 11155111, false);
+
+        // update addresses.json file
+        addresses.updateJson();
+
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](3);
+        chainIds[0] = 1;
+        chainIds[1] = 31337;
+        chainIds[2] = 11155111;
+
+        addresses = new Addresses(addressesFolderPath, chainIds);
+
+        // check Addresseses files are updated correctly and TEST1 address is set
+        addresses.isAddressSet("TEST1");
+        assertEq(addresses.getAddress("TEST1", 11155111), test1);
+
+        test1 = vm.addr(2);
+        address test2 = vm.addr(3);
+
+        // change TEST1 address
+        addresses.changeAddress("TEST1", test1, 11155111, false);
+
+        // add TEST2 address
+        addresses.addAddress("TEST2", test2, block.chainid, false);
+
+        // update addresses.json file
+        addresses.updateJson();
+
+        // update addresses object with updated addresses.json
+        addresses = new Addresses(addressesFolderPath, chainIds);
+
+        // check TEST1 address is updated
+        assertEq(addresses.getAddress("TEST1", 11155111), test1);
+
+        // check TEST2 address is added
+        assertEq(addresses.getAddress("TEST2"), test2);
+    }
+
     function addressIsPresent() public {
         address test = vm.addr(1);
 
@@ -334,7 +376,7 @@ contract TestAddresses is Test {
         address test = vm.addr(1);
 
         vm.expectRevert(
-            "Address: 0x7e5f4552091a69125d5dfcb7b8c2659029395bdf already set on chain: 123"
+            "Address: 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf already set on chain: 123"
         );
         addresses.addAddress("TEST_2", test, 123, false);
     }
@@ -347,7 +389,7 @@ contract TestAddresses is Test {
         chainIds[0] = 31337;
 
         vm.expectRevert(
-            "Address: 0x9679e26bf0c470521de83ad77bb1bf1e7312f739 already set on chain: 31337"
+            "Address: 0x9679E26bf0C470521DE83Ad77BB1bf1e7312f739 already set on chain: 31337"
         );
         new Addresses(addressesFolderPath, chainIds);
     }
