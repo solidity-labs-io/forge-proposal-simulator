@@ -38,15 +38,16 @@ contract MultisigProposal_01 is MultisigProposal {
         buildModifier(addresses.getAddress("PROTOCOL_MULTISIG"))
     {
         MockToken mockToken = MockToken(addresses.getAddress("TOKEN"));
+        address deployer = addresses.getAddress("DEPLOYER_EOA");
 
         // Actions
-        mockToken.approve(addresses.getAddress("DEPLOYER_EOA"), 200);
-        mockToken.transfer(addresses.getAddress("DEPLOYER_EOA"), 500);
-        mockToken.transfer(addresses.getAddress("DEPLOYER_EOA"), 100);
+        mockToken.approve(deployer, 200);
+        mockToken.transfer(deployer, 500);
+        mockToken.transfer(deployer, 100);
         mockToken.approve(addresses.getAddress("PROTOCOL_MULTISIG"), 200);
         mockToken.transferFrom(
             addresses.getAddress("PROTOCOL_MULTISIG"),
-            addresses.getAddress("DEPLOYER_EOA"),
+            deployer,
             200
         );
     }
