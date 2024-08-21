@@ -33,6 +33,14 @@ Deployed contract addresses are registered along with their respective names. Th
 ]
 ```
 
+Here is an example folder tree structure of multiple JSON files corresponding to different networks.
+```
+addresses/
+    1.json
+    31337.json
+    11155111.json
+```
+
 FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks that the same address is not set under two different names on the same network.
 
 ## Functions

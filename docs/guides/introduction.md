@@ -22,7 +22,7 @@ echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
 
 ### Step 3: Addresses File
 
-Create a JSON file following the standard on [Addresses](../overview/architecture/addresses.md). It is recommended to keep the JSON file in a separate folder, for example, `./addresses/31337.json`. Also allow read access for this file in `foundry.toml`.
+Create a JSON file following the standard on [Addresses](../overview/architecture/addresses.md). It is recommended to keep the JSON file in a separate folder, for example, `./addresses/31337.json`. The name of the JSON file would be the same as the network id. If there are multiple networks, addresses should be added in the JSON files corresponding to their network. Also, allow read access for this file in `foundry.toml`.
 
 ```toml
 [profile.default]
