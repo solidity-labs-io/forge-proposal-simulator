@@ -368,9 +368,11 @@ Two proposals were added to the fps-example-repo. First, [ArbitrumPorposal_01](h
 
   ```solidity
   function run() public override {
-      addresses = new Addresses(
-          vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-      );
+      string memory addressesFolderPath = "./addresses";
+      uint256[] memory chainIds = new uint256[](2);
+      chainIds[0] = 1;
+      chainIds[1] = 42161;
+      addresses = new Addresses(addressesFolderPath, chainIds);
       vm.makePersistent(address(addresses));
 
       setPrimaryForkId(vm.createFork("arbitrum"));
@@ -490,9 +492,11 @@ Now let's have a look at `ArbitrumProposal_02`:
 
   ```solidity
   function run() public override {
-      addresses = new Addresses(
-          vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
-      );
+      string memory addressesFolderPath = "./addresses";
+      uint256[] memory chainIds = new uint256[](2);
+      chainIds[0] = 1;
+      chainIds[1] = 42161;
+      addresses = new Addresses(addressesFolderPath, chainIds);
       vm.makePersistent(address(addresses));
 
       setPrimaryForkId(vm.createFork("arbitrum"));
@@ -528,94 +532,87 @@ Now let's have a look at `ArbitrumProposal_02`:
 
 ## Proposal Simulation
 
-### Setting Up the Addresses JSON
+### Setting Up the Addrsses JSON Files
 
-Copy all address arbitrum address from [Addresses.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/Addresses.json). Your addresses.json file should follow this structure:
+Copy all address arbitrum address from [1.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/1.json). Your `1.json` file should follow this structure:
 
 ```json
 [
   {
     "addr": "0xE6841D92B0C345144506576eC13ECf5103aC7f49",
-    "chainId": 1,
     "name": "ARBITRUM_L1_TIMELOCK",
     "isContract": true
   },
   {
     "addr": "0x3ffFbAdAF827559da092217e474760E2b2c3CeDd",
-    "chainId": 1,
     "name": "ARBITRUM_L1_UPGRADE_EXECUTOR",
     "isContract": true
   },
   {
     "addr": "0x9aD46fac0Cf7f790E5be05A0F15223935A0c0aDa",
-    "chainId": 1,
     "name": "ARBITRUM_L1_PROXY_ADMIN",
     "isContract": true
   },
   {
     "addr": "0xd92023e9d9911199a6711321d1277285e6d4e2db",
-    "chainId": 1,
     "name": "ARBITRUM_L1_WETH_GATEWAY_PROXY",
     "isContract": true
   },
   {
     "addr": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a",
-    "chainId": 1,
     "name": "ARBITRUM_BRIDGE",
     "isContract": true
   },
   {
+    "addr": "0x2c9c0F10E3F8820544522df210dFb0A2BbC75147",
+    "name": "DEPLOYER_EOA",
+    "isContract": false
+  }
+]
+```
+
+Copy all arbitrum address from [42161.json](https://github.com/solidity-labs-io/fps-example-repo/blob/main/addresses/42161.json). Your `42161.json` file should follow this structure:
+
+```json
+[
+  {
     "addr": "0x34d45e99f7D8c45ed05B5cA72D54bbD1fb3F98f0",
-    "chainId": 42161,
     "name": "ARBITRUM_L2_TIMELOCK",
     "isContract": true
   },
   {
     "addr": "0xCF57572261c7c2BCF21ffD220ea7d1a27D40A827",
-    "chainId": 42161,
     "name": "ARBITRUM_L2_UPGRADE_EXECUTOR",
     "isContract": true
   },
   {
     "addr": "0xd570aCE65C43af47101fC6250FD6fC63D1c22a86",
-    "chainId": 42161,
     "name": "ARBITRUM_L2_PROXY_ADMIN",
     "isContract": true
   },
   {
     "addr": "0x6c411aD3E74De3E7Bd422b94A27770f5B86C623B",
-    "chainId": 42161,
     "name": "ARBITRUM_L2_WETH_GATEWAY_PROXY",
     "isContract": true
   },
   {
     "addr": "0xf07DeD9dC292157749B6Fd268E37DF6EA38395B9",
-    "chainId": 42161,
     "name": "ARBITRUM_L2_CORE_GOVERNOR",
     "isContract": true
   },
   {
     "addr": "0x0000000000000000000000000000000000000064",
-    "chainId": 42161,
     "name": "ARBITRUM_SYS",
     "isContract": true
   },
   {
     "addr": "0xf7951d92b0c345144506576ec13ecf5103ac905a",
-    "chainId": 42161,
     "name": "ARBITRUM_ALIASED_L1_TIMELOCK",
     "isContract": false
   },
   {
     "addr": "0x2c9c0F10E3F8820544522df210dFb0A2BbC75147",
     "name": "DEPLOYER_EOA",
-    "chainId": 42161,
-    "isContract": false
-  },
-  {
-    "addr": "0x2c9c0F10E3F8820544522df210dFb0A2BbC75147",
-    "name": "DEPLOYER_EOA",
-    "chainId": 1,
     "isContract": false
   }
 ]
@@ -684,6 +681,6 @@ payload
   0x7d5e81e2000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000004c00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000344928c169a000000000000000000000000e6841d92b0c345144506576ec13ecf5103ac7f49000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000002c401d5062a000000000000000000000000a723c008e76e379c55599d2e4d93879beafda79c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000009c33e8e47a5438b554b45b782bed73248b78e26754b37292265f0b4a3ede7874000000000000000000000000000000000000000000000000000000000003f48000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000004dbd4fc535ac27206064b68ffcf827b0a60bab3f000000000000000000000000cf57572261c7c2bcf21ffd220ea7d1a27d40a82700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000e41cff79cd000000000000000000000000a98dec0c8e0326756c956033bbf091081986d0ed00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000064e17f52e9000000000000000000000000d570ace65c43af47101fc6250fd6fc63d1c22a860000000000000000000000006c411ad3e74de3e7bd422b94a27770f5b86c623b0000000000000000000000006801e4888a91180238a8c36594ec65797ec2dddf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a546869732070726f706f73616c20757067726164657320746865204c322077657468206761746577617900000000000000000000000000000000000000000000
 ```
 
-A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can check whether the calldata proposed on the governance matches the calldata from the script exeuction. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
 
 The proposal script will deploy the contracts in `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be proposed manually using `cast send` with the calldata generated above.

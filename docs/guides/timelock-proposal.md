@@ -61,8 +61,6 @@ Let's review each of the functions that are overridden.
     }
     ```
 
-    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
 -   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
@@ -91,7 +89,7 @@ Let's review each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The timelock contract to test is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for running the proposal. Next, the `addresses` object is set by reading the JSON file. The timelock contract to test is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -99,11 +97,12 @@ Let's review each of the functions that are overridden.
         primaryForkId = vm.createFork("sepolia");
         vm.selectFork(primaryForkId);
 
-        // Set the addresses object by reading addresses from the json file
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 11155111;
+        // Set the addresses object by reading addresses from the json file.
         setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
+            new Addresses(addressesFolderPath, chainIds)
         );
 
         // Set the timelock; this address is used for proposal simulation and checking on-chain proposal state
@@ -174,14 +173,13 @@ Let's review each of the functions that are overridden.
 
 Before executing the proposal, set up a Timelock Controller contract on the testnet. A script [DeployTimelock](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployTimelock.s.sol) is provided to streamline this process.
 
-Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+Before running the script, add the `DEPLOYER_EOA` address to the `11155111.json` file.
 
 ```json
 [
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -205,13 +203,11 @@ Add the Timelock Controller address to the JSON file. The file should follow thi
     {
         "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -314,6 +310,6 @@ payload
   0xe38335e500000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000000eff0dbf88af0664ed6d8db81251aaaeac77a977f015bb9bf3d34c91b1bf988a6000000000000000000000000000000000000000000000000000000000000000300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a0500000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a200000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
 
-It's crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON file and must be manually added to ensure accuracy.
+It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
 
 The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action, along with schedule and execute calldatas for the proposal. The proposal can be scheduled and executed manually using `cast send` along with the calldata generated above.

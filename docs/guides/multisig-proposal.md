@@ -63,8 +63,6 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
-    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
 -   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the multisig approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. The `buildModifier` is necessary modifier for `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
@@ -100,7 +98,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the `Addresses.json` file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the JSON file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -108,11 +106,12 @@ Let's go through each of the functions that are overridden.
         primaryForkId = vm.createFork("sepolia");
         vm.selectFork(primaryForkId);
 
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 11155111;
         // Set addresses object reading addresses from json file.
         setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
+            new Addresses(addressesFolderPath, chainIds)
         );
 
         // Call the run function of parent contract 'Proposal.sol'.
@@ -186,20 +185,18 @@ To kick off this tutorial, a Gnosis Safe Multisig contract is needed to be set u
 
 ### Setting Up the Addresses JSON
 
-Set up Addresses.json file and add the Gnosis Safe address and deployer address to it. The file should follow this structure:
+Set up `11155111.json` file and add the Gnosis Safe address and deployer address to it. The file should follow this structure:
 
 ```json
 [
     {
         "addr": "0x<YOUR_GNOSIS_SAFE_ADDRESS>",
         "name": "DEV_MULTISIG",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_DEV_EOA",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -300,6 +297,6 @@ payload
   0x174dea710000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000160000000000000000000000000000000000000000000000000000000000000026000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
 ```
 
-A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the Addresses.sol storage. These addresses are not included in the JSON file and must be added manually for accuracy.
+A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
 
 The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using `cast send` command along with the calldata generated above.

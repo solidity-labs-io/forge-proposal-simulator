@@ -73,10 +73,12 @@ Let's review each of the overridden functions:
         setPrimaryForkId(vm.createFork("mainnet"));
         vm.selectFork(primaryForkId);
 
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
         // Set the addresses object by reading addresses from the JSON file.
         setAddresses(
             new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
             )
         );
 

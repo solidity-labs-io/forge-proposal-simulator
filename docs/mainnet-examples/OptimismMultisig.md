@@ -63,7 +63,7 @@ Let's go through each of the functions that are overridden:
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the `Addresses.json` file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+-   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the JSON file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -71,9 +71,13 @@ Let's go through each of the functions that are overridden:
         primaryForkId = vm.createFork("mainnet");
         vm.selectFork(primaryForkId);
 
-        // Set addresses object reading addresses from JSON file.
-        addresses = new Addresses(
-            vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 1;
+        // Set the addresses object by reading addresses from the JSON file.
+        setAddresses(
+            new Addresses(
+                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
+            )
         );
 
         // Call the run function of parent contract 'Proposal.sol'.
@@ -121,7 +125,7 @@ Let's go through each of the functions that are overridden:
 forge script mocks/MockMultisigProposal.sol --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
+All required addresses should be in the JSON file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
 
 The script will output the following:
 

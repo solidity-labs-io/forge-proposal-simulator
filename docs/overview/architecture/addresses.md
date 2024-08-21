@@ -6,32 +6,28 @@ The Addresses contract plays an important role in managing and storing the addre
 
 ## Structure
 
-Deployed contract addresses are registered along with their respective names and networks. This data is stored in an array within a JSON file, adhering to the following format:
+Deployed contract addresses are registered along with their respective names. This data is stored in an array within a JSON file, the JSON file is named with the chain id representing the network to which the addresses belong. If there are deployments on multiple networks, files correspoding to each network are created. JSON files adhere to the following example format:
 
 ```json
 [
     {
         "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
         "name": "DEV_MULTISIG",
-        "chainId": 1234,
         "isContract": true
     },
     {
         "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
         "name": "TEAM_MULTISIG",
-        "chainId": 1234,
         "isContract": true
     },
     {
         "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
         "name": "PROTOCOL_TIMELOCK",
-        "chainId": 1234,
         "isContract": true
     },
     {
         "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
         "name": "DEPLOYER_EOA",
-        "chainId": 123,
         "isContract": true
     }
 ]
@@ -127,7 +123,7 @@ addresses.getChangedAddresses();
 
 ### Print Added and Changed Addressses
 
-Addresses that are changed or newly added during the proposal's execution can be retrieved by calling the `printJSONChanges` method. It prints the changes in JSON format, making it easy for users to add them to `Addresses.json`.
+Addresses that are changed or newly added during the proposal's execution can be retrieved by calling the `printJSONChanges` method. It prints the changes in JSON format, making it easy for users to add them to corresponding JSON files.
 
 ```solidity
 addresses.printJSONChanges();
@@ -155,7 +151,7 @@ addresses.isAddressContract("CONTRACT_NAME");
 
 ### Update addresses file
 
-The `updateJson` function updates the `Addresses.json` file with the newly added and changed addresses. This is helpful as a user doesn't need to update the file manually after the proposal run.
+The `updateJson` function updates the JSON files with the newly added and changed addresses. JSON files are updated corresponding to the network where new addresses are added or changed. This is helpful as a user doesn't need to update the file manually after the proposal run.
 
 ```solidity
 addresses.updateJson();

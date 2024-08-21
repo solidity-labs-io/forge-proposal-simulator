@@ -22,12 +22,12 @@ echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
 
 ### Step 3: Addresses File
 
-Create a JSON file following the standard on [Addresses](../overview/architecture/addresses.md). It is recommended to keep the addresses file in a separate folder, for example, `./addresses/Addresses.json`. Also allow read access for this file in `foundry.toml`.
+Create a JSON file following the standard on [Addresses](../overview/architecture/addresses.md). It is recommended to keep the JSON file in a separate folder, for example, `./addresses/31337.json`. Also allow read access for this file in `foundry.toml`.
 
 ```toml
 [profile.default]
 ...
-fs_permissions = [{ access = "read", path = "./addresses/Addresses.json"}]
+fs_permissions = [{ access = "read", path = "./addresses/31337.json"}]
 ```
 
 ### Step 4: Setting Up Your Deployer Address
@@ -42,14 +42,14 @@ cast wallet import ${wallet_name} --interactive
 
 ## Executing Proposals
 
-Before proceeding with the guides, make sure to have a cleaned Addresses.json file with read permissions set to `foundry.toml` in your preferred location. Each guide includes a proposal simulation section that provides detailed explanations of the proposal execution steps.
+Before proceeding with the guides, make sure to have a cleaned JSON file with read permissions set to `foundry.toml` in your preferred location. Each guide includes a proposal simulation section that provides detailed explanations of the proposal execution steps.
 
 There are two methods for executing proposals:
 
 1. **Using `forge test`**: Detailed information on this method can be found in the [integration-tests.md](../testing/integration-tests.md) section.
 2. **Using `forge script`**: All the guides employs this method.
 
-Ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/` at the time of proposal simulation through `forge script`. It's essential to verify that ${wallet_address} is correctly listed as the deployer address in the Addresses.json file. Failure to align these details will result in script execution failure. If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
+Ensure that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/` at the time of proposal simulation through `forge script`. It's essential to verify that ${wallet_address} is correctly listed as the deployer address in the JSON file. Failure to align these details will result in script execution failure. If a password was provide to the wallet, the script will prompt for the password before broadcasting the proposal.
 
 ## Validated Governance Models
 

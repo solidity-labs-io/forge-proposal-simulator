@@ -59,8 +59,6 @@ Let's go through each of the overridden functions.
     }
     ```
 
-    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
 -   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the Governor Bravo's timelock approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`; it is the Governor Bravo's timelock for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
 
     ```solidity
@@ -95,7 +93,7 @@ Let's go through each of the overridden functions.
     }
     ```
 
--   `run()`: Sets up the environment for running the proposal. This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the `addresses.json` file. The Governor Bravo contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+-   `run()`: Sets up the environment for running the proposal. This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `sepolia` for executing the proposal. Next, the `addresses` object is set by reading from the addresses JSON file. The Governor Bravo contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
     function run() public override {
@@ -103,11 +101,12 @@ Let's go through each of the overridden functions.
         primaryForkId = vm.createFork("sepolia");
         vm.selectFork(primaryForkId);
 
+        string memory addressesFolderPath = "./addresses";
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = 11155111;
         // Set addresses object reading addresses from json file.
         setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("addresses/Addresses.json"))
-            )
+            new Addresses(addressesFolderPath, chainIds)
         );
 
         // Set Governor Bravo. This address is used for proposal simulation and check on
@@ -239,14 +238,13 @@ A Governor Bravo contract is needed to be set up on the testnet before running t
 
 This script [DeployGovernorBravo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/script/DeployGovernorBravo.s.sol) facilitates this process.
 
-Before running the script, add the `DEPLOYER_EOA` address to the `Addresses.json` file.
+Before running the script, add the `DEPLOYER_EOA` address to the `11155111.json` file.
 
 ```json
 [
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -261,32 +259,28 @@ forge script script/DeployGovernorBravo.s.sol --rpc-url sepolia --broadcast
 
 Double-check that the ${wallet_name} and ${wallet_address} accurately match the wallet details saved in `~/.foundry/keystores/`.
 
-Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `Addresses.json` file. The file should follow this structure:
+Copy the addresses of the timelock, governor, and governance token from the script output and add them to the `11155111.json` file. The file should follow this structure:
 
 ```json
 [
     {
         "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
-        "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -307,38 +301,33 @@ forge script script/InitializeBravo.s.sol --rpc-url sepolia --broadcast -vvvv --
 
 ### Setting Up the Addresses JSON
 
-Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `Addresses.json` file. The final `Addresses.json` file should follow this structure:
+Copy the `GOVERNOR_BRAVO_ALPHA` address from the script output and add it to the `11155111.json` file. The final `11155111.json` file should follow this structure:
 
 ```json
 [
     {
         "addr": "0x<YOUR_TIMELOCK_ADDRESS>",
         "name": "PROTOCOL_TIMELOCK",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_GOVERNOR_ADDRESS>",
         "name": "GOVERNOR_BRAVO",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_GOVERNANCE_TOKEN_ADDRESS>",
-        "chainId": 11155111,
         "isContract": true,
         "name": "PROTOCOL_GOVERNANCE_TOKEN"
     },
     {
         "addr": "0x<YOUR_GOVERNOR_ALPHA_ADDRESS>",
         "name": "GOVERNOR_BRAVO_ALPHA",
-        "chainId": 11155111,
         "isContract": true
     },
     {
         "addr": "0x<YOUR_DEV_ADDRESS>",
         "name": "DEPLOYER_EOA",
-        "chainId": 11155111,
         "isContract": false
     }
 ]
@@ -437,6 +426,6 @@ payload
   0xda95691a00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000002800000000000000000000000000000000000000000000000000000000000000480000000000000000000000000000000000000000000000000000000000000000300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a0500000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013427261766f2070726f706f73616c206d6f636b00000000000000000000000000
 ```
 
-A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It's crucial to note that two new addresses have been added to the `Addresses.sol` storage during proposal execution. However, these addresses are not included in the JSON file and must be added manually as new contracts have now been added to the system.
+A DAO member can verify whether the calldata proposed on the governance matches the calldata from the script execution. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
 
 The proposal script will deploy the contracts in the `deploy()` method and will generate actions calldata for each individual action along with proposal calldata for the proposal. The proposal can be manually proposed using `cast send` along with the calldata generated above.

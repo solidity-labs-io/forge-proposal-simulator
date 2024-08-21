@@ -55,8 +55,6 @@ Let's review each of the overridden functions:
   }
   ```
 
-  Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
 - `preBuildMock()`: Post-deployment mock actions, such as setting a new `outBox` for `Arbitrum bridge` using `vm.store` foundry cheatcode.
 
   ```solidity
@@ -99,7 +97,7 @@ Let's review each of the overridden functions:
   }
   ```
 
-- `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and the fork for running the proposal is selected. Next, the `addresses` object is set by reading the `addresses.json` file. The timelock contract to test is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
+- `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `timelock` and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and the fork for running the proposal is selected. Next, the `addresses` object is set by reading the JSON file. The timelock contract to test is set using `setTimelock`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
   ```solidity
   function run() public override {
@@ -107,9 +105,11 @@ Let's review each of the overridden functions:
       primaryForkId = vm.createFork("mainnet");
       vm.selectFork(primaryForkId);
 
+      uint256[] memory chainIds = new uint256[](1);
+      chainIds[0] = 1;
       // Set the addresses object by reading addresses from the json file
       addresses = new Addresses(
-          vm.envOr("ADDRESSES_PATH", string("./addresses/Addresses.json"))
+          vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
       );
 
       // Set the timelock. This address is used for proposal simulation and checking on-chain proposal state
@@ -159,7 +159,7 @@ Let's review each of the overridden functions:
 forge script mocks/MockTimelockProposal.sol:MockTimelockProposal --fork-url mainnet
 ```
 
-All required addresses should be in the Addresses.json file, including `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
+All required addresses should be in the JSON file, including `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
 
 The script will output the following:
 
@@ -221,3 +221,5 @@ payload
 ------------------ Execute Calldata ------------------
   0xe38335e500000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000050deb3e0ef55ff1976003bef5ca1a251beebbeb0d17ef15e6340ea825bbfe8e800000000000000000000000000000000000000000000000000000000000000010000000000000000000000003fffbadaf827559da092217e474760e2b2c3cedd000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000e41cff79cd00000000000000000000000056a0dfa59fd02284d1b39327cfe92251051da6bb0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000006409b461c10000000000000000000000009ad46fac0cf7f790e5be05a0f15223935a0c0ada000000000000000000000000d92023e9d9911199a6711321d1277285e6d4e2db000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 ```
+
+It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
