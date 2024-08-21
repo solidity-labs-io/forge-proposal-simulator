@@ -310,6 +310,7 @@ contract TestAddresses is Test {
 
         test1 = vm.addr(2);
         address test2 = vm.addr(3);
+        address test3 = vm.addr(4);
 
         // change TEST1 address
         addresses.changeAddress("TEST1", test1, 11155111, false);
@@ -317,17 +318,35 @@ contract TestAddresses is Test {
         // add TEST2 address
         addresses.addAddress("TEST2", test2, block.chainid, false);
 
+        // add TEST3 address
+        addresses.addAddress("TEST3", test3, 1, false);
+
         // update addresses.json file
         addresses.updateJson();
 
         // update addresses object with updated addresses.json
         addresses = new Addresses(addressesFolderPath, chainIds);
 
-        // check TEST1 address is updated
+        // check TEST1 address is updated on chain id 11155111
         assertEq(addresses.getAddress("TEST1", 11155111), test1);
 
-        // check TEST2 address is added
+        // check TEST2 address is added to chain id 2
         assertEq(addresses.getAddress("TEST2"), test2);
+
+        // check TEST3 address is added to chain id 1
+        assertEq(addresses.getAddress("TEST3", 1), test3);
+
+        // expect revert when getAddress TEST1 on chain id 1
+        vm.expectRevert("Address: TEST1 not set on chain: 1");
+        addresses.getAddress("TEST1", 1);
+
+        // expect revert when getAddress TEST2 on chain id 11155111
+        vm.expectRevert("Address: TEST2 not set on chain: 11155111");
+        addresses.getAddress("TEST2", 11155111);
+
+        // expect revert when getAddress TEST3 on chain id 31337
+        vm.expectRevert("Address: TEST3 not set on chain: 31337");
+        addresses.getAddress("TEST3", 31337);
     }
 
     function addressIsPresent() public {
