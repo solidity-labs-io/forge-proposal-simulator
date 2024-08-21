@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
 
+/// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
 contract MockVotingContract {
     mapping(string candidate => uint256 votes) public votesReceived;
     string[] public candidateList;

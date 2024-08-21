@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {MockToken} from "mocks/MockToken.sol";
 
+/// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
 contract MockTokenWrapper {
     address internal _tokenAddress;
 
