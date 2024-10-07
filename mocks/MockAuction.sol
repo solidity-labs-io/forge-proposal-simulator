@@ -18,7 +18,8 @@ contract MockAuction {
         highestBid = msg.value;
 
         if (previousBidder != address(0)) {
-            payable(previousBidder).call{value: msg.value}("");
+            (bool success, ) = payable(previousBidder).call{value: msg.value}("");
+            assert(success);
         }
     }
 
