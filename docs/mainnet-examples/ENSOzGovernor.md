@@ -121,10 +121,9 @@ The script will output the following:
 
 --------- Addresses added ---------
   {
-          'addr': '0x714CB817EfD08fEe91558b07A924a87C3587F3C1',
-          'chainId': 1,
-          'isContract': true ,
-          'name': 'ENS_DNSSEC'
+          "addr": "0x714CB817EfD08fEe91558b07A924a87C3587F3C1",
+          "isContract": true,
+          "name": "ENS_DNSSEC"
 }
 
 ---------------- Proposal Description ----------------

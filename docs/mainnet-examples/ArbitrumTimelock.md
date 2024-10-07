@@ -169,16 +169,14 @@ The script will output the following:
 
 --------- Addresses added ---------
   {
-          'addr': '0x714CB817EfD08fEe91558b07A924a87C3587F3C1',
-          'chainId': 1,
-          'isContract': true ,
-          'name': 'ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION'
+          "addr": "0x714CB817EfD08fEe91558b07A924a87C3587F3C1",
+          "isContract": true,
+          "name": "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"
 },
   {
-          'addr': '0x56a0dFA59fD02284D1b39327CfE92251051Da6bb',
-          'chainId': 1,
-          'isContract': true ,
-          'name': 'ARBITRUM_GAC_UPGRADE_WETH_GATEWAY'
+          "addr": "0x56a0dFA59fD02284D1b39327CfE92251051Da6bb",
+          "isContract": true,
+          "name": "ARBITRUM_GAC_UPGRADE_WETH_GATEWAY"
 }
 
 ---------------- Proposal Description ----------------

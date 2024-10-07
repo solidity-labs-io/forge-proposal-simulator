@@ -347,16 +347,14 @@ The script will output the following:
 
 --------- Addresses added ---------
   {
-          'addr': '0x69A5DfCD97eF074108b480e369CecfD9335565A2',
-          'chainId': 11155111,
-          'isContract': true ,
-          'name': 'BRAVO_VAULT'
+          "addr": "0x69A5DfCD97eF074108b480e369CecfD9335565A2",
+          "isContract": true,
+          "name": "BRAVO_VAULT"
 },
   {
-          'addr': '0x541234b61c081eaAE62c9EF52A633cD2aaf92A05',
-          'chainId': 11155111,
-          'isContract': true ,
-          'name': 'BRAVO_VAULT_TOKEN'
+          "addr": "0x541234b61c081eaAE62c9EF52A633cD2aaf92A05",
+          "isContract": true,
+          "name": "BRAVO_VAULT_TOKEN"
 }
 
 ---------------- Proposal Description ----------------

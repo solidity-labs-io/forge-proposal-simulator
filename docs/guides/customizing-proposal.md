@@ -632,16 +632,14 @@ The script will output the following:
 
 --------- Addresses added ---------
   {
-          'addr': '0x6801E4888A91180238A8c36594EC65797eC2dDDf',
-          'chainId': 42161,
-          'isContract': true ,
-          'name': 'ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION'
+          "addr": "0x6801E4888A91180238A8c36594EC65797eC2dDDf",
+          "isContract": true,
+          "name": "ARBITRUM_L2_WETH_GATEWAY_IMPLEMENTATION"
 },
   {
-          'addr': '0xA98deC0C8e0326756C956033bbF091081986d0eD',
-          'chainId': 42161,
-          'isContract': true ,
-          'name': 'PROXY_UPGRADE_ACTION'
+          "addr": "0xA98deC0C8e0326756C956033bbF091081986d0eD",
+          "isContract": true,
+          "name": "PROXY_UPGRADE_ACTION"
 }
 
 ---------------- Proposal Description ----------------
