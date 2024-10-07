@@ -333,11 +333,10 @@ contract Addresses is IAddresses, Test {
             if (names.length > 0) {
                 console.log("\n\n--------- Addresses added ---------");
                 for (uint256 j = 0; j < names.length; j++) {
-                    console.log("{\n          'addr': '%s', ", addresses[j]);
-                    console.log("        'chainId': %d,", block.chainid);
-                    console.log("        'isContract': %s", true, ",");
+                    console.log("{\n          \"addr\": \"%s\", ", addresses[j]);
+                    console.log("        \"isContract\": %s,", true);
                     console.log(
-                        "        'name': '%s'\n}%s",
+                        "        \"name\": \"%s\"\n}%s",
                         names[j],
                         j < names.length - 1 ? "," : ""
                     );
