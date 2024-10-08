@@ -223,7 +223,7 @@ abstract contract Proposal is Test, Script, IProposal {
             console.log("\n");
         }
 
-        console.log("\n----------------- Proposal Changes ---------------");
+        console.log("\n----------------- Proposal Changes -------------------");
         for (uint256 i; i < _proposalAffectedAddresses.length; i++) {
             address account = _proposalAffectedAddresses[i];
 

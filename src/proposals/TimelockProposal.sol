@@ -180,7 +180,7 @@ abstract contract TimelockProposal is Proposal {
         console.logBytes(getCalldata());
 
         console.log(
-            "\n\n------------------ Execute Calldata ------------------"
+            "\n\n------------------ Execute Calldata -------------------"
         );
         console.logBytes(getExecuteCalldata());
     }
