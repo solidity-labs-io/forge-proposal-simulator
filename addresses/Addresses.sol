@@ -253,18 +253,18 @@ contract Addresses is IAddresses, Test {
         view
         returns (
             string[] memory names,
-            uint256[] memory chainIds,
+            uint256[] memory chainIdsList,
             address[] memory addresses
         )
     {
         uint256 length = recordedAddresses.length;
         names = new string[](length);
-        chainIds = new uint256[](length);
+        chainIdsList = new uint256[](length);
         addresses = new address[](length);
 
         for (uint256 i = 0; i < length; i++) {
             names[i] = recordedAddresses[i].name;
-            chainIds[i] = recordedAddresses[i].chainId;
+            chainIdsList[i] = recordedAddresses[i].chainId;
             addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i]
                 .chainId].addr;
         }
@@ -281,20 +281,20 @@ contract Addresses is IAddresses, Test {
         view
         returns (
             string[] memory names,
-            uint256[] memory chainIds,
+            uint256[] memory chainIdsList,
             address[] memory oldAddresses,
             address[] memory newAddresses
         )
     {
         uint256 length = changedAddresses.length;
         names = new string[](length);
-        chainIds = new uint256[](length);
+        chainIdsList = new uint256[](length);
         oldAddresses = new address[](length);
         newAddresses = new address[](length);
 
         for (uint256 i = 0; i < length; i++) {
             names[i] = changedAddresses[i].name;
-            chainIds[i] = changedAddresses[i].chainId;
+            chainIdsList[i] = changedAddresses[i].chainId;
             oldAddresses[i] = changedAddresses[i].oldAddress;
             newAddresses[i] = _addresses[changedAddresses[i].name][changedAddresses[i]
                 .chainId].addr;
