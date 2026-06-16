@@ -24,8 +24,7 @@
         "prettier:write": "prettier \"**/*\" --ignore-path .prettierignore -w",
         "test": "forge test",
         "test:coverage": "forge coverage",
-        "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
-        "preinstall": "npx only-allow@1.2.2 pnpm"
+        "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
     },
     "engines": {
         "node": ">=24",
