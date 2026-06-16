@@ -5,7 +5,6 @@ preferFrozenLockfile: true
 engineStrict: true
 strictDepBuilds: true
 blockExoticSubdeps: true
-onlyBuiltDependencies: []
 overrides:
   "brace-expansion@>=2.0.0 <2.0.3": "^2.0.3"
   "fast-uri@>=3.0.0 <3.1.2": "^3.1.2"
