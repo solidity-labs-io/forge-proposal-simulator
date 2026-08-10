@@ -29,12 +29,7 @@ abstract contract OZGovernorProposal is Proposal {
     }
 
     /// @notice Getter function for `IGovernor.propose()` calldata
-    function getCalldata()
-        public
-        virtual
-        override
-        returns (bytes memory data)
-    {
+    function getCalldata() public virtual override returns (bytes memory data) {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -52,12 +47,7 @@ abstract contract OZGovernorProposal is Proposal {
 
     /// @notice Check if there are any on-chain proposals that match the
     /// proposal calldata
-    function getProposalId()
-        public
-        view
-        override
-        returns (uint256 proposalId)
-    {
+    function getProposalId() public view override returns (uint256 proposalId) {
         (
             address[] memory targets,
             uint256[] memory values,
@@ -88,7 +78,8 @@ abstract contract OZGovernorProposal is Proposal {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorum(block.number - 1);
             uint256 proposalThreshold = governor.proposalThreshold();
-            uint256 votingPower = quorumVotes > proposalThreshold
+            uint256 votingPower =
+                quorumVotes > proposalThreshold
                 ? quorumVotes
                 : proposalThreshold;
             deal(address(governanceToken), proposerAddress, votingPower);

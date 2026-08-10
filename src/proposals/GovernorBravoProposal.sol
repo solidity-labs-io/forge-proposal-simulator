@@ -3,7 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@forge-std/console.sol";
 
-import {IERC20VotesComp, IGovernorBravo, ITimelockBravo} from "@interface/IGovernorBravo.sol";
+import {
+    IERC20VotesComp,
+    IGovernorBravo,
+    ITimelockBravo
+} from "@interface/IGovernorBravo.sol";
 
 import {Address} from "@utils/Address.sol";
 
@@ -22,8 +26,18 @@ abstract contract GovernorBravoProposal is Proposal {
     }
 
     /// @notice Getter function for `GovernorBravoDelegate.propose()` calldata
-    function getCalldata() public view virtual override returns (bytes memory data) {
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = getProposalActions();
+    function getCalldata()
+        public
+        view
+        virtual
+        override
+        returns (bytes memory data)
+    {
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = getProposalActions();
         string[] memory signatures = new string[](targets.length);
 
         data = abi.encodeWithSignature(
@@ -42,8 +56,12 @@ abstract contract GovernorBravoProposal is Proposal {
         uint256 proposalCount = governor.proposalCount();
 
         while (proposalCount > 0) {
-            (address[] memory targets, uint256[] memory values, string[] memory signatures, bytes[] memory calldatas) =
-                governor.getActions(proposalCount);
+            (
+                address[] memory targets,
+                uint256[] memory values,
+                string[] memory signatures,
+                bytes[] memory calldatas
+            ) = governor.getActions(proposalCount);
 
             bytes memory onchainCalldata = abi.encodeWithSignature(
                 "propose(address[],uint256[],string[],bytes[],string)",
@@ -58,7 +76,10 @@ abstract contract GovernorBravoProposal is Proposal {
 
             if (keccak256(proposalCalldata) == keccak256(onchainCalldata)) {
                 if (DEBUG) {
-                    console.log("Proposal calldata matches on-chain calldata with proposalId: ", proposalCount);
+                    console.log(
+                        "Proposal calldata matches on-chain calldata with proposalId: ",
+                        proposalCount
+                    );
                 }
                 return proposalCount;
             }
@@ -78,13 +99,20 @@ abstract contract GovernorBravoProposal is Proposal {
         // so the timelock admin doesn't correspond to the governor address on mainnet anymore
         // This is a workaround since this proposal is not compatible with the new Compound governor
         // In Compound's timelock, admin is stored at slot 0
-        vm.store(address(timelock), bytes32(uint256(0)), bytes32(uint256(uint160(address(governor)))));
+        vm.store(
+            address(timelock),
+            bytes32(uint256(0)),
+            bytes32(uint256(uint160(address(governor))))
+        );
 
         {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorumVotes();
             uint256 proposalThreshold = governor.proposalThreshold();
-            uint256 votingPower = quorumVotes > proposalThreshold ? quorumVotes : proposalThreshold;
+            uint256 votingPower =
+                quorumVotes > proposalThreshold
+                ? quorumVotes
+                : proposalThreshold;
             deal(address(governanceToken), proposerAddress, votingPower);
             // Delegate proposer's votes to itself
             vm.prank(proposerAddress);
@@ -100,11 +128,15 @@ abstract contract GovernorBravoProposal is Proposal {
         uint256 proposalId = abi.decode(data, (uint256));
 
         // Check proposal is in Pending state
-        require(governor.state(proposalId) == IGovernorBravo.ProposalState.Pending);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Pending
+        );
 
         // Roll to Active state (voting period)
         vm.roll(block.number + governor.votingDelay() + 1);
-        require(governor.state(proposalId) == IGovernorBravo.ProposalState.Active);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Active
+        );
 
         // Vote YES
         vm.prank(proposerAddress);
@@ -112,16 +144,22 @@ abstract contract GovernorBravoProposal is Proposal {
 
         // Roll to allow proposal state transitions
         vm.roll(block.number + governor.votingPeriod());
-        require(governor.state(proposalId) == IGovernorBravo.ProposalState.Succeeded);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Succeeded
+        );
 
         // Queue the proposal
         governor.queue(proposalId);
-        require(governor.state(proposalId) == IGovernorBravo.ProposalState.Queued);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Queued
+        );
 
         vm.warp(block.timestamp + timelock.delay());
 
         // Execute the proposal
         governor.execute(proposalId);
-        require(governor.state(proposalId) == IGovernorBravo.ProposalState.Executed);
+        require(
+            governor.state(proposalId) == IGovernorBravo.ProposalState.Executed
+        );
     }
 }
