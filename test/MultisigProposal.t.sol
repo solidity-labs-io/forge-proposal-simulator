@@ -30,9 +30,15 @@ contract MultisigProposalIntegrationTest is Test {
     }
 
     function test_setUp() public view {
-        assertEq(proposal.name(), string("OPTMISM_MULTISIG_MOCK"), "Wrong proposal name");
         assertEq(
-            proposal.description(), string("Mock proposal that upgrade the L1 NFT Bridge"), "Wrong proposal description"
+            proposal.name(),
+            string("OPTMISM_MULTISIG_MOCK"),
+            "Wrong proposal name"
+        );
+        assertEq(
+            proposal.description(),
+            string("Mock proposal that upgrade the L1 NFT Bridge"),
+            "Wrong proposal description"
         );
     }
 
@@ -41,7 +47,9 @@ contract MultisigProposalIntegrationTest is Test {
         proposal.deploy();
         vm.stopPrank();
 
-        assertTrue(addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"));
+        assertTrue(
+            addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
+        );
     }
 
     function test_build() public {
@@ -52,11 +60,19 @@ contract MultisigProposalIntegrationTest is Test {
 
         proposal.build();
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
 
         // check that the proposal targets are correct
         assertEq(targets.length, 1, "Wrong targets length");
-        assertEq(targets[0], addresses.getAddress("OPTIMISM_PROXY_ADMIN"), "Wrong target at index 0");
+        assertEq(
+            targets[0],
+            addresses.getAddress("OPTIMISM_PROXY_ADMIN"),
+            "Wrong target at index 0"
+        );
 
         // check that the proposal values are correct
         assertEq(values.length, 1, "Wrong values length");
@@ -86,7 +102,11 @@ contract MultisigProposalIntegrationTest is Test {
     function test_getCalldata() public {
         test_build();
 
-        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas) = proposal.getProposalActions();
+        (
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        ) = proposal.getProposalActions();
 
         bytes memory encodedTxs;
 
@@ -96,11 +116,16 @@ contract MultisigProposalIntegrationTest is Test {
             uint256 value = values[i];
             bytes memory callData = calldatas[i];
 
-            encodedTxs =
-                bytes.concat(encodedTxs, abi.encodePacked(operation, to, value, uint256(callData.length), callData));
+            encodedTxs = bytes.concat(
+                encodedTxs,
+                abi.encodePacked(
+                    operation, to, value, uint256(callData.length), callData
+                )
+            );
         }
 
-        bytes memory expectedData = abi.encodeWithSignature("multiSend(bytes)", encodedTxs);
+        bytes memory expectedData =
+            abi.encodeWithSignature("multiSend(bytes)", encodedTxs);
 
         bytes memory data = proposal.getCalldata();
 
