@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 /// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
@@ -19,8 +20,7 @@ contract MockSavingContract {
     function withdraw(uint256 depositIndex) public {
         Deposit memory userDeposit = deposits[msg.sender][depositIndex];
         require(
-            block.timestamp >= userDeposit.unlockTime,
-            "Deposit is still locked"
+            block.timestamp >= userDeposit.unlockTime, "Deposit is still locked"
         );
         require(userDeposit.amount > 0, "No funds to withdraw");
 
@@ -29,10 +29,11 @@ contract MockSavingContract {
         payable(msg.sender).transfer(amount);
     }
 
-    function getDeposit(
-        address user,
-        uint256 depositIndex
-    ) public view returns (uint256 amount, uint256 unlockTime) {
+    function getDeposit(address user, uint256 depositIndex)
+        public
+        view
+        returns (uint256 amount, uint256 unlockTime)
+    {
         return (
             deposits[user][depositIndex].amount,
             deposits[user][depositIndex].unlockTime

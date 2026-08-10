@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Addresses} from "@addresses/Addresses.sol";
@@ -120,7 +120,9 @@ contract MockTimelockProposal is TimelockProposal {
         vm.startPrank(addresses.getAddress("ARBITRUM_L1_PROXY_ADMIN"));
         require(
             proxy.implementation()
-                == addresses.getAddress("ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"),
+                == addresses.getAddress(
+                    "ARBITRUM_L1_WETH_GATEWAY_IMPLEMENTATION"
+                ),
             "Proxy implementation not set"
         );
         vm.stopPrank();

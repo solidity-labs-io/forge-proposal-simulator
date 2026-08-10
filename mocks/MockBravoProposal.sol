@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
@@ -43,8 +43,9 @@ contract MockBravoProposal is GovernorBravoProposal {
         buildModifier(addresses.getAddress("COMPOUND_TIMELOCK_BRAVO"))
     {
         /// STATICCALL -- not recorded for the run stage
-        ICompoundConfigurator configurator =
-            ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
+        ICompoundConfigurator configurator = ICompoundConfigurator(
+            addresses.getAddress("COMPOUND_CONFIGURATOR")
+        );
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         /// CALLS -- mutative and recorded
@@ -53,8 +54,9 @@ contract MockBravoProposal is GovernorBravoProposal {
     }
 
     function validate() public view override {
-        ICompoundConfigurator configurator =
-            ICompoundConfigurator(addresses.getAddress("COMPOUND_CONFIGURATOR"));
+        ICompoundConfigurator configurator = ICompoundConfigurator(
+            addresses.getAddress("COMPOUND_CONFIGURATOR")
+        );
         address comet = addresses.getAddress("COMPOUND_COMET");
 
         ICompoundConfigurator.Configuration memory config =

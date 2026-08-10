@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
@@ -430,8 +431,7 @@ abstract contract Proposal is Test, Script, IProposal {
                 _isProposalAffectedAddress[accountAccess.accessor] = true;
                 _proposalAffectedAddresses.push(accountAccess.accessor);
             }
-            _proposalTransfers[accountAccess.accessor]
-            .push(
+            _proposalTransfers[accountAccess.accessor].push(
                 TransferInfo({
                     to: account,
                     value: accountAccess.value,
@@ -480,8 +480,7 @@ abstract contract Proposal is Test, Script, IProposal {
             _proposalAffectedAddresses.push(from);
         }
 
-        _proposalTransfers[from]
-        .push(
+        _proposalTransfers[from].push(
             TransferInfo({
                 to: to, value: value, tokenAddress: accountAccess.account
             })
@@ -497,8 +496,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
             // get only state changes for write storage access
             if (storageAccess[i].isWrite) {
-                _stateInfos[account]
-                .push(
+                _stateInfos[account].push(
                     StateInfo({
                         slot: storageAccess[i].slot,
                         oldValue: storageAccess[i].previousValue,
