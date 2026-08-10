@@ -48,9 +48,8 @@ contract MultisigProposal_02 is MultisigProposal {
             MockTokenWrapper(addresses.getAddress("TOKEN_WRAPPER"));
 
         // actions
-        MockToken(addresses.getAddress("TOKEN")).approve(
-            address(tokenWrapper), 60 ether
-        );
+        MockToken(addresses.getAddress("TOKEN"))
+            .approve(address(tokenWrapper), 60 ether);
         tokenWrapper.mint{value: 10 ether}();
         tokenWrapper.redeemTokens(10 ether);
         tokenWrapper.mint{value: 20 ether}();

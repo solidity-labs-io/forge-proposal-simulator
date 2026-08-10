@@ -379,9 +379,7 @@ contract TestAddresses is Test {
         addresses.addAddress("TEST", vm.addr(1), true);
     }
 
-    function test_checkAddressRevertIfSetIsContractFalseButIsContract()
-        public
-    {
+    function test_checkAddressRevertIfSetIsContractFalseButIsContract() public {
         address test = vm.addr(1);
 
         vm.etch(test, "0x01");

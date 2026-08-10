@@ -5,16 +5,21 @@ import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {MultisigProposal} from "@proposals/MultisigProposal.sol";
-import {MultisigProposal_01} from
-    "@test/multisigProposals/MultisigProposal_01.sol";
-import {MultisigProposal_02} from
-    "@test/multisigProposals/MultisigProposal_02.sol";
-import {MultisigProposal_03} from
-    "@test/multisigProposals/MultisigProposal_03.sol";
-import {MultisigProposal_04} from
-    "@test/multisigProposals/MultisigProposal_04.sol";
-import {MultisigProposal_05} from
-    "@test/multisigProposals/MultisigProposal_05.sol";
+import {
+    MultisigProposal_01
+} from "@test/multisigProposals/MultisigProposal_01.sol";
+import {
+    MultisigProposal_02
+} from "@test/multisigProposals/MultisigProposal_02.sol";
+import {
+    MultisigProposal_03
+} from "@test/multisigProposals/MultisigProposal_03.sol";
+import {
+    MultisigProposal_04
+} from "@test/multisigProposals/MultisigProposal_04.sol";
+import {
+    MultisigProposal_05
+} from "@test/multisigProposals/MultisigProposal_05.sol";
 
 contract MultisigProposalCalldataTest is Test {
     Addresses public addresses;
