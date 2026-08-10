@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {console} from "@forge-std/console.sol";
@@ -76,12 +77,7 @@ abstract contract TimelockProposal is Proposal {
 
     /// @notice Check and return proposal hash if there are any on-chain proposal that matches the
     /// proposal calldata
-    function getProposalId()
-        public
-        view
-        override
-        returns (uint256 proposalId)
-    {
+    function getProposalId() public view override returns (uint256 proposalId) {
         (
             address[] memory targets,
             uint256[] memory values,

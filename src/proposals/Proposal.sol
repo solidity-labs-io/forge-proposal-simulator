@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
@@ -29,7 +30,8 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice transfers during proposal execution
-    mapping(address addr => TransferInfo[] transfers) private _proposalTransfers;
+    mapping(address addr => TransferInfo[] transfers) private
+        _proposalTransfers;
 
     /// @notice state changes during proposal execution
     mapping(address addr => StateInfo[] stateChanges) private _stateInfos;
@@ -300,7 +302,8 @@ abstract contract Proposal is Test, Script, IProposal {
             bool isDuplicateValue = actions[i].value == value;
 
             require(
-                !(isDuplicateTarget && isDuplicateArguments && isDuplicateValue),
+                !(isDuplicateTarget && isDuplicateArguments
+                        && isDuplicateValue),
                 "Duplicated action found"
             );
         }
@@ -365,8 +368,8 @@ abstract contract Proposal is Test, Script, IProposal {
             if (
                 accountAccesses[i].account != address(addresses)
                     && accountAccesses[i].account != address(vm)
-                /// ignore calls to vm in the build function
-                && accountAccesses[i].accessor != address(addresses)
+                    /// ignore calls to vm in the build function
+                    && accountAccesses[i].accessor != address(addresses)
                     && accountAccesses[i].kind == VmSafe.AccountAccessKind.Call
                     && accountAccesses[i].accessor == caller
             ) {
@@ -402,9 +405,8 @@ abstract contract Proposal is Test, Script, IProposal {
     }
 
     /// @notice helper method to get transfers and state changes of proposal affected addresses
-    function _processStateDiffChanges(
-        VmSafe.AccountAccess[] memory accountAccesses
-    ) internal {
+    function _processStateDiffChanges(VmSafe
+                .AccountAccess[] memory accountAccesses) internal {
         for (uint256 i = 0; i < accountAccesses.length; i++) {
             // process ETH transfer changes
             _processETHTransferChanges(accountAccesses[i]);
@@ -480,9 +482,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         _proposalTransfers[from].push(
             TransferInfo({
-                to: to,
-                value: value,
-                tokenAddress: accountAccess.account
+                to: to, value: value, tokenAddress: accountAccess.account
             })
         );
     }
@@ -541,14 +541,16 @@ abstract contract Proposal is Test, Script, IProposal {
             }
         } else {
             // return "{LABEL} @{ADDRESS}" if address is labeled
-            return string(
-                abi.encodePacked(label, " @", vm.toString(contractAddress))
-            );
+            return
+                string(
+                    abi.encodePacked(label, " @", vm.toString(contractAddress))
+                );
         }
 
         // return "UNLABELED @{ADDRESS}" if address is unlabeled
-        return string(
-            abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
-        );
+        return
+            string(
+                abi.encodePacked("UNLABELED @", vm.toString(contractAddress))
+            );
     }
 }

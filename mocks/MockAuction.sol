@@ -1,9 +1,10 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 /// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
 contract MockAuction {
     address public highestBidder;
-    uint public highestBid;
+    uint256 public highestBid;
     address public owner;
 
     constructor() {
@@ -18,7 +19,7 @@ contract MockAuction {
         highestBid = msg.value;
 
         if (previousBidder != address(0)) {
-            (bool success, ) = payable(previousBidder).call{value: msg.value}("");
+            (bool success,) = payable(previousBidder).call{value: msg.value}("");
             assert(success);
         }
     }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Addresses} from "@addresses/Addresses.sol";
@@ -70,7 +70,9 @@ contract MockMultisigProposal is MultisigProposal {
         vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
         require(
             proxy.implementation()
-                == addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
+                == addresses.getAddress(
+                    "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"
+                ),
             "Proxy implementation not set"
         );
         vm.stopPrank();

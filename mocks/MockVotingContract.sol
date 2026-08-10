@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 /// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
@@ -13,7 +14,11 @@ contract MockVotingContract {
         votesReceived[candidate] += 1;
     }
 
-    function totalVotesFor(string memory candidate) public view returns (uint) {
+    function totalVotesFor(string memory candidate)
+        public
+        view
+        returns (uint256)
+    {
         return votesReceived[candidate];
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 /// @notice This is a contract that stores addresses for different networks.
@@ -11,20 +11,17 @@ interface IAddresses {
 
     /// @notice get an address for a specific chainId
     /// @param name the name of the address
-    function getAddress(
-        string memory name,
-        uint256 chainId
-    ) external view returns (address);
+    function getAddress(string memory name, uint256 chainId)
+        external
+        view
+        returns (address);
 
     /// @notice add an address for the current chainId
     /// @param name the name of the address
     /// @param addr the address to add
     /// @param isContract whether the address is a contract
-    function addAddress(
-        string memory name,
-        address addr,
-        bool isContract
-    ) external;
+    function addAddress(string memory name, address addr, bool isContract)
+        external;
 
     /// @notice add an address for a specific chainId
     /// @param name the name of the address
@@ -42,11 +39,8 @@ interface IAddresses {
     /// @param name the name of the address
     /// @param addr the address to change
     /// @param isContract whether the address is a contract
-    function changeAddress(
-        string memory name,
-        address addr,
-        bool isContract
-    ) external;
+    function changeAddress(string memory name, address addr, bool isContract)
+        external;
 
     /// @notice change an address for a specific chainId
     /// @param name the name of the address
@@ -60,11 +54,24 @@ interface IAddresses {
         bool isContract
     ) external;
 
+    /// @notice remove an address for a specific chainId
+    /// @param name the name of the address
+    /// @param toRemove the address expected to be currently stored
+    /// @param chainId the chain id
+    function removeAddress(
+        string memory name,
+        address toRemove,
+        uint256 chainId
+    ) external;
+
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external;
 
     /// @notice remove changed addresses
     function resetChangedAddresses() external;
+
+    /// @notice remove removed addresses
+    function resetRemovedAddresses() external;
 
     /// @notice get recorded addresses from a proposal's deployment
     function getRecordedAddresses()
@@ -87,6 +94,12 @@ interface IAddresses {
             address[] memory newAddresses
         );
 
+    /// @notice get removed addresses from a proposal's deployment
+    function getRemovedAddresses()
+        external
+        view
+        returns (string[] memory names, uint256[] memory chainIds);
+
     /// @notice check if an address is a contract
     /// @param name the name of the address
     function isAddressContract(string memory name) external view returns (bool);
@@ -98,8 +111,8 @@ interface IAddresses {
     /// @notice check if an address is set for a specific chain id
     /// @param name the name of the address
     /// @param chainId the chain id
-    function isAddressSet(
-        string memory name,
-        uint256 chainId
-    ) external view returns (bool);
+    function isAddressSet(string memory name, uint256 chainId)
+        external
+        view
+        returns (bool);
 }

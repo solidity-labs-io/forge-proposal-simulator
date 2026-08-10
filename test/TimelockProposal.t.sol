@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
@@ -123,8 +123,8 @@ contract TimelockProposalIntegrationTest is Test {
 
         bytes32 salt = keccak256(abi.encode(proposal.description()));
         uint256 delay = ITimelockController(
-            payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
-        ).getMinDelay();
+                payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
+            ).getMinDelay();
 
         bytes memory expectedData = abi.encodeWithSignature(
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
@@ -178,8 +178,8 @@ contract TimelockProposalIntegrationTest is Test {
         bytes32 salt = keccak256(abi.encode(proposal.description()));
 
         bytes32 hash = ITimelockController(
-            payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
-        ).hashOperationBatch(targets, values, calldatas, bytes32(0), salt);
+                payable(addresses.getAddress("ARBITRUM_L1_TIMELOCK"))
+            ).hashOperationBatch(targets, values, calldatas, bytes32(0), salt);
 
         assertEq(proposal.getProposalId(), uint256(hash));
     }

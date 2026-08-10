@@ -1,12 +1,13 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
 
 import {Addresses} from "@addresses/Addresses.sol";
 import {GovernorBravoProposal} from "@proposals/GovernorBravoProposal.sol";
-import {MockDuplicatedActionProposal} from
-    "@mocks/MockDuplicatedActionProposal.sol";
+import {
+    MockDuplicatedActionProposal
+} from "@mocks/MockDuplicatedActionProposal.sol";
 
 contract DuplicatedActionProposalIntegrationTest is Test {
     Addresses public addresses;

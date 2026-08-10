@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {OZGovernorProposal} from "@proposals/OZGovernorProposal.sol";
@@ -21,8 +21,7 @@ contract MockOZGovernorProposal is OZGovernorProposal {
     }
 
     function description() public pure override returns (string memory) {
-        return
-        "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
+        return "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
     }
 
     function run() public override {

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {Test} from "@forge-std/Test.sol";
@@ -274,6 +274,67 @@ contract TestAddresses is Test {
         addresses.changeAddress("DEPLOYER_EOA", vm.addr(1), 0, false);
     }
 
+    function test_removeAddress() public {
+        address addr = addresses.getAddress("DEPLOYER_EOA");
+
+        addresses.removeAddress("DEPLOYER_EOA", addr, block.chainid);
+
+        assertEq(addresses.isAddressSet("DEPLOYER_EOA"), false);
+
+        vm.expectRevert("Address: DEPLOYER_EOA not set on chain: 31337");
+        addresses.getAddress("DEPLOYER_EOA");
+
+        // name and address should both be free to reuse after removal
+        addresses.addAddress("DEPLOYER_EOA", addr, false);
+        assertEq(addresses.getAddress("DEPLOYER_EOA"), addr);
+    }
+
+    function test_removeAddressUpdatesRecordedAddresses() public {
+        address addr = addresses.getAddress("DEPLOYER_EOA");
+
+        addresses.removeAddress("DEPLOYER_EOA", addr, block.chainid);
+
+        (string[] memory names, uint256[] memory chainIds) =
+            addresses.getRemovedAddresses();
+
+        assertEq(names.length, 1);
+        assertEq(chainIds.length, 1);
+        assertEq(names[0], "DEPLOYER_EOA");
+        assertEq(chainIds[0], block.chainid);
+    }
+
+    function test_resetRemovedAddresses() public {
+        address addr = addresses.getAddress("DEPLOYER_EOA");
+        addresses.removeAddress("DEPLOYER_EOA", addr, block.chainid);
+
+        addresses.resetRemovedAddresses();
+
+        (string[] memory names, uint256[] memory chainIds) =
+            addresses.getRemovedAddresses();
+
+        assertEq(names.length, 0);
+        assertEq(chainIds.length, 0);
+    }
+
+    function test_revertRemoveAddressCannotBeZeroChainId() public {
+        address addr = addresses.getAddress("DEPLOYER_EOA");
+
+        vm.expectRevert("ChainId cannot be 0");
+        addresses.removeAddress("DEPLOYER_EOA", addr, 0);
+    }
+
+    function test_revertRemoveAddressDoesNotExist() public {
+        vm.expectRevert("Address: TEST doesn't exist on chain: 31337");
+        addresses.removeAddress("TEST", vm.addr(1), block.chainid);
+    }
+
+    function test_revertRemoveAddressMismatch() public {
+        vm.expectRevert(
+            "Address: DEPLOYER_EOA does not match provided address on chain: 31337"
+        );
+        addresses.removeAddress("DEPLOYER_EOA", vm.addr(1), block.chainid);
+    }
+
     function test_isContractFalse() public view {
         assertEq(addresses.isAddressContract("DEPLOYER_EOA"), false);
     }
@@ -347,6 +408,14 @@ contract TestAddresses is Test {
         // expect revert when getAddress TEST3 on chain id 31337
         vm.expectRevert("Address: TEST3 not set on chain: 31337");
         addresses.getAddress("TEST3", 31337);
+
+        // undo the additions made above so the on-disk address files are
+        // restored to their original contents and this test remains
+        // idempotent across repeated runs
+        addresses.removeAddress("TEST1", test1, 11155111);
+        addresses.removeAddress("TEST2", test2, block.chainid);
+        addresses.removeAddress("TEST3", test3, 1);
+        addresses.updateJson();
     }
 
     function addressIsPresent() public {
@@ -379,9 +448,7 @@ contract TestAddresses is Test {
         addresses.addAddress("TEST", vm.addr(1), true);
     }
 
-    function test_checkAddressRevertIfSetIsContractFalseButIsContract()
-        public
-    {
+    function test_checkAddressRevertIfSetIsContractFalseButIsContract() public {
         address test = vm.addr(1);
 
         vm.etch(test, "0x01");

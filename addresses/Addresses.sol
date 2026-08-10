@@ -1,122 +1,88 @@
-/*
-Copyright 2023 Lunar Enterprise Ventures, Ltd.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import {console} from "@forge-std/console.sol";
-import {Test} from "@forge-std/Test.sol";
+import {Vm} from "@forge-std/Vm.sol";
 import {IAddresses} from "@addresses/IAddresses.sol";
 
 /// @notice This is a contract that stores addresses for different networks.
 /// It allows a project to have a single source of truth to get all the addresses
 /// for a given network.
-contract Addresses is IAddresses, Test {
-    struct Address {
-        address addr;
-        bool isContract;
+contract Addresses is IAddresses {
+    Vm private constant forgeVm =
+        Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
+    struct RegistryRecord {
+        bool contractFlag;
+        address storedAddress;
     }
 
-    /// @notice mapping from contract name to network chain id to address
-    mapping(string name => mapping(uint256 chainId => Address)) public
-        _addresses;
-
-    /// each address on each network should only have 1 name
-    /// @notice mapping from address to chain id to whether it exists
-    mapping(address addr => mapping(uint256 chainId => bool exist)) public
-        addressToChainId;
-
-    /// @notice json structure to store address details
-    struct SavedAddresses {
-        /// address to store
-        address addr;
-        /// whether the address is a contract
-        bool isContract;
-        /// name of contract to store
-        string name;
-        /// chain id of contract to store
-        uint256 chainId;
+    struct PersistedRecord {
+        address addrValue;
+        bool contractFlag;
+        string entryName;
+        uint256 networkId;
     }
 
-    /// @notice json structure to read addresses from file
-    struct FileAddresses {
-        /// address of contract
-        address addr;
-        /// whether the address is a contract
-        bool isContract;
-        /// name of contract
-        string name;
+    struct DiskRecord {
+        address addrValue;
+        bool contractFlag;
+        string entryName;
     }
 
-    /// @notice struct to record addresses deployed during a proposal
-    struct RecordedAddress {
-        string name;
-        uint256 chainId;
+    struct AddedMarker {
+        string entryName;
+        uint256 networkId;
     }
 
-    // @notice struct to record addresses changed during a proposal
-    struct ChangedAddress {
-        string name;
-        uint256 chainId;
-        address oldAddress;
+    struct RemovedMarker {
+        string entryName;
+        uint256 networkId;
     }
 
-    /// @notice array of addresses deployed during a proposal
-    RecordedAddress[] private recordedAddresses;
+    struct ReplacedMarker {
+        string entryName;
+        uint256 networkId;
+        address previousAddress;
+    }
 
-    /// @notice array of addresses changed during a proposal
-    ChangedAddress[] private changedAddresses;
+    mapping(string label => mapping(uint256 network => RegistryRecord)) private
+        registry;
 
-    /// @notice array of all address details
-    SavedAddresses[] private savedAddresses;
+    mapping(address location => mapping(uint256 network => bool present))
+        private reverseRegistry;
 
-    /// @notice path of addresses folder
-    string private addressesFolderPath;
+    AddedMarker[] private additions;
+    RemovedMarker[] private removed;
+    ReplacedMarker[] private replacements;
+    PersistedRecord[] private persisted;
+    string private rootDirectory;
+    uint256[] private knownNetworks;
 
-    /// @notice addresses chain ids
-    uint256[] private chainIds;
+    constructor(string memory folder, uint256[] memory networks) {
+        rootDirectory = folder;
 
-    constructor(
-        string memory _addressesFolderPath,
-        uint256[] memory _chainIds
-    ) {
-        addressesFolderPath = _addressesFolderPath;
-        for (uint256 i; i < _chainIds.length; ++i) {
-            chainIds.push(_chainIds[i]);
+        for (uint256 cursor; cursor < networks.length; ++cursor) {
+            uint256 network = networks[cursor];
+            knownNetworks.push(network);
 
-            string memory addressesPath = string(
+            string memory document = string(
                 abi.encodePacked(
-                    _addressesFolderPath,
-                    "/",
-                    vm.toString(_chainIds[i]),
-                    ".json"
+                    folder, "/", forgeVm.toString(network), ".json"
                 )
             );
 
-            string memory addressesData =
-                string(abi.encodePacked(vm.readFile(addressesPath)));
+            string memory contents =
+                string(abi.encodePacked(forgeVm.readFile(document)));
+            DiskRecord[] memory rows =
+                abi.decode(forgeVm.parseJson(contents), (DiskRecord[]));
 
-            bytes memory parsedJson = vm.parseJson(addressesData);
-
-            FileAddresses[] memory fileAddresses =
-                abi.decode(parsedJson, (FileAddresses[]));
-
-            for (uint256 j = 0; j < fileAddresses.length; j++) {
-                _addAddress(
-                    fileAddresses[j].name,
-                    fileAddresses[j].addr,
-                    _chainIds[i],
-                    fileAddresses[j].isContract
+            for (uint256 row; row < rows.length; ++row) {
+                _storeEntry(
+                    rows[row].entryName,
+                    rows[row].addrValue,
+                    network,
+                    rows[row].contractFlag
                 );
             }
         }
@@ -125,18 +91,18 @@ contract Addresses is IAddresses, Test {
     /// @notice get an address for the current chainId
     /// @param name the name of the address
     function getAddress(string memory name) public view returns (address) {
-        return _getAddress(name, block.chainid);
+        return _lookupEntry(name, block.chainid);
     }
 
     /// @notice get an address for a specific chainId
     /// @param name the name of the address
-    /// @param _chainId the chain id
-    function getAddress(string memory name, uint256 _chainId)
+    /// @param chainId the chain id
+    function getAddress(string memory name, uint256 chainId)
         public
         view
         returns (address)
     {
-        return _getAddress(name, _chainId);
+        return _lookupEntry(name, chainId);
     }
 
     /// @notice add an address for the current chainId
@@ -146,90 +112,23 @@ contract Addresses is IAddresses, Test {
     function addAddress(string memory name, address addr, bool isContract)
         public
     {
-        _addAddress(name, addr, block.chainid, isContract);
-
-        recordedAddresses.push(
-            RecordedAddress({name: name, chainId: block.chainid})
-        );
+        _storeEntry(name, addr, block.chainid, isContract);
+        additions.push(AddedMarker({entryName: name, networkId: block.chainid}));
     }
 
     /// @notice add an address for a specific chainId
     /// @param name the name of the address
     /// @param addr the address to add
-    /// @param _chainId the chain id
+    /// @param chainId the chain id
     /// @param isContract whether the address is a contract
     function addAddress(
         string memory name,
         address addr,
-        uint256 _chainId,
-        bool isContract
-    ) public {
-        _addAddress(name, addr, _chainId, isContract);
-
-        recordedAddresses.push(RecordedAddress({name: name, chainId: _chainId}));
-    }
-
-    /// @notice change an address for a specific chainId
-    /// @param name the name of the address
-    /// @param _addr the address to change to
-    /// @param chainId the chain id
-    /// @param isContract whether the address is a contract
-    function changeAddress(
-        string memory name,
-        address _addr,
         uint256 chainId,
         bool isContract
     ) public {
-        Address storage data = _addresses[name][chainId];
-
-        require(_addr != address(0), "Address cannot be 0");
-
-        require(chainId != 0, "ChainId cannot be 0");
-
-        require(
-            data.addr != address(0),
-            string(
-                abi.encodePacked(
-                    "Address: ",
-                    name,
-                    " doesn't exist on chain: ",
-                    vm.toString(chainId),
-                    ". Use addAddress instead"
-                )
-            )
-        );
-
-        require(
-            data.addr != _addr,
-            string(
-                abi.encodePacked(
-                    "Address: ",
-                    name,
-                    " already set to the same value on chain: ",
-                    vm.toString(chainId)
-                )
-            )
-        );
-
-        _checkAddress(_addr, isContract, name, chainId);
-
-        changedAddresses.push(
-            ChangedAddress({name: name, chainId: chainId, oldAddress: data.addr})
-        );
-
-        for (uint256 i; i < savedAddresses.length; i++) {
-            if (
-                keccak256(abi.encode(savedAddresses[i].name))
-                    == keccak256(abi.encode(name))
-                    && savedAddresses[i].chainId == chainId
-            ) {
-                savedAddresses[i].addr = _addr;
-            }
-        }
-
-        data.addr = _addr;
-        data.isContract = isContract;
-        vm.label(_addr, name);
+        _storeEntry(name, addr, chainId, isContract);
+        additions.push(AddedMarker({entryName: name, networkId: chainId}));
     }
 
     /// @notice change an address for the current chainId
@@ -242,9 +141,154 @@ contract Addresses is IAddresses, Test {
         changeAddress(name, addr, block.chainid, isContract);
     }
 
+    /// @notice change an address for a specific chainId
+    /// @param name the name of the address
+    /// @param addr the address to change to
+    /// @param chainId the chain id
+    /// @param isContract whether the address is a contract
+    function changeAddress(
+        string memory name,
+        address addr,
+        uint256 chainId,
+        bool isContract
+    ) public {
+        RegistryRecord storage existing = registry[name][chainId];
+
+        require(addr != address(0), "Address cannot be 0");
+        require(chainId != 0, "ChainId cannot be 0");
+        require(
+            existing.storedAddress != address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " doesn't exist on chain: ",
+                    forgeVm.toString(chainId),
+                    ". Use addAddress instead"
+                )
+            )
+        );
+        require(
+            existing.storedAddress != addr,
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " already set to the same value on chain: ",
+                    forgeVm.toString(chainId)
+                )
+            )
+        );
+
+        _assertCodeMatches(addr, isContract, name, chainId);
+
+        replacements.push(
+            ReplacedMarker({
+                entryName: name,
+                networkId: chainId,
+                previousAddress: existing.storedAddress
+            })
+        );
+
+        for (uint256 cursor; cursor < persisted.length; ++cursor) {
+            if (
+                keccak256(abi.encode(persisted[cursor].entryName))
+                        == keccak256(abi.encode(name))
+                    && persisted[cursor].networkId == chainId
+            ) {
+                persisted[cursor].addrValue = addr;
+            }
+        }
+
+        existing.storedAddress = addr;
+        existing.contractFlag = isContract;
+        forgeVm.label(addr, name);
+    }
+
+    /// @notice remove an address for a specific chainId
+    /// @param name the name of the address
+    /// @param toRemove the address expected to be currently stored
+    /// @param chainId the chain id
+    function removeAddress(
+        string memory name,
+        address toRemove,
+        uint256 chainId
+    ) external {
+        RegistryRecord storage existing = registry[name][chainId];
+
+        require(chainId != 0, "ChainId cannot be 0");
+        require(
+            existing.storedAddress != address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " doesn't exist on chain: ",
+                    forgeVm.toString(chainId)
+                )
+            )
+        );
+        require(
+            existing.storedAddress == toRemove,
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " does not match provided address on chain: ",
+                    forgeVm.toString(chainId)
+                )
+            )
+        );
+
+        removed.push(RemovedMarker({entryName: name, networkId: chainId}));
+
+        reverseRegistry[existing.storedAddress][chainId] = false;
+
+        for (uint256 cursor; cursor < persisted.length; ++cursor) {
+            if (
+                keccak256(abi.encode(persisted[cursor].entryName))
+                        == keccak256(abi.encode(name))
+                    && persisted[cursor].networkId == chainId
+            ) {
+                persisted[cursor] = persisted[persisted.length - 1];
+                persisted.pop();
+                break;
+            }
+        }
+
+        delete registry[name][chainId];
+    }
+
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
-        delete recordedAddresses;
+        delete additions;
+    }
+
+    /// @notice remove changed addresses
+    function resetChangedAddresses() external {
+        delete replacements;
+    }
+
+    /// @notice remove removed addresses
+    function resetRemovedAddresses() external {
+        delete removed;
+    }
+
+    /// @notice get removed addresses from a proposal's deployment
+    function getRemovedAddresses()
+        public
+        view
+        returns (string[] memory names, uint256[] memory chainIds)
+    {
+        uint256 count = removed.length;
+        names = new string[](count);
+        chainIds = new uint256[](count);
+
+        for (uint256 cursor; cursor < count; ++cursor) {
+            RemovedMarker storage entry = removed[cursor];
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+        }
     }
 
     /// @notice get recorded addresses from a proposal's deployment
@@ -253,26 +297,22 @@ contract Addresses is IAddresses, Test {
         view
         returns (
             string[] memory names,
-            uint256[] memory chainIdsList,
+            uint256[] memory chainIds,
             address[] memory addresses
         )
     {
-        uint256 length = recordedAddresses.length;
-        names = new string[](length);
-        chainIdsList = new uint256[](length);
-        addresses = new address[](length);
+        uint256 count = additions.length;
+        names = new string[](count);
+        chainIds = new uint256[](count);
+        addresses = new address[](count);
 
-        for (uint256 i = 0; i < length; i++) {
-            names[i] = recordedAddresses[i].name;
-            chainIdsList[i] = recordedAddresses[i].chainId;
-            addresses[i] = _addresses[recordedAddresses[i].name][recordedAddresses[i]
-                .chainId].addr;
+        for (uint256 cursor; cursor < count; ++cursor) {
+            AddedMarker storage entry = additions[cursor];
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+            addresses[cursor] =
+            registry[entry.entryName][entry.networkId].storedAddress;
         }
-    }
-
-    /// @notice remove changed addresses
-    function resetChangedAddresses() external {
-        delete changedAddresses;
     }
 
     /// @notice get changed addresses from a proposal's deployment
@@ -281,36 +321,37 @@ contract Addresses is IAddresses, Test {
         view
         returns (
             string[] memory names,
-            uint256[] memory chainIdsList,
+            uint256[] memory chainIds,
             address[] memory oldAddresses,
             address[] memory newAddresses
         )
     {
-        uint256 length = changedAddresses.length;
-        names = new string[](length);
-        chainIdsList = new uint256[](length);
-        oldAddresses = new address[](length);
-        newAddresses = new address[](length);
+        uint256 count = replacements.length;
+        names = new string[](count);
+        chainIds = new uint256[](count);
+        oldAddresses = new address[](count);
+        newAddresses = new address[](count);
 
-        for (uint256 i = 0; i < length; i++) {
-            names[i] = changedAddresses[i].name;
-            chainIdsList[i] = changedAddresses[i].chainId;
-            oldAddresses[i] = changedAddresses[i].oldAddress;
-            newAddresses[i] = _addresses[changedAddresses[i].name][changedAddresses[i]
-                .chainId].addr;
+        for (uint256 cursor; cursor < count; ++cursor) {
+            ReplacedMarker storage entry = replacements[cursor];
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+            oldAddresses[cursor] = entry.previousAddress;
+            newAddresses[cursor] =
+            registry[entry.entryName][entry.networkId].storedAddress;
         }
     }
 
     /// @notice check if an address is a contract
     /// @param name the name of the address
     function isAddressContract(string memory name) public view returns (bool) {
-        return _addresses[name][block.chainid].isContract;
+        return registry[name][block.chainid].contractFlag;
     }
 
     /// @notice check if an address is set
     /// @param name the name of the address
     function isAddressSet(string memory name) public view returns (bool) {
-        return _addresses[name][block.chainid].addr != address(0);
+        return registry[name][block.chainid].storedAddress != address(0);
     }
 
     /// @notice check if an address is set for a specific chain id
@@ -321,7 +362,7 @@ contract Addresses is IAddresses, Test {
         view
         returns (bool)
     {
-        return _addresses[name][chainId].addr != address(0);
+        return registry[name][chainId].storedAddress != address(0);
     }
 
     /// @dev Print new recorded and changed addresses
@@ -331,14 +372,18 @@ contract Addresses is IAddresses, Test {
                 getRecordedAddresses();
 
             if (names.length > 0) {
-                console.log("\n\n------------------ Addresses Added ------------------");
-                for (uint256 j = 0; j < names.length; j++) {
-                    console.log("{\n          \"addr\": \"%s\", ", addresses[j]);
+                console.log(
+                    "\n\n------------------ Addresses Added ------------------"
+                );
+                for (uint256 cursor; cursor < names.length; ++cursor) {
+                    console.log(
+                        "{\n          \"addr\": \"%s\", ", addresses[cursor]
+                    );
                     console.log("        \"isContract\": %s,", true);
                     console.log(
                         "        \"name\": \"%s\"\n}%s",
-                        names[j],
-                        j < names.length - 1 ? "," : ""
+                        names[cursor],
+                        cursor < names.length - 1 ? "," : ""
                     );
                 }
             }
@@ -349,16 +394,19 @@ contract Addresses is IAddresses, Test {
                 getChangedAddresses();
 
             if (names.length > 0) {
-                console.log("\n\n----------------- Addresses changed  -----------------");
-
-                for (uint256 j = 0; j < names.length; j++) {
-                    console.log("{\n          'addr': '%s', ", addresses[j]);
+                console.log(
+                    "\n\n----------------- Addresses changed  -----------------"
+                );
+                for (uint256 cursor; cursor < names.length; ++cursor) {
+                    console.log(
+                        "{\n          'addr': '%s', ", addresses[cursor]
+                    );
                     console.log("        'chainId': %d,", block.chainid);
                     console.log("        'isContract': %s", true, ",");
                     console.log(
                         "        'name': '%s'\n}%s",
-                        names[j],
-                        j < names.length - 1 ? "," : ""
+                        names[cursor],
+                        cursor < names.length - 1 ? "," : ""
                     );
                 }
             }
@@ -367,112 +415,91 @@ contract Addresses is IAddresses, Test {
 
     /// @dev Update Address json
     function updateJson() external {
-        for (uint256 i; i < chainIds.length; ++i) {
-            string memory json = _constructJson(chainIds[i]);
-            string memory addressesPath = string(
+        for (uint256 cursor; cursor < knownNetworks.length; ++cursor) {
+            uint256 network = knownNetworks[cursor];
+            string memory json = _renderJson(network);
+            string memory document = string(
                 abi.encodePacked(
-                    addressesFolderPath, "/", vm.toString(chainIds[i]), ".json"
+                    rootDirectory, "/", forgeVm.toString(network), ".json"
                 )
             );
-            vm.writeJson(json, addressesPath);
+            forgeVm.writeJson(json, document);
         }
     }
 
-    /// @notice add an address for a specific chainId
-    /// @param name the name of the address
-    /// @param addr the address to add
-    /// @param chainId the chain id
-    /// @param isContract whether the address is a contract
-    function _addAddress(
+    function _storeEntry(
         string memory name,
         address addr,
         uint256 chainId,
         bool isContract
     ) private {
-        Address storage currentAddress = _addresses[name][chainId];
+        RegistryRecord storage destination = registry[name][chainId];
 
         require(addr != address(0), "Address cannot be 0");
-
         require(chainId != 0, "ChainId cannot be 0");
-
         require(
-            currentAddress.addr == address(0),
+            destination.storedAddress == address(0),
             string(
                 abi.encodePacked(
                     "Address with name: ",
                     name,
                     " already set on chain: ",
-                    vm.toString(chainId)
+                    forgeVm.toString(chainId)
                 )
             )
         );
-
-        bool exist = addressToChainId[addr][chainId];
-
         require(
-            !exist,
+            !reverseRegistry[addr][chainId],
             string(
                 abi.encodePacked(
                     "Address: ",
-                    vm.toString(addr),
+                    forgeVm.toString(addr),
                     " already set on chain: ",
-                    vm.toString(chainId)
+                    forgeVm.toString(chainId)
                 )
             )
         );
 
-        addressToChainId[addr][chainId] = true;
+        reverseRegistry[addr][chainId] = true;
+        _assertCodeMatches(addr, isContract, name, chainId);
 
-        _checkAddress(addr, isContract, name, chainId);
-
-        currentAddress.addr = addr;
-        currentAddress.isContract = isContract;
-
-        savedAddresses.push(
-            SavedAddresses({
-                name: name,
-                addr: addr,
-                chainId: chainId,
-                isContract: isContract
+        destination.storedAddress = addr;
+        destination.contractFlag = isContract;
+        persisted.push(
+            PersistedRecord({
+                addrValue: addr,
+                contractFlag: isContract,
+                entryName: name,
+                networkId: chainId
             })
         );
 
-        vm.label(addr, name);
+        forgeVm.label(addr, name);
     }
 
-    /// @notice get an address for a specific chainId
-    /// @param name the name of the address
-    /// @param chainId the chain id
-    function _getAddress(string memory name, uint256 chainId)
+    function _lookupEntry(string memory name, uint256 chainId)
         private
         view
-        returns (address addr)
+        returns (address result)
     {
         require(chainId != 0, "ChainId cannot be 0");
 
-        Address memory data = _addresses[name][chainId];
-        addr = data.addr;
-
+        result = registry[name][chainId].storedAddress;
         require(
-            addr != address(0),
+            result != address(0),
             string(
                 abi.encodePacked(
                     "Address: ",
                     name,
                     " not set on chain: ",
-                    vm.toString(chainId)
+                    forgeVm.toString(chainId)
                 )
             )
         );
     }
 
-    /// @notice check if an address is a contract
-    /// @param _addr the address to check
-    /// @param isContract whether the address is a contract
-    /// @param name the name of the address
-    /// @param chainId the chain id
-    function _checkAddress(
-        address _addr,
+    function _assertCodeMatches(
+        address addr,
         bool isContract,
         string memory name,
         uint256 chainId
@@ -480,25 +507,25 @@ contract Addresses is IAddresses, Test {
         if (chainId == block.chainid) {
             if (isContract) {
                 require(
-                    _addr.code.length > 0,
+                    addr.code.length > 0,
                     string(
                         abi.encodePacked(
                             "Address: ",
                             name,
                             " is not a contract on chain: ",
-                            vm.toString(chainId)
+                            forgeVm.toString(chainId)
                         )
                     )
                 );
             } else {
                 require(
-                    _addr.code.length == 0,
+                    addr.code.length == 0,
                     string(
                         abi.encodePacked(
                             "Address: ",
                             name,
                             " is a contract on chain: ",
-                            vm.toString(chainId)
+                            forgeVm.toString(chainId)
                         )
                     )
                 );
@@ -506,59 +533,46 @@ contract Addresses is IAddresses, Test {
         }
     }
 
-    /// @notice constructs json string data for address json from saved addresses array
-    /// @param chainId chain id of addresses
-    function _constructJson(uint256 chainId)
-        private
-        view
-        returns (string memory)
-    {
+    function _renderJson(uint256 chainId) private view returns (string memory) {
         string memory json = "[";
 
-        for (uint256 i = 0; i < savedAddresses.length; ++i) {
-            if (savedAddresses[i].chainId == chainId) {
+        for (uint256 cursor; cursor < persisted.length; ++cursor) {
+            PersistedRecord storage entry = persisted[cursor];
+            if (entry.networkId == chainId) {
                 json = string(
                     abi.encodePacked(
                         json,
                         "{",
                         '"addr": "',
-                        vm.toString(savedAddresses[i].addr),
+                        forgeVm.toString(entry.addrValue),
                         '",',
                         '"name": "',
-                        savedAddresses[i].name,
+                        entry.entryName,
                         '",',
                         '"isContract": ',
-                        savedAddresses[i].isContract ? "true" : "false",
-                        "}"
+                        entry.contractFlag ? "true" : "false",
+                        "},"
                     )
                 );
-
-                json = string(abi.encodePacked(json, ","));
             }
         }
 
-        json = _removeLastCharacter(json);
-
-        json = string(abi.encodePacked(json, "]"));
-
-        return json;
+        json = _dropFinalByte(json);
+        return string(abi.encodePacked(json, "]"));
     }
 
-    function _removeLastCharacter(string memory str)
-        public
+    function _dropFinalByte(string memory input)
+        private
         pure
         returns (string memory)
     {
-        bytes memory strBytes = bytes(str);
+        bytes memory source = bytes(input);
+        bytes memory shortened = new bytes(source.length - 1);
 
-        // Create a new bytes array with one less byte
-        bytes memory newStrBytes = new bytes(strBytes.length - 1);
-
-        // Copy bytes from original string except the last one
-        for (uint256 i = 0; i < newStrBytes.length; i++) {
-            newStrBytes[i] = strBytes[i];
+        for (uint256 cursor; cursor < shortened.length; ++cursor) {
+            shortened[cursor] = source[cursor];
         }
 
-        return string(newStrBytes);
+        return string(shortened);
     }
 }
