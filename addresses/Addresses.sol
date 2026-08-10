@@ -12,32 +12,32 @@ contract Addresses is IAddresses {
         Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     struct RegistryRecord {
-        address location;
-        bool hasCode;
+        bool contractFlag;
+        address storedAddress;
     }
 
     struct PersistedRecord {
-        address location;
-        bool hasCode;
-        string label;
-        uint256 network;
+        address addrValue;
+        bool contractFlag;
+        string entryName;
+        uint256 networkId;
     }
 
     struct DiskRecord {
-        address location;
-        bool hasCode;
-        string label;
+        address addrValue;
+        bool contractFlag;
+        string entryName;
     }
 
     struct AddedMarker {
-        string label;
-        uint256 network;
+        string entryName;
+        uint256 networkId;
     }
 
     struct ReplacedMarker {
-        string label;
-        uint256 network;
-        address priorLocation;
+        string entryName;
+        uint256 networkId;
+        address previousAddress;
     }
 
     mapping(string label => mapping(uint256 network => RegistryRecord)) private
@@ -72,10 +72,10 @@ contract Addresses is IAddresses {
 
             for (uint256 row; row < rows.length; ++row) {
                 _storeEntry(
-                    rows[row].label,
-                    rows[row].location,
+                    rows[row].entryName,
+                    rows[row].addrValue,
                     network,
-                    rows[row].hasCode
+                    rows[row].contractFlag
                 );
             }
         }
@@ -106,7 +106,7 @@ contract Addresses is IAddresses {
         public
     {
         _storeEntry(name, addr, block.chainid, isContract);
-        additions.push(AddedMarker({label: name, network: block.chainid}));
+        additions.push(AddedMarker({entryName: name, networkId: block.chainid}));
     }
 
     /// @notice add an address for a specific chainId
@@ -121,7 +121,7 @@ contract Addresses is IAddresses {
         bool isContract
     ) public {
         _storeEntry(name, addr, chainId, isContract);
-        additions.push(AddedMarker({label: name, network: chainId}));
+        additions.push(AddedMarker({entryName: name, networkId: chainId}));
     }
 
     /// @notice change an address for the current chainId
@@ -150,7 +150,7 @@ contract Addresses is IAddresses {
         require(addr != address(0), "Address cannot be 0");
         require(chainId != 0, "ChainId cannot be 0");
         require(
-            existing.location != address(0),
+            existing.storedAddress != address(0),
             string(
                 abi.encodePacked(
                     "Address: ",
@@ -162,7 +162,7 @@ contract Addresses is IAddresses {
             )
         );
         require(
-            existing.location != addr,
+            existing.storedAddress != addr,
             string(
                 abi.encodePacked(
                     "Address: ",
@@ -177,22 +177,24 @@ contract Addresses is IAddresses {
 
         replacements.push(
             ReplacedMarker({
-                label: name, network: chainId, priorLocation: existing.location
+                entryName: name,
+                networkId: chainId,
+                previousAddress: existing.storedAddress
             })
         );
 
         for (uint256 cursor; cursor < persisted.length; ++cursor) {
             if (
-                keccak256(abi.encode(persisted[cursor].label))
+                keccak256(abi.encode(persisted[cursor].entryName))
                         == keccak256(abi.encode(name))
-                    && persisted[cursor].network == chainId
+                    && persisted[cursor].networkId == chainId
             ) {
-                persisted[cursor].location = addr;
+                persisted[cursor].addrValue = addr;
             }
         }
 
-        existing.location = addr;
-        existing.hasCode = isContract;
+        existing.storedAddress = addr;
+        existing.contractFlag = isContract;
         forgeVm.label(addr, name);
     }
 
@@ -223,9 +225,10 @@ contract Addresses is IAddresses {
 
         for (uint256 cursor; cursor < count; ++cursor) {
             AddedMarker storage entry = additions[cursor];
-            names[cursor] = entry.label;
-            chainIds[cursor] = entry.network;
-            addresses[cursor] = registry[entry.label][entry.network].location;
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+            addresses[cursor] =
+                registry[entry.entryName][entry.networkId].storedAddress;
         }
     }
 
@@ -248,23 +251,24 @@ contract Addresses is IAddresses {
 
         for (uint256 cursor; cursor < count; ++cursor) {
             ReplacedMarker storage entry = replacements[cursor];
-            names[cursor] = entry.label;
-            chainIds[cursor] = entry.network;
-            oldAddresses[cursor] = entry.priorLocation;
-            newAddresses[cursor] = registry[entry.label][entry.network].location;
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+            oldAddresses[cursor] = entry.previousAddress;
+            newAddresses[cursor] =
+                registry[entry.entryName][entry.networkId].storedAddress;
         }
     }
 
     /// @notice check if an address is a contract
     /// @param name the name of the address
     function isAddressContract(string memory name) public view returns (bool) {
-        return registry[name][block.chainid].hasCode;
+        return registry[name][block.chainid].contractFlag;
     }
 
     /// @notice check if an address is set
     /// @param name the name of the address
     function isAddressSet(string memory name) public view returns (bool) {
-        return registry[name][block.chainid].location != address(0);
+        return registry[name][block.chainid].storedAddress != address(0);
     }
 
     /// @notice check if an address is set for a specific chain id
@@ -275,7 +279,7 @@ contract Addresses is IAddresses {
         view
         returns (bool)
     {
-        return registry[name][chainId].location != address(0);
+        return registry[name][chainId].storedAddress != address(0);
     }
 
     /// @dev Print new recorded and changed addresses
@@ -351,7 +355,7 @@ contract Addresses is IAddresses {
         require(addr != address(0), "Address cannot be 0");
         require(chainId != 0, "ChainId cannot be 0");
         require(
-            destination.location == address(0),
+            destination.storedAddress == address(0),
             string(
                 abi.encodePacked(
                     "Address with name: ",
@@ -376,14 +380,14 @@ contract Addresses is IAddresses {
         reverseRegistry[addr][chainId] = true;
         _assertCodeMatches(addr, isContract, name, chainId);
 
-        destination.location = addr;
-        destination.hasCode = isContract;
+        destination.storedAddress = addr;
+        destination.contractFlag = isContract;
         persisted.push(
             PersistedRecord({
-                label: name,
-                location: addr,
-                network: chainId,
-                hasCode: isContract
+                addrValue: addr,
+                contractFlag: isContract,
+                entryName: name,
+                networkId: chainId
             })
         );
 
@@ -397,7 +401,7 @@ contract Addresses is IAddresses {
     {
         require(chainId != 0, "ChainId cannot be 0");
 
-        result = registry[name][chainId].location;
+        result = registry[name][chainId].storedAddress;
         require(
             result != address(0),
             string(
@@ -451,19 +455,19 @@ contract Addresses is IAddresses {
 
         for (uint256 cursor; cursor < persisted.length; ++cursor) {
             PersistedRecord storage entry = persisted[cursor];
-            if (entry.network == chainId) {
+            if (entry.networkId == chainId) {
                 json = string(
                     abi.encodePacked(
                         json,
                         "{",
                         '"addr": "',
-                        forgeVm.toString(entry.location),
+                        forgeVm.toString(entry.addrValue),
                         '",',
                         '"name": "',
-                        entry.label,
+                        entry.entryName,
                         '",',
                         '"isContract": ',
-                        entry.hasCode ? "true" : "false",
+                        entry.contractFlag ? "true" : "false",
                         "},"
                     )
                 );
