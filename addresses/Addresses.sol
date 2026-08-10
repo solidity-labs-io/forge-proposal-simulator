@@ -34,6 +34,11 @@ contract Addresses is IAddresses {
         uint256 networkId;
     }
 
+    struct RemovedMarker {
+        string entryName;
+        uint256 networkId;
+    }
+
     struct ReplacedMarker {
         string entryName;
         uint256 networkId;
@@ -47,6 +52,7 @@ contract Addresses is IAddresses {
         private reverseRegistry;
 
     AddedMarker[] private additions;
+    RemovedMarker[] private removed;
     ReplacedMarker[] private replacements;
     PersistedRecord[] private persisted;
     string private rootDirectory;
@@ -198,6 +204,60 @@ contract Addresses is IAddresses {
         forgeVm.label(addr, name);
     }
 
+    /// @notice remove an address for a specific chainId
+    /// @param name the name of the address
+    /// @param toRemove the address expected to be currently stored
+    /// @param chainId the chain id
+    function removeAddress(
+        string memory name,
+        address toRemove,
+        uint256 chainId
+    ) external {
+        RegistryRecord storage existing = registry[name][chainId];
+
+        require(chainId != 0, "ChainId cannot be 0");
+        require(
+            existing.storedAddress != address(0),
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " doesn't exist on chain: ",
+                    forgeVm.toString(chainId)
+                )
+            )
+        );
+        require(
+            existing.storedAddress == toRemove,
+            string(
+                abi.encodePacked(
+                    "Address: ",
+                    name,
+                    " does not match provided address on chain: ",
+                    forgeVm.toString(chainId)
+                )
+            )
+        );
+
+        removed.push(RemovedMarker({entryName: name, networkId: chainId}));
+
+        reverseRegistry[existing.storedAddress][chainId] = false;
+
+        for (uint256 cursor; cursor < persisted.length; ++cursor) {
+            if (
+                keccak256(abi.encode(persisted[cursor].entryName))
+                        == keccak256(abi.encode(name))
+                    && persisted[cursor].networkId == chainId
+            ) {
+                persisted[cursor] = persisted[persisted.length - 1];
+                persisted.pop();
+                break;
+            }
+        }
+
+        delete registry[name][chainId];
+    }
+
     /// @notice remove recorded addresses
     function resetRecordingAddresses() external {
         delete additions;
@@ -206,6 +266,28 @@ contract Addresses is IAddresses {
     /// @notice remove changed addresses
     function resetChangedAddresses() external {
         delete replacements;
+    }
+
+    /// @notice remove removed addresses
+    function resetRemovedAddresses() external {
+        delete removed;
+    }
+
+    /// @notice get removed addresses from a proposal's deployment
+    function getRemovedAddresses()
+        public
+        view
+        returns (string[] memory names, uint256[] memory chainIds)
+    {
+        uint256 count = removed.length;
+        names = new string[](count);
+        chainIds = new uint256[](count);
+
+        for (uint256 cursor; cursor < count; ++cursor) {
+            RemovedMarker storage entry = removed[cursor];
+            names[cursor] = entry.entryName;
+            chainIds[cursor] = entry.networkId;
+        }
     }
 
     /// @notice get recorded addresses from a proposal's deployment
@@ -228,7 +310,7 @@ contract Addresses is IAddresses {
             names[cursor] = entry.entryName;
             chainIds[cursor] = entry.networkId;
             addresses[cursor] =
-                registry[entry.entryName][entry.networkId].storedAddress;
+            registry[entry.entryName][entry.networkId].storedAddress;
         }
     }
 
@@ -255,7 +337,7 @@ contract Addresses is IAddresses {
             chainIds[cursor] = entry.networkId;
             oldAddresses[cursor] = entry.previousAddress;
             newAddresses[cursor] =
-                registry[entry.entryName][entry.networkId].storedAddress;
+            registry[entry.entryName][entry.networkId].storedAddress;
         }
     }
 
