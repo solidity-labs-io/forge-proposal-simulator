@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "forge-std/mocks/MockERC20.sol";
+import "@mocks/MockERC20.sol";
 
 /// @notice This is a mock contract for testing purposes only, it SHOULD NOT be used in production.
 contract MockToken is MockERC20 {

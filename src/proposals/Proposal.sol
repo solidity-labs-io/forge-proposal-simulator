@@ -336,7 +336,7 @@ abstract contract Proposal is Test, Script, IProposal {
     function _startBuild(address toPrank) private {
         vm.startPrank(toPrank);
 
-        _startSnapshot = vm.snapshot();
+        _startSnapshot = vm.snapshotState();
 
         vm.startStateDiffRecording();
     }
@@ -355,7 +355,7 @@ abstract contract Proposal is Test, Script, IProposal {
 
         /// roll back all state changes made during the governance proposal
         require(
-            vm.revertTo(_startSnapshot),
+            vm.revertToState(_startSnapshot),
             "failed to revert back to snapshot, unsafe state to run proposal"
         );
 
