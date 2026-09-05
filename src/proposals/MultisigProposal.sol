@@ -10,9 +10,6 @@ import {Constants} from "@utils/Constants.sol";
 abstract contract MultisigProposal is Proposal {
     using Address for address;
 
-    uint8 internal constant CALL = 0;
-    uint8 internal constant DELEGATE_CALL = 1;
-
     bytes32 public constant MULTISIG_BYTECODE_HASH = bytes32(
         0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
     );
@@ -46,7 +43,8 @@ abstract contract MultisigProposal is Proposal {
         bytes memory encodedTxs;
 
         for (uint256 i = 0; i < targets.length; i++) {
-            uint8 operation = isDelegateCall(i) ? DELEGATE_CALL : CALL;
+            uint8 operation =
+                isDelegateCall(i) ? Constants.DELEGATE_CALL : Constants.CALL;
             address to = targets[i];
             uint256 value = values[i];
             bytes memory data = arguments[i];
@@ -74,7 +72,7 @@ abstract contract MultisigProposal is Proposal {
             : Constants.SAFE_MULTISEND_CALL_ONLY_CONTRACT;
         value = 0;
         data = getCalldata();
-        operation = DELEGATE_CALL;
+        operation = Constants.DELEGATE_CALL;
     }
 
     /// @notice Check if there are any on-chain proposal that matches the
