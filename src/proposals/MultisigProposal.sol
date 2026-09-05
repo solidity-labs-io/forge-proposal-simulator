@@ -10,6 +10,9 @@ import {Constants} from "@utils/Constants.sol";
 abstract contract MultisigProposal is Proposal {
     using Address for address;
 
+    uint8 internal constant CALL = 0;
+    uint8 internal constant DELEGATE_CALL = 1;
+
     bytes32 public constant MULTISIG_BYTECODE_HASH = bytes32(
         0xb89c1b3bdf2cf8827818646bce9a8f6e372885f8c55e5c07acbd307cb133b000
     );
@@ -19,6 +22,11 @@ abstract contract MultisigProposal is Proposal {
         bool allowFailure;
         uint256 value;
         bytes callData;
+    }
+
+    /// @notice Override to mark an action as a delegatecall.
+    function isDelegateCall(uint256) public view virtual returns (bool) {
+        return false;
     }
 
     /// @notice return calldata, log if debug is set to true
@@ -38,7 +46,7 @@ abstract contract MultisigProposal is Proposal {
         bytes memory encodedTxs;
 
         for (uint256 i = 0; i < targets.length; i++) {
-            uint8 operation = 0;
+            uint8 operation = isDelegateCall(i) ? DELEGATE_CALL : CALL;
             address to = targets[i];
             uint256 value = values[i];
             bytes memory data = arguments[i];
@@ -55,6 +63,20 @@ abstract contract MultisigProposal is Proposal {
         return abi.encodeWithSignature("multiSend(bytes)", encodedTxs);
     }
 
+    /// @notice return the transaction fields to enter in the Safe UI.
+    function getSafeTransaction()
+        public
+        view
+        returns (address to, uint256 value, bytes memory data, uint8 operation)
+    {
+        to = _hasDelegateCall()
+            ? Constants.SAFE_MULTISEND_CONTRACT
+            : Constants.SAFE_MULTISEND_CALL_ONLY_CONTRACT;
+        value = 0;
+        data = getCalldata();
+        operation = DELEGATE_CALL;
+    }
+
     /// @notice Check if there are any on-chain proposal that matches the
     /// proposal calldata
     function getProposalId() public pure override returns (uint256) {
@@ -62,19 +84,58 @@ abstract contract MultisigProposal is Proposal {
     }
 
     function _simulateActions(address multisig) internal {
+        bytes memory originalBytecode = multisig.code;
+        vm.etch(multisig, Constants.SAFE_RUNTIME_BYTECODE);
+
+        (address to, uint256 value, bytes memory data, uint8 operation) =
+            getSafeTransaction();
+
+        bytes memory safeCalldata = abi.encodeWithSignature(
+            "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)",
+            to,
+            value,
+            data,
+            operation,
+            0,
+            0,
+            0,
+            address(0),
+            address(0),
+            ""
+        );
+
         vm.startPrank(multisig);
 
-        /// this is a hack because multisig execTransaction requires owners signatures
-        /// so we cannot simulate it exactly as it will be executed on mainnet
-        vm.etch(multisig, Constants.MULTISEND_BYTECODE);
-
-        bytes memory data = getCalldata();
-
-        multisig.functionCall(data);
-
-        /// revert contract code to original safe bytecode
-        vm.etch(multisig, Constants.SAFE_BYTECODE);
+        (bool success, bytes memory returndata) = multisig.call(safeCalldata);
 
         vm.stopPrank();
+
+        vm.etch(multisig, originalBytecode);
+
+        Address.verifyCallResult(success, returndata);
+    }
+
+    function _printProposalCalldata() internal virtual override {
+        (address to, uint256 value, bytes memory data, uint8 operation) =
+            getSafeTransaction();
+
+        console.log(
+            "\n\n---------------- Safe Transaction Fields --------------"
+        );
+        console.log("to:", to);
+        console.log("value:", value);
+        console.log("data:");
+        console.logBytes(data);
+        console.log("operation:", operation);
+    }
+
+    function _hasDelegateCall() internal view returns (bool) {
+        for (uint256 i = 0; i < actions.length; i++) {
+            if (isDelegateCall(i)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
