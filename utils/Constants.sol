@@ -2,6 +2,9 @@
 pragma solidity ^0.8.0;
 
 library Constants {
+    uint8 public constant CALL = 0;
+    uint8 public constant DELEGATE_CALL = 1;
+
     address public constant SAFE_MULTISEND_CONTRACT =
         0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761;
     address public constant SAFE_MULTISEND_CALL_ONLY_CONTRACT =
