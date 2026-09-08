@@ -142,22 +142,38 @@ contract MultisigProposalIntegrationTest is Test {
         bytes memory transactions =
             _decodeMultiSendTransactions(allCallProposal.getCalldata());
 
-        assertEq(_operationAt(transactions, 0), 0, "Wrong operation 0");
-        assertEq(_operationAt(transactions, 1), 0, "Wrong operation 1");
+        assertEq(
+            _operationAt(transactions, 0), Constants.CALL, "Wrong operation 0"
+        );
+        assertEq(
+            _operationAt(transactions, 1), Constants.CALL, "Wrong operation 1"
+        );
     }
 
-    function test_getCalldataWithMixedOperations() public {
-        (MockMixedOperationMultisigProposal mixedProposal,,,,) =
-            _createMixedOperationProposal();
+    function test_getCalldataWithDelegateCallProposal() public {
+        (MockDelegateCallMultisigProposal delegateCallProposal,,,,) =
+            _createDelegateCallProposal();
 
-        mixedProposal.build();
+        delegateCallProposal.build();
 
         bytes memory transactions =
-            _decodeMultiSendTransactions(mixedProposal.getCalldata());
+            _decodeMultiSendTransactions(delegateCallProposal.getCalldata());
 
-        assertEq(_operationAt(transactions, 0), 0, "Wrong operation 0");
-        assertEq(_operationAt(transactions, 1), 1, "Wrong operation 1");
-        assertEq(_operationAt(transactions, 2), 0, "Wrong operation 2");
+        assertEq(
+            _operationAt(transactions, 0),
+            Constants.DELEGATE_CALL,
+            "Wrong operation 0"
+        );
+        assertEq(
+            _operationAt(transactions, 1),
+            Constants.DELEGATE_CALL,
+            "Wrong operation 1"
+        );
+        assertEq(
+            _operationAt(transactions, 2),
+            Constants.DELEGATE_CALL,
+            "Wrong operation 2"
+        );
     }
 
     function test_getSafeTransactionUsesCallOnlyMultiSendForCalls() public {
@@ -169,39 +185,57 @@ contract MultisigProposalIntegrationTest is Test {
         assertEq(to, Constants.SAFE_MULTISEND_CALL_ONLY_CONTRACT);
         assertEq(value, 0);
         assertEq(data, proposal.getCalldata());
-        assertEq(operation, 1);
+        assertEq(operation, Constants.DELEGATE_CALL);
     }
 
     function test_getSafeTransactionUsesMultiSendForDelegateCall() public {
-        (MockMixedOperationMultisigProposal mixedProposal,,,,) =
-            _createMixedOperationProposal();
-        mixedProposal.build();
+        (MockDelegateCallMultisigProposal delegateCallProposal,,,,) =
+            _createDelegateCallProposal();
+        delegateCallProposal.build();
 
         (address to, uint256 value, bytes memory data, uint8 operation) =
-            mixedProposal.getSafeTransaction();
+            delegateCallProposal.getSafeTransaction();
 
         assertEq(to, Constants.SAFE_MULTISEND_CONTRACT);
         assertEq(value, 0);
-        assertEq(data, mixedProposal.getCalldata());
-        assertEq(operation, 1);
+        assertEq(data, delegateCallProposal.getCalldata());
+        assertEq(operation, Constants.DELEGATE_CALL);
     }
 
-    function test_simulateMixedCallAndDelegateCall() public {
+    function test_simulateDelegateCallProposal() public {
         (
-            MockMixedOperationMultisigProposal mixedProposal,
+            MockDelegateCallMultisigProposal delegateCallProposal,
             MockOperationTarget target,
             address multisig,
             bytes32 delegateSlot,
             bytes32 delegateValue
-        ) = _createMixedOperationProposal();
+        ) = _createDelegateCallProposal();
 
-        mixedProposal.build();
+        delegateCallProposal.build();
         bytes memory originalBytecode = multisig.code;
 
-        mixedProposal.simulate();
+        delegateCallProposal.simulate();
 
-        assertEq(target.callSender(), multisig, "Wrong call sender");
-        assertEq(target.callNumber(), 22, "Wrong call number");
+        assertEq(
+            target.callSender(),
+            address(0),
+            "Delegatecall unexpectedly wrote target sender"
+        );
+        assertEq(
+            target.callNumber(),
+            0,
+            "Delegatecall unexpectedly wrote target number"
+        );
+        assertEq(
+            vm.load(multisig, bytes32(uint256(0))),
+            bytes32(uint256(uint160(multisig))),
+            "Delegatecall did not write sender to multisig storage"
+        );
+        assertEq(
+            vm.load(multisig, bytes32(uint256(1))),
+            bytes32(uint256(22)),
+            "Delegatecall did not write number to multisig storage"
+        );
         assertEq(
             vm.load(multisig, delegateSlot),
             delegateValue,
@@ -240,10 +274,10 @@ contract MultisigProposalIntegrationTest is Test {
         );
     }
 
-    function _createMixedOperationProposal()
+    function _createDelegateCallProposal()
         internal
         returns (
-            MockMixedOperationMultisigProposal mixedProposal,
+            MockDelegateCallMultisigProposal delegateCallProposal,
             MockOperationTarget target,
             address multisig,
             bytes32 delegateSlot,
@@ -258,7 +292,7 @@ contract MultisigProposalIntegrationTest is Test {
             )
         );
         delegateValue = bytes32(uint256(0x1234));
-        mixedProposal = new MockMixedOperationMultisigProposal(
+        delegateCallProposal = new MockDelegateCallMultisigProposal(
             multisig, target, delegateSlot, delegateValue
         );
     }
@@ -367,7 +401,7 @@ contract MockAllCallMultisigProposal is MultisigProposal {
     }
 }
 
-contract MockMixedOperationMultisigProposal is MockAllCallMultisigProposal {
+contract MockDelegateCallMultisigProposal is MockAllCallMultisigProposal {
     constructor(
         address _multisig,
         MockOperationTarget _target,
@@ -380,11 +414,11 @@ contract MockMixedOperationMultisigProposal is MockAllCallMultisigProposal {
     {}
 
     function name() public pure override returns (string memory) {
-        return "MIXED_OPERATION_MULTISIG_MOCK";
+        return "DELEGATE_CALL_MULTISIG_MOCK";
     }
 
     function description() public pure override returns (string memory) {
-        return "Mock mixed-operation multisig proposal";
+        return "Mock delegatecall multisig proposal";
     }
 
     function build() public override buildModifier(multisig) {
@@ -393,13 +427,8 @@ contract MockMixedOperationMultisigProposal is MockAllCallMultisigProposal {
         target.recordCall(22);
     }
 
-    function isDelegateCall(uint256 actionIndex)
-        public
-        pure
-        override
-        returns (bool)
-    {
-        return actionIndex == 1;
+    function isDelegateCall() public pure override returns (bool) {
+        return true;
     }
 
     function simulate() public override {
