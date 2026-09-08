@@ -22,6 +22,7 @@ abstract contract MultisigProposal is Proposal {
     }
 
     /// @notice Override to encode every action as a delegatecall.
+    /// Action defaults to call type.
     function isDelegateCall() public view virtual returns (bool) {
         return false;
     }
