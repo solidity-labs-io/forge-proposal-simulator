@@ -98,17 +98,16 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `isDelegateCall(uint256 actionIndex)`: Override this only when one or more recorded actions must be encoded as a Safe MultiSend delegatecall. The action index matches the zero-based order of calls recorded in `build()`. Regular calls are the default, so do not maintain a separate operations array.
+-   `isDelegateCall()`: Override this only when the entire multisig action group must be encoded as Safe MultiSend delegatecalls. Regular calls are the default. This is a proposal-level setting, so every recorded action in `build()` uses the same operation.
 
     ```solidity
-    function isDelegateCall(uint256 actionIndex)
+    function isDelegateCall()
         public
         view
         override
         returns (bool)
     {
-        // Encode the second recorded action as a delegatecall.
-        return actionIndex == 1;
+        return true;
     }
     ```
 
@@ -133,7 +132,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` temporarily etches a Safe runtime with signature checks bypassed onto the multisig address, then calls Safe `execTransaction(...)` with a delegatecall to the selected Safe MultiSend contract. FPS uses `MultiSendCallOnly` when every action is a regular call and regular `MultiSend` when any action is marked as a delegatecall.
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` temporarily etches a Safe runtime with signature checks bypassed onto the multisig address, then calls Safe `execTransaction(...)` with a delegatecall to the selected Safe MultiSend contract. FPS uses `MultiSendCallOnly` when `isDelegateCall()` is false and regular `MultiSend` when `isDelegateCall()` is true.
 
     ```solidity
     function simulate() public override {
