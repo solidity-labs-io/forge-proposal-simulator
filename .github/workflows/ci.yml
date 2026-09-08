@@ -65,8 +65,8 @@ jobs:
                     echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
                   )" >> $GITHUB_ENV
 
-            - name: "Build the contracts and print their size"
-              run: "forge build --sizes"
+            - name: "Contract linting"
+              run: "forge fmt --check"
 
             - name: "Proposal Simulator Integration Tests"
               run: "forge test --mc IntegrationTest"
