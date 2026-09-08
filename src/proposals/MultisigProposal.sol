@@ -21,8 +21,8 @@ abstract contract MultisigProposal is Proposal {
         bytes callData;
     }
 
-    /// @notice Override to mark an action as a delegatecall.
-    function isDelegateCall(uint256) public view virtual returns (bool) {
+    /// @notice Override to encode every action as a delegatecall.
+    function isDelegateCall() public view virtual returns (bool) {
         return false;
     }
 
@@ -41,10 +41,10 @@ abstract contract MultisigProposal is Proposal {
         );
 
         bytes memory encodedTxs;
+        uint8 operation =
+            isDelegateCall() ? Constants.DELEGATE_CALL : Constants.CALL;
 
         for (uint256 i = 0; i < targets.length; i++) {
-            uint8 operation =
-                isDelegateCall(i) ? Constants.DELEGATE_CALL : Constants.CALL;
             address to = targets[i];
             uint256 value = values[i];
             bytes memory data = arguments[i];
@@ -67,7 +67,7 @@ abstract contract MultisigProposal is Proposal {
         view
         returns (address to, uint256 value, bytes memory data, uint8 operation)
     {
-        to = _hasDelegateCall()
+        to = isDelegateCall()
             ? Constants.SAFE_MULTISEND_CONTRACT
             : Constants.SAFE_MULTISEND_CALL_ONLY_CONTRACT;
         value = 0;
@@ -125,15 +125,5 @@ abstract contract MultisigProposal is Proposal {
         console.log("data:");
         console.logBytes(data);
         console.log("operation:", operation);
-    }
-
-    function _hasDelegateCall() internal view returns (bool) {
-        for (uint256 i = 0; i < actions.length; i++) {
-            if (isDelegateCall(i)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
