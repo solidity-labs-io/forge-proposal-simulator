@@ -1,8 +1,5 @@
 name: "CI"
 
-env:
-    FOUNDRY_PROFILE: "ci"
-
 on:
     workflow_dispatch:
     pull_request:
@@ -53,6 +50,8 @@ jobs:
 
             - name: "Install Foundry"
               uses: "foundry-rs/foundry-toolchain@v1"
+              with:
+                  version: "v1.5.1"
 
             - name: "Show the Foundry config"
               run: "forge config"
@@ -86,6 +85,8 @@ jobs:
 
             - name: "Install Foundry"
               uses: "foundry-rs/foundry-toolchain@v1"
+              with:
+                  version: "v1.5.1"
 
             - name: "Show the Foundry config"
               run: "forge config"
