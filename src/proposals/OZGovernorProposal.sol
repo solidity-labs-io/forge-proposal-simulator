@@ -78,8 +78,7 @@ abstract contract OZGovernorProposal is Proposal {
             // Ensure proposer has meets minimum proposal threshold and quorum votes to pass the proposal
             uint256 quorumVotes = governor.quorum(block.number - 1);
             uint256 proposalThreshold = governor.proposalThreshold();
-            uint256 votingPower =
-                quorumVotes > proposalThreshold
+            uint256 votingPower = quorumVotes > proposalThreshold
                 ? quorumVotes
                 : proposalThreshold;
             deal(address(governanceToken), proposerAddress, votingPower);

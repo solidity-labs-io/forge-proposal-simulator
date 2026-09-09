@@ -98,6 +98,19 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
+-   `isDelegateCall()`: Override this only when the entire multisig action group must be encoded as Safe MultiSend delegatecalls. Regular calls are the default. This is a proposal-level setting, so every recorded action in `build()` uses the same operation.
+
+    ```solidity
+    function isDelegateCall()
+        public
+        view
+        override
+        returns (bool)
+    {
+        return true;
+    }
+    ```
+
 -   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the JSON file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
 
     ```solidity
@@ -119,7 +132,7 @@ Let's go through each of the functions that are overridden.
     }
     ```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step. Multicall contract is used to execute all of the actions together in a single safe action. This is done by batching all the build actions together using the `aggregate3Value` multicall3 function. The single safe action is a delegate call to the multicall3 contract as the caller for all the batched actions should be the multisig contract and not the multicall3 contract.
+-   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` temporarily etches a Safe runtime with signature checks bypassed onto the multisig address, then calls Safe `execTransaction(...)` with a delegatecall to the selected Safe MultiSend contract. FPS uses `MultiSendCallOnly` when `isDelegateCall()` is false and regular `MultiSend` when `isDelegateCall()` is true.
 
     ```solidity
     function simulate() public override {
@@ -291,10 +304,14 @@ payload
   Sent 10000000000000000000000000 MULTISIG_TOKEN @0x541234b61c081eaAE62c9EF52A633cD2aaf92A05 to MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2
 
 
------------------- Proposal Calldata ------------------
+---------------- Safe Transaction Fields --------------
+  to: 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D
+  value: 0
+  data:
   0x174dea710000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000160000000000000000000000000000000000000000000000000000000000000026000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
+  operation: 1
 ```
 
 A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
 
-The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with calldata for the proposal. The proposal can be executed manually using `cast send` command along with the calldata generated above.
+The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with the Safe transaction fields. In the Safe UI, use the helper output directly: `to` is the selected MultiSend contract, `value` is `0`, `data` is the MultiSend calldata, and `operation` is `DelegateCall`.

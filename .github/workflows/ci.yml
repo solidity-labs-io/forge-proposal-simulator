@@ -1,8 +1,5 @@
 name: "CI"
 
-env:
-    FOUNDRY_PROFILE: "ci"
-
 on:
     workflow_dispatch:
     pull_request:
@@ -53,6 +50,8 @@ jobs:
 
             - name: "Install Foundry"
               uses: "foundry-rs/foundry-toolchain@v1"
+              with:
+                  version: "v1.5.1"
 
             - name: "Show the Foundry config"
               run: "forge config"
@@ -65,8 +64,8 @@ jobs:
                     echo $(($EPOCHSECONDS - $EPOCHSECONDS % 604800))
                   )" >> $GITHUB_ENV
 
-            - name: "Build the contracts and print their size"
-              run: "forge build --sizes"
+            - name: "Contract linting"
+              run: "forge fmt --check"
 
             - name: "Proposal Simulator Integration Tests"
               run: "forge test --mc IntegrationTest"
@@ -86,6 +85,8 @@ jobs:
 
             - name: "Install Foundry"
               uses: "foundry-rs/foundry-toolchain@v1"
+              with:
+                  version: "v1.5.1"
 
             - name: "Show the Foundry config"
               run: "forge config"
