@@ -5,34 +5,34 @@
     "isContract": false
   },
   {
-    "addr": "0xc0da02939e1441f497fd74f78ce7decb17b66529",
-    "isContract": true,
-    "name": "COMPOUND_GOVERNOR_BRAVO"
+    "addr": "0xc0Da02939E1441F497fd74F78cE7Decb17B66529",
+    "name": "COMPOUND_GOVERNOR_BRAVO",
+    "isContract": true
   },
   {
     "addr": "0x316f9708bB98af7dA9c68C1C3b5e79039cD336E3",
-    "isContract": true,
-    "name": "COMPOUND_CONFIGURATOR"
+    "name": "COMPOUND_CONFIGURATOR",
+    "isContract": true
   },
   {
     "addr": "0xf603265f91f58F1EfA4fAd57694Fb3B77b25fC18",
-    "isContract": false,
-    "name": "COMPOUND_PROPOSER"
+    "name": "COMPOUND_PROPOSER",
+    "isContract": false
   },
   {
-    "addr": "0xa17581a9e3356d9a858b789d68b4d866e593ae94",
-    "isContract": true,
-    "name": "COMPOUND_COMET"
+    "addr": "0xA17581A9E3356d9A858b789D68B4d866e593aE94",
+    "name": "COMPOUND_COMET",
+    "isContract": true
   },
   {
-    "addr": "0xc00e94cb662c3520282e6f5717214004a7f26888",
-    "isContract": true,
-    "name": "COMP_TOKEN"
+    "addr": "0xc00e94Cb662C3520282E6f5717214004A7f26888",
+    "name": "COMP_TOKEN",
+    "isContract": true
   },
   {
     "addr": "0x6d903f6003cca6255D85CcA4D3B5E5146dC33925",
-    "isContract": true,
-    "name": "COMPOUND_TIMELOCK_BRAVO"
+    "name": "COMPOUND_TIMELOCK_BRAVO",
+    "isContract": true
   },
   {
     "addr": "0x5a0Aae59D09fccBdDb6C6CcEB07B7279367C3d2A",
@@ -45,7 +45,7 @@
     "isContract": true
   },
   {
-    "addr": "0x5a7749f83b81b301cab5f48eb8516b986daef23d",
+    "addr": "0x5a7749f83b81B301cAb5f48EB8516B986DAef23D",
     "name": "OPTIMISM_L1_NFT_BRIDGE_PROXY",
     "isContract": true
   },
@@ -70,7 +70,7 @@
     "isContract": true
   },
   {
-    "addr": "0xd92023e9d9911199a6711321d1277285e6d4e2db",
+    "addr": "0xd92023E9d9911199a6711321D1277285e6d4e2db",
     "name": "ARBITRUM_L1_WETH_GATEWAY_PROXY",
     "isContract": true
   },
@@ -80,7 +80,7 @@
     "isContract": true
   },
   {
-    "addr": "0x323a76393544d5ecca80cd6ef2a560c6a395b7e3",
+    "addr": "0x323A76393544d5ecca80cd6ef2A560C6a395b7E3",
     "name": "ENS_GOVERNOR",
     "isContract": true
   },
