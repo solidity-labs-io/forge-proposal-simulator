@@ -1,200 +1,203 @@
 # Addresses
 
-## Overview
+`Addresses` is the chain-aware registry used by proposal contracts. It loads
+named entries from per-chain JSON files, labels the addresses in Foundry, and
+tracks additions, replacements, and removals made during a run.
 
-The Addresses contract plays an important role in managing and storing the addresses of deployed contracts and protocol EOAs. This functionality is essential for facilitating access to these contracts within proposal contracts and ensuring accurate record-keeping post-execution. Additionally, this contract contains important safety checks such as checking bytecode and providing error messages when non-existent addresses are queried.
+## Files and constructor
 
-## Structure
+The constructor accepts a directory and the chain IDs to load:
 
-Deployed contract addresses are registered along with their respective names. This data is stored in an array within a JSON file, the JSON file is named with the chain id representing the network to which the addresses belong. If there are deployments on multiple networks, files correspoding to each network are created. JSON files adhere to the following example format:
+```solidity
+uint256[] memory chainIds = new uint256[](2);
+chainIds[0] = 1;
+chainIds[1] = 11155111;
+
+Addresses addresses = new Addresses("./addresses", chainIds);
+```
+
+Each requested chain ID maps to `<directory>/<chain-id>.json`. Every requested
+file must exist and contain an array with this schema:
 
 ```json
 [
-    {
-        "addr": "0x3dd46846eed8D147841AE162C8425c08BD8E1b41",
-        "name": "DEV_MULTISIG",
-        "isContract": true
-    },
-    {
-        "addr": "0x7da82C7AB4771ff031b66538D2fB9b0B047f6CF9",
-        "name": "TEAM_MULTISIG",
-        "isContract": true
-    },
-    {
-        "addr": "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
-        "name": "PROTOCOL_TIMELOCK",
-        "isContract": true
-    },
-    {
-        "addr": "0x10A19e7eE7d7F8a52822f6817de8ea18204F2e4f",
-        "name": "DEPLOYER_EOA",
-        "isContract": true
-    }
+  {
+    "addr": "0x1111111111111111111111111111111111111111",
+    "name": "PROTOCOL_TIMELOCK",
+    "isContract": true
+  },
+  {
+    "addr": "0x2222222222222222222222222222222222222222",
+    "name": "DEPLOYER_EOA",
+    "isContract": false
+  }
 ]
 ```
 
-Here is an example folder tree structure of multiple JSON files corresponding to different networks.
-```
+A multi-chain directory has one file per loaded network:
+
+```text
 addresses/
-    1.json
-    31337.json
-    11155111.json
+├── 1.json
+├── 11155111.json
+└── 31337.json
 ```
 
-FPS allows contracts with identical names as long as they are deployed on different networks. However, duplicates on the same network are not permitted. The `Addresses.sol` contract enforces this rule by reverting during construction if such a duplicate is detected. It also checks that the same address is not set under two different names on the same network.
+Grant Foundry access in `foundry.toml`:
 
-## Functions
-
-### Adding
-
-Addresses can be added to the object during a proposal or test by calling the `addAddress` function with the name to be saved in storage, the address of the contract to be stored with that name and whether the address is a contract. Calling this function without a chain id will save the contract and name to the current chain id.
-
-```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress, isContract);
+```toml
+[profile.default]
+fs_permissions = [{ access = "read", path = "./addresses" }]
 ```
 
-If the address needs to be added to a chain id that is not the current chain id, that address can still be added by calling the same function with an additional chain id parameter.
+Use `read-write` when the run may call `updateJson()`:
 
-```solidity
-addresses.addAddress("CONTRACT_NAME", contractAddress, chainId, isContract);
+```toml
+[profile.default]
+fs_permissions = [{ access = "read-write", path = "./addresses" }]
 ```
 
-FPS has the following type checks implemented for the function `addAddress`:
+## Registry checks
 
--   Address must be unique for a given name and chain id.
--   Address must be non-zero.
--   Chain id must be non-zero.
--   Address must be a contract in the specified chain if `isContract` is set to `true`.
--   Address must not be a contract in the specified chain if `isContract` is set to `false`.
+Loading a file or adding an entry requires a unique name and address within its
+chain ID. Adds and changes reject the zero address and chain ID zero. A change
+requires an existing name and a different address. A removal requires the
+currently stored address as an explicit argument.
 
-Addresses can be added before the proposal runs by modifying the Addresses JSON file. After a successful deployment, the `getRecordedAddresses` function will return all of the newly deployed addresses and their respective names and chain id's.
+Current limitation: `changeAddress()` does not update the reverse-address
+index. After a replacement, the previous address remains reserved and the new
+address is not reserved against another `addAddress()` call. Treat replacement
+addresses as unique at the proposal level until the registry implementation is
+fixed.
 
-### Updating
+When an entry targets `block.chainid`, `isContract` must match the address code:
+contract entries require code and non-contract entries require no code. Entries
+for other chain IDs are stored without a code check. Select the intended fork
+before constructing the registry when current-chain validation is required.
 
-If an address is already stored, and the name stays the same, but the address changes during a proposal or test, the `changeAddress` function can be called with the new address for the name.
+## Read entries
+
+Use the overload without a chain ID for `block.chainid`:
 
 ```solidity
-addresses.changeAddress("CONTRACT_NAME", contractAddress, isContract);
+address timelock = addresses.getAddress("PROTOCOL_TIMELOCK");
+bool exists = addresses.isAddressSet("PROTOCOL_TIMELOCK");
+bool isContract = addresses.isAddressContract("PROTOCOL_TIMELOCK");
 ```
 
-If the address needs to be updated on a chain id that is not the current chain id, that address can still be updated by calling the same function with an additional chain id parameter.
+Use the chain ID overload for another loaded network:
 
 ```solidity
-addresses.changeAddress("CONTRACT_NAME", contractAddress, chainId);
+address timelock = addresses.getAddress("PROTOCOL_TIMELOCK", 1);
+bool exists = addresses.isAddressSet("PROTOCOL_TIMELOCK", 1);
 ```
 
-FPS has the following type checks implemented for the function `changeAddress`:
+`getAddress` reverts when the name is unset. `isAddressContract` reads only the
+current chain ID.
 
--   Address must be unique for a given name and chain id.
--   Address must be non-zero.
--   Chain id must be non-zero.
--   Address must be a contract in the specified chain if `isContract` is set to `true`.
--   Address must not be a contract in the specified chain if `isContract` is set to `false`.
--   Address must be different from the existing address.
--   An address for the specified name must already exist.
+## Add, change, and remove entries
 
-After a proposal that changes the address, the `getChangedAddresses` function should be called. This will return all of the old addresses, new addresses, and their respective names and chain id's.
-
-### Removing
-
-An address can be removed from storage by removing its entry from the Addresses JSON file. This way, when the Address contract is constructed, the name and address will not be saved to storage. Addresses should not be removed during a governance proposal or test.
-
-### Retrieving
-
-Addresses can be retrieved by calling the `getAddress` function with the name of the contract.
+Add an entry on the current chain or an explicit chain:
 
 ```solidity
-addresses.getAddress("CONTRACT_NAME");
+addresses.addAddress("NEW_IMPLEMENTATION", implementation, true);
+addresses.addAddress("L2_MESSENGER", messenger, 10, true);
 ```
 
-If the address needs to be retrieved from a chain id that is not the current chain id, that address can still be retrieved by calling the same function with an additional chain id parameter.
+Replace an existing entry while preserving its name:
 
 ```solidity
-addresses.getAddress("CONTRACT_NAME", chainId);
+addresses.changeAddress("IMPLEMENTATION", implementation, true);
+addresses.changeAddress("L2_MESSENGER", messenger, 10, true);
 ```
 
-### Retrieving Recorded Addresses
-
-Addresses added during the proposals executions can be retrieved by calling the `getRecordedAddresses` function.
+Remove an entry by name, expected address, and chain ID:
 
 ```solidity
-addresses.getRecordedAddresses();
+addresses.removeAddress("OLD_IMPLEMENTATION", oldImplementation, 1);
 ```
 
-### Retrieving Changed Addresses
+The expected address prevents removal when the registry has already changed.
+After removal, both the name and address can be reused on that chain.
 
-Addresses changed during the proposals executions can be retrieved by calling the `getChangedAddresses` function.
+## Recorded changes
+
+Registry mutations are available as parallel arrays:
 
 ```solidity
-addresses.getChangedAddresses();
+(
+    string[] memory addedNames,
+    uint256[] memory addedChainIds,
+    address[] memory addedAddresses
+) = addresses.getRecordedAddresses();
+
+(
+    string[] memory changedNames,
+    uint256[] memory changedChainIds,
+    address[] memory oldAddresses,
+    address[] memory newAddresses
+) = addresses.getChangedAddresses();
+
+(
+    string[] memory removedNames,
+    uint256[] memory removedChainIds
+) = addresses.getRemovedAddresses();
 ```
 
-### Print Added and Changed Addressses
-
-Addresses that are changed or newly added during the proposal's execution can be retrieved by calling the `printJSONChanges` method. It prints the changes in JSON format, making it easy for users to add them to corresponding JSON files.
+Clear each mutation log independently:
 
 ```solidity
-addresses.printJSONChanges();
+addresses.resetRecordingAddresses();
+addresses.resetChangedAddresses();
+addresses.resetRemovedAddresses();
 ```
 
-### Address exists
+`printJSONChanges()` prints additions and replacements collected during the
+run. `Proposal.run()` calls it immediately after `deploy()` while the broadcast
+section is active. This output is diagnostic rather than canonical JSON: the
+current implementation prints `isContract: true` for every entry, reports
+replacement chain IDs as `block.chainid`, and omits removals.
 
-The `isAddressSet` function checks if an address exists in the Addresses contract storage.
+## Persist files
 
-```solidity
-addresses.isAddressSet("CONTRACT_NAME");
-```
+`updateJson()` rewrites every per-chain file listed in the constructor from the
+registry's persisted entries. It writes added and replaced addresses and drops
+removed entries. Only constructor-provided chain IDs are written, so include
+every chain whose file must be updated.
 
-```solidity
-addresses.isAddressSet("CONTRACT_NAME", chainId);
-```
+Two current edge cases require manual review. A replacement writes the new
+address but retains the entry's original `isContract` value. Removing the last
+entry for a chain renders `]` instead of an empty JSON array. Do not persist a
+replacement that changes the contract flag or an empty chain file until those
+implementation defects are fixed.
 
-### Address is a contract
+The proposal lifecycle calls `updateJson()` when
+`DO_UPDATE_ADDRESS_JSON=true`. The default is `false`. Keep write permission
+disabled for review and simulation jobs that should leave the checkout
+unchanged.
 
-The `isAddressContract` function determines whether an address on the execution chain represents a contract. This is useful for distinguishing between contract and non-contract addresses, helping to avoid runtime errors when attempting to interact with non-existent contracts or contracts not deployed on the current chain.
+## Proposal setup
 
-```solidity
-addresses.isAddressContract("CONTRACT_NAME");
-```
-
-### Update addresses file
-
-The `updateJson` function updates the JSON files with the newly added and changed addresses. JSON files are updated corresponding to the network where new addresses are added or changed. This is helpful as a user doesn't need to update the file manually after the proposal run.
-
-```solidity
-addresses.updateJson();
-```
-
-## Usage
-
-When writing a proposal, set the `addresses` object using the `setAddresses` method. Ensure the correct path for `Addresses.json` file is passed inside the constructor while creating the `addresses` object. Use the `addresses` object to add, update, retrieve, and remove addresses.
+Create the registry after selecting the proposal fork, then pass it to the
+proposal before calling `super.run()`:
 
 ```solidity
-pragma solidity ^0.8.0;
+function run() public override {
+    setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-import { MultisigProposal } from "@forge-proposal-simulator/proposals/MultisigProposal.sol";
+    uint256[] memory chainIds = new uint256[](1);
+    chainIds[0] = 1;
 
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
-import { MyContract } from "@path/to/MyContract.sol";
+    setAddresses(
+        new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses")),
+            chainIds
+        )
+    );
 
-contract PROPOSAL_01 is MultisigProposal {
-    string private constant ADDRESSES_PATH = "./addresses/Addresses.json";
-
-    function deploy() public override {
-        if (!addresses.isAddressSet("CONTRACT_NAME")) {
-            /// Deploy a new contract
-            MyContract myContract = new MyContract();
-
-            /// Interact with the Addresses object, adding the new contract address
-            addresses.addAddress("CONTRACT_NAME", address(myContract), true);
-        }
-    }
-
-    function run() {
-        // Set addresses object for the proposal
-        setAddresses(new Addresses(ADDRESSES_PATH));
-
-        super.run();
-    }
+    super.run();
 }
 ```
+
+Governance-specific setup, such as `setGovernor(...)` or `setTimelock(...)`,
+belongs before `super.run()` in the same function.

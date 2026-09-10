@@ -1,153 +1,174 @@
-# ENS OZ Governor Proposal
+# ENS OpenZeppelin Governor Proposal
 
-## Overview
+[`MockOZGovernorProposal`](../../mocks/MockOZGovernorProposal.sol) models the
+executed ENS proposal
+[[EP5.1] Upgrade DNSSEC support](https://www.tally.xyz/gov/ens/proposal/4208408830555077285685632645423534041634535116286721240943655761928631543220).
+It deploys `MockUpgrade` as the replacement registry entry, records a call that
+enables that address as an ENS Root controller, and simulates the ENS Governor
+lifecycle on a mainnet fork.
 
-This example on mainnet demonstrates FPS being utilized to simulate proposals for the ENS Governor on mainnet. The proposal involves setting up a new DNSSEC on the ENS root. It entails deploying a new DNSSEC contract named `UPGRADE_DNSSEC_SUPPORT`. Subsequently, the timelock sets the newly deployed DNSSEC contract as the controller for the ENS Root.
+The deployed object is a test double. The production EP5.1 action enabled the
+new DNS registrar at `0xb32cB5677a7C971689228EC835800432B339bA2B`.
 
-The contract for this proposal is located in the [mocks folder](../../mocks/MockOZGovernorProposal.sol).
+## Proposal setup
 
-Let's review each of the overridden functions:
+The concrete `run()` function selects the fork and configures the shared
+objects before entering `Proposal.run()`.
 
--   `name()`: Specifies the name of the proposal.
+```solidity
+function run() public override {
+    setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-    ```solidity
-    function name() public pure override returns (string memory) {
-        return "UPGRADE_DNSSEC_SUPPORT";
-    }
-    ```
+    uint256[] memory chainIds = new uint256[](1);
+    chainIds[0] = 1;
 
--   `description()`: Provides a detailed description of the proposal.
+    setAddresses(
+        new Addresses(
+            vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
+        )
+    );
 
-    ```solidity
-    function description() public pure override returns (string memory) {
-        return
-            "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
-    }
-    ```
+    setGovernor(addresses.getAddress("ENS_GOVERNOR"));
 
--   `deploy()`: Deploys any necessary contracts. This example demonstrates the deployment of a new `dnsSec` contract (only a mock for this proposal). Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
-
-    ```solidity
-    function deploy() public override {
-        // Deploy a mock upgrade contract to set controller if not already deployed
-        if (!addresses.isAddressSet("ENS_DNSSEC")) {
-            // In a real case, this function would be responsible for
-            // deploying the DNSSEC contract instead of using a mock
-            address dnsSec = address(new MockUpgrade());
-
-            addresses.addAddress("ENS_DNSSEC", dnsSec, true);
-        }
-    }
-    ```
-
-    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
--   `build()`: Add actions to the proposal contract. In this example, the newly deployed `dnsSec` contract is set as the controller for the root contract. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`. In this example, it is the OZ Governor's timelock. The `buildModifier` is a necessary modifier for the `build` function and will not function without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
-
-    ```solidity
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("ENS_TIMELOCK"))
-    {
-        /// STATICCALL -- non-mutative and hence not recorded for the run stage
-
-        // Get ENS root address
-        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
-
-        // Get deployed dnsSec address
-        address dnsSec = addresses.getAddress("ENS_DNSSEC");
-
-        /// CALLS -- mutative and recorded
-
-        // Set controller to newly deployed dnsSec contract
-        control.setController(dnsSec, true);
-    }
-    ```
-
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and `governor`, and then calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet`, selecting the fork for running the proposal. Next, the `addresses` object is set by reading the `addresses.json` file. The OZ Governor contract to test is set using `setGovernor`. This will be used to check onchain calldata and simulate the proposal. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
-
-    ```solidity
-    function run() public override {
-        // Create and select the mainnet fork for proposal execution.
-        setPrimaryForkId(vm.createFork("mainnet"));
-        vm.selectFork(primaryForkId);
-
-        uint256[] memory chainIds = new uint256[](1);
-        chainIds[0] = 1;
-        // Set the addresses object by reading addresses from the JSON file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
-            )
-        );
-
-        // Set Governor Bravo. This address is used for proposal simulation and checking the on-chain proposal state.
-        setGovernor(addresses.getAddress("ENS_GOVERNOR"));
-
-        // Call the run function of the parent contract 'Proposal.sol'.
-        super.run();
-    }
-    ```
-
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the dnsSec contract is set as the controller for the root contract.
-
-    ```solidity
-    function validate() public view override {
-        // Get ENS root address
-        IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
-
-        // Get deployed dnsSec address
-        address dnsSec = addresses.getAddress("ENS_DNSSEC");
-
-        // Ensure dnsSec is set as the controller for the ENS root contract
-        assertEq(control.controllers(dnsSec), true);
-    }
-    ```
-
-## Running the Proposal
-
-```sh
-forge script mocks/MockOZGovernorProposal.sol:MockOZGovernorProposal --fork-url mainnet
+    super.run();
+}
 ```
 
-All required addresses should be in the Addresses.json file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
+The inherited lifecycle calls `deploy()`, `preBuildMock()`, `build()`,
+`simulate()`, `validate()`, and `print()` according to the environment flags.
+Address JSON persistence runs last when `DO_UPDATE_ADDRESS_JSON=true`. See
+[Proposal functions](../overview/architecture/proposal-functions.md) for the
+shared lifecycle.
 
-The script will output the following:
+## Metadata
 
-```sh
-== Logs ==
+OpenZeppelin Governor includes the description hash in the proposal ID. Keep
+the submitted description byte-for-byte consistent with the reviewed payload.
 
-
---------- Addresses added ---------
-  {
-          "addr": "0x714CB817EfD08fEe91558b07A924a87C3587F3C1",
-          "isContract": true,
-          "name": "ENS_DNSSEC"
+```solidity
+function name() public pure override returns (string memory) {
+    return "UPGRADE_DNSSEC_SUPPORT";
 }
 
----------------- Proposal Description ----------------
-  Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar
-
------------------- Proposal Actions ------------------
-  1). calling ENS_ROOT @0xaB528d626EC275E3faD363fF1393A41F581c5897 with 0 eth and 0xe0dba60f000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c10000000000000000000000000000000000000000000000000000000000000001 data.
-  target: ENS_ROOT @0xaB528d626EC275E3faD363fF1393A41F581c5897
-payload
-  0xe0dba60f000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c10000000000000000000000000000000000000000000000000000000000000001
-
-
-
------------------ Proposal Changes ---------------
-
-
- ENS_ROOT @0xaB528d626EC275E3faD363fF1393A41F581c5897:
-
- State Changes:
-  Slot: 0x683b779d654146db8352b5203c98de0bc792fdb59471541d9a885b4f9933a736
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x0000000000000000000000000000000000000000000000000000000000000001
-
-
------------------- Proposal Calldata ------------------
-  0x7d5e81e2000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000000000000001000000000000000000000000ab528d626ec275e3fad363ff1393a41f581c589700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000044e0dba60f000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c1000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006843616c6c20736574436f6e74726f6c6c6572206f6e2074686520526f6f7420636f6e747261637420617420726f6f742e656e732e6574682c2070617373696e6720696e207468652061646472657373206f6620746865206e657720444e5320726567697374726172000000000000000000000000000000000000000000000000
+function description() public pure override returns (string memory) {
+    return "Call setController on the Root contract at root.ens.eth, passing in the address of the new DNS registrar";
+}
 ```
+
+## Deployment
+
+`deploy()` creates the test double only when `ENS_DNSSEC` is absent from the
+registry.
+
+```solidity
+function deploy() public override {
+    if (!addresses.isAddressSet("ENS_DNSSEC")) {
+        address dnsSec = address(new MockUpgrade());
+
+        addresses.addAddress("ENS_DNSSEC", dnsSec, true);
+    }
+}
+```
+
+The shared runner broadcasts `deploy()` from `DEPLOYER_EOA`. A normal script
+run prints the added address. Set `DO_UPDATE_ADDRESS_JSON=true` to persist it to
+the per-chain JSON file.
+
+## Build
+
+The ENS Timelock is the authorized caller for the Root contract. Passing it to
+`buildModifier` records `setController` as the proposal action and restores the
+fork to its pre-build state before simulation.
+
+```solidity
+function build()
+    public
+    override
+    buildModifier(addresses.getAddress("ENS_TIMELOCK"))
+{
+    /// STATICCALL -- not recorded for the run stage
+    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+    address dnsSec = addresses.getAddress("ENS_DNSSEC");
+
+    /// CALLS -- mutative and recorded
+    control.setController(dnsSec, true);
+}
+```
+
+The action mirrors EP5.1's `setController(newDnsRegistrar, true)` call while
+using the mock deployment as `newDnsRegistrar`.
+
+## Proposal hashing and lookup
+
+`OZGovernorProposal.getCalldata()` encodes the standard Governor entry point:
+
+```solidity
+propose(
+    address[] targets,
+    uint256[] values,
+    bytes[] calldatas,
+    string description
+)
+```
+
+The proposal ID is:
+
+```solidity
+governor.hashProposal(
+    targets,
+    values,
+    calldatas,
+    keccak256(abi.encodePacked(description()))
+);
+```
+
+`getProposalId()` calls `governor.state(proposalId)`. It returns the hash when
+that call succeeds and zero when the governor rejects the unknown ID. ENS
+executable proposals use a Governor and Timelock flow documented in the
+[ENS governance process](https://docs.ens.domains/dao/governance/process/).
+
+## Lifecycle simulation
+
+The inherited `simulate()` runs the OpenZeppelin Governor lifecycle:
+
+1. It loads the voting token from the Governor, gives `address(1)` enough votes
+   to meet the larger of the proposal threshold and quorum, and delegates those
+   votes.
+2. It submits the proposal, recomputes the proposal hash, and checks the
+   returned ID and `Pending` state.
+3. It advances through the voting delay, casts a `For` vote, advances through
+   the voting period, and checks the `Succeeded` state.
+4. It warps by `governor.proposalEta(proposalId) + 1`, queues the proposal with
+   its description hash, and checks the `Queued` state.
+5. It loads the Governor's Timelock, warps by its minimum delay, executes the
+   proposal, and checks the `Executed` state.
+
+Queueing and execution use the same targets, values, calldatas, and description
+hash that produced the proposal ID.
+
+## Validation
+
+Validation checks the post-execution controller mapping.
+
+```solidity
+function validate() public view override {
+    IControllable control = IControllable(addresses.getAddress("ENS_ROOT"));
+    address dnsSec = addresses.getAddress("ENS_DNSSEC");
+
+    assertTrue(control.controllers(dnsSec));
+}
+```
+
+## Run the proposal
+
+The `mainnet` RPC alias must be configured in `foundry.toml` or supplied by the
+environment. `ADDRESSES_PATH` defaults to `./addresses`.
+
+```sh
+forge script mocks/MockOZGovernorProposal.sol:MockOZGovernorProposal \
+  --fork-url mainnet
+```
+
+The default output prints the deployed registry entry, the ENS Root action,
+the recorded controller mapping change, and the Governor `propose` calldata.
+Check the description and every proposal array before submitting the payload.

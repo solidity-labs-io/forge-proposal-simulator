@@ -1,23 +1,41 @@
-# Contributing Guidelines
+# Contributing
 
-There are many ways to contribute to Forge Proposal Simulator.
+Use [GitHub issues](https://github.com/solidity-labs-io/forge-proposal-simulator/issues/new)
+for bug reports and feature proposals. Search open and closed issues before
+filing a new one. Include the affected proposal type, reproduction steps, and
+the expected behavior.
 
-## Opening an issue
+Discuss non-trivial code changes with the maintainers in an issue before
+opening a pull request. Small fixes and documentation corrections can go
+directly to a pull request.
 
-You can [open an issue] to suggest a feature or report a minor bug.
+## Local checks
 
-Before opening an issue, be sure to search through the existing open and closed issues, and consider posting a comment in one of those instead.
+Initialize dependencies and install the Solidity linter:
 
-When requesting a new feature, include as many details as you can, especially around the use cases that motivate it. Features are prioritized according to the impact they may have on the ecosystem, so we appreciate information showing that the impact could be high.
+```sh
+git submodule update --init --recursive
+npm install
+```
 
-[open an issue]: https://github.com/solidity-labs-io/forge-proposal-simulator/issues/new
+Run the checks used by the repository:
 
-## Submitting a pull request
+```sh
+npm run lint
+forge fmt --check
+forge build
+forge test
+```
 
-If you would like to contribute code or documentation you may do so by forking the repository and submitting a pull request.
+The integration tests fork mainnet and require a working `mainnet` endpoint in
+`foundry.toml` or an equivalent Foundry configuration. Tests for
+`Addresses.updateJson()` write to files under `addresses/`, so inspect the
+working tree after running the suite.
 
-Any non-trivial code contribution must be first discussed with the maintainers in an issue (see [Opening an issue](#opening-an-issue)). Only very minor changes are accepted without prior discussion.
+Keep changes scoped to the issue. Add or update tests for behavior changes, and
+update the relevant guide when a public function, environment flag, command,
+or generated payload changes.
 
-Run linter, forge fmt and tests to make sure your pull request is good before submitting it.
-
-If you're looking for a good place to start, look for issues labelled ["good first issue"](https://github.com/solidity-labs-io/forge-proposal-simulator/labels/good%20first%20issue)!
+Issues labeled
+[good first issue](https://github.com/solidity-labs-io/forge-proposal-simulator/labels/good%20first%20issue)
+are intended for new contributors.

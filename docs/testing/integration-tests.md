@@ -1,21 +1,81 @@
 # Integration Tests
 
-FPS enables the simulation of proposals within integration tests. This capability is essential for verifying the functionality of your proposals and ensuring they don't break existing features. Additionally, it allows testing of the entire proposal lifecycle, including governance proposals and deployment scripts. This guide illustrates writing integration tests with the Multisig example from our [Multisig Proposal Guide](../guides/multisig-proposal.md). These integration tests have already been implemented in the fps-example [repo](https://github.com/solidity-labs-io/fps-example-repo/tree/main/test/multisig).
+Run a proposal from `setUp()` when an integration test needs the state produced by that proposal. The setup contract deploys the latest compiled proposal artifact, keeps the proposal contract available when it selects a fork, runs the proposal, and exposes its `Addresses` registry to the test.
 
-## Setting Up PostProposalCheck.sol
+The complete multisig implementation is in the [`fps-example-repo` test directory](https://github.com/solidity-labs-io/fps-example-repo/tree/main/test/multisig).
 
-The first step is to create a `PostProposalCheck.sol` contract, which serves as a base for your integration test contracts. This contract is responsible for deploying proposal contracts, executing them, and updating the addresses object. This allows integration tests to run against the newly updated state after all changes from the governance proposal go into effect.
+## Configure Foundry
+
+The proposal initializes its own fork in its `run()` override. Define the RPC alias used by the proposal and allow reads from the repository so `Addresses` can load its per-chain JSON files:
+
+```toml
+[profile.default]
+fs_permissions = [{ access = "read", path = "./" }]
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+```
+
+The test uses the `ffi` cheatcode to run a local artifact-selection script. FFI executes host commands and is disabled by default. Enable it only for commands committed to and reviewed with the repository.
+
+## Find the Latest Proposal Artifact
+
+Create `get-latest-proposal.sh` at the repository root:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+base_dir="out"
+proposal_type="${1:?proposal type is required}"
+latest_number=-1
+latest_directory=""
+
+shopt -s nullglob
+for directory in "$base_dir"/"${proposal_type}"_*.sol; do
+    filename="${directory##*/}"
+    suffix="${filename#"${proposal_type}"_}"
+    number="${suffix%.sol}"
+
+    [[ "$number" =~ ^[0-9]+$ ]] || continue
+    numeric_value=$((10#$number))
+
+    if ((numeric_value > latest_number)); then
+        latest_number=$numeric_value
+        latest_directory="$directory"
+    fi
+done
+
+if [[ -z "$latest_directory" ]]; then
+    echo "No ${proposal_type}_<number>.sol artifact found in ${base_dir}" >&2
+    exit 1
+fi
+
+contract_name="${latest_directory##*/}"
+contract_name="${contract_name%.sol}"
+printf '%s/%s.json\n' "$latest_directory" "$contract_name"
+```
+
+Make the script executable:
+
+```bash
+chmod +x get-latest-proposal.sh
+```
+
+For `MultisigProposal_02.sol`, the script returns `out/MultisigProposal_02.sol/MultisigProposal_02.json`. `deployCode()` reads that artifact and deploys its creation bytecode.
+
+## Execute the Proposal in `setUp()`
+
+Create `test/multisig/MultisigPostProposalCheck.sol`:
 
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@forge-std/Test.sol";
+import {Test} from "@forge-std/Test.sol";
 
-import { MultisigProposal } from "@forge-proposal-simulator/src/proposals/MultisigProposal.sol";
-import { Addresses } from "@forge-proposal-simulator/addresses/Addresses.sol";
+import {Addresses} from "@forge-proposal-simulator/addresses/Addresses.sol";
+import {MultisigProposal} from "@forge-proposal-simulator/src/proposals/MultisigProposal.sol";
 
-// @notice this is a helper contract to execute proposals before running integration tests.
-// @dev should be inherited by integration test contracts.
 contract MultisigPostProposalCheck is Test {
     Addresses public addresses;
 
@@ -24,116 +84,74 @@ contract MultisigPostProposalCheck is Test {
         inputs[0] = "./get-latest-proposal.sh";
         inputs[1] = "MultisigProposal";
 
-        string memory output = string(vm.ffi(inputs));
+        string memory artifact = string(vm.ffi(inputs));
+        MultisigProposal proposal = MultisigProposal(deployCode(artifact));
 
-        MultisigProposal multisigProposal = MultisigProposal(
-            deployCode(output)
-        );
-        vm.makePersistent(address(multisigProposal));
+        vm.makePersistent(address(proposal));
+        proposal.run();
 
-        // Execute proposals
-        multisigProposal.run();
-
-        addresses = multisigProposal.addresses();
+        addresses = proposal.addresses();
     }
 }
 ```
 
-## Creating a script that returns the latest proposal based on the type of proposal.
+The proposal is deployed before its `run()` override selects a fork. `vm.makePersistent()` keeps the proposal contract available after that fork change. The override must configure `primaryForkId`, `addresses`, and any governance-specific contracts before it calls `super.run()`.
 
-```bash
-#!/bin/bash
-BASE_DIR="out"
+`proposal.run()` executes the enabled lifecycle stages in order: `deploy()`, `preBuildMock()`, `build()`, `simulate()`, `validate()`, and `print()`, followed by optional address JSON persistence. The defaults execute every stage except JSON persistence. The integration test therefore starts from the state left by `simulate()` and checked by `validate()`.
 
-PROPOSAL_TYPE="$1"
+## Write Integration Tests
 
-# Find proposal directories and get the latest one
-LATEST_PROPOSAL_DIR=$(ls -1v ${BASE_DIR}/ | grep "^$PROPOSAL_TYPE" | tail -n 1)
-
-LATEST_FILE="${LATEST_PROPOSAL_DIR%.sol}"
-
-# Print the path to the latest proposal artifact json file
-echo "${BASE_DIR}/${LATEST_PROPOSAL_DIR}/${LATEST_FILE}.json"
-```
-
-## Creating Integration Test Contracts
-
-Next, the creation of the `MultisigProposalIntegrationTest` contract is required, which will inherit from `MultisigPostProposalCheck`. Tests should be added to this contract. Utilize the addresses object within this contract to access the addresses of the contracts that have been deployed by the proposals.
+Inherit the setup contract and read deployed or changed addresses from its registry:
 
 ```solidity
 pragma solidity ^0.8.0;
 
-import { Vault } from "src/mocks/Vault.sol";
-import { Token } from "src/mocks/Token.sol";
-import { MultisigPostProposalCheck } from "./MultisigPostProposalCheck.sol";
+import {Token} from "src/mocks/vault/Token.sol";
+import {Vault} from "src/mocks/vault/Vault.sol";
+import {MultisigPostProposalCheck} from "./MultisigPostProposalCheck.sol";
 
-// @dev This test contract inherits MultisigPostProposalCheck, granting it
-// the ability to interact with state modifications effected by proposals
-// and to work with newly deployed contracts, if applicable.
-contract MultisigProposalIntegrationTest is MultisigPostProposalCheck {
-    // Tests adding a token to the whitelist in the Vault contract
+contract MultisigVaultIntegrationTestSepolia is MultisigPostProposalCheck {
     function test_addTokenToWhitelist() public {
-        // Retrieves the Vault instance using its address from the Addresses contract
-        Vault multisigVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-        // Retrieves the address of the multisig wallet
+        Vault vault = Vault(addresses.getAddress("MULTISIG_VAULT"));
         address multisig = addresses.getAddress("DEV_MULTISIG");
-        // Creates a new instance of Token
         Token token = new Token();
 
-        // Sets the next caller of the function to be the multisig address
         vm.prank(multisig);
+        vault.whitelistToken(address(token), true);
 
-        // Whitelists the newly created token in the Vault
-        multisigVault.whitelistToken(address(token), true);
-
-        // Asserts that the token is successfully whitelisted
-        assertTrue(
-            multisigVault.tokenWhitelist(address(token)),
-            "Token should be whitelisted"
-        );
+        assertTrue(vault.tokenWhitelist(address(token)));
     }
 
-    // Tests deposit functionality in the Vault contract
     function test_depositToVault() public {
-        // Retrieves the Vault instance using its address from the Addresses contract
-        Vault multisigVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-        // Retrieves the address of the multisig wallet
+        Vault vault = Vault(addresses.getAddress("MULTISIG_VAULT"));
         address multisig = addresses.getAddress("DEV_MULTISIG");
-        // Retrieves the address of the token to be deposited
-        address token = addresses.getAddress("MULTISIG_TOKEN");
+        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
 
-        (uint256 prevDeposits, ) = multisigVault.deposits(
-            address(token),
-            multisig
-        );
-
+        (uint256 previousDeposits,) =
+            vault.deposits(address(token), multisig);
         uint256 depositAmount = 100;
 
-        // Starts a prank session with the multisig address as the caller
         vm.startPrank(multisig);
-        // Mints 100 tokens to the multisig contract's address
-        Token(token).mint(multisig, depositAmount);
-        // Approves the Vault to spend depositAmount tokens
-        Token(token).approve(address(multisigVault), depositAmount);
-        // Deposits depositAmount tokens into the Vault
-        multisigVault.deposit(address(token), depositAmount);
+        token.mint(multisig, depositAmount);
+        token.approve(address(vault), depositAmount);
+        vault.deposit(address(token), depositAmount);
+        vm.stopPrank();
 
-        // Retrieves the deposit amount of the token in the Vault for the multisig address
-        (uint256 amount, ) = multisigVault.deposits(address(token), multisig);
-        // Asserts that the deposit amount is equal to previous deposit + depositAmount
-        assertTrue(
-            amount == prevDeposits + depositAmount,
-            "Token should be deposited"
-        );
+        (uint256 deposits,) = vault.deposits(address(token), multisig);
+        assertEq(deposits, previousDeposits + depositAmount);
     }
 }
 ```
 
-## Running Integration Tests
+## Run the Tests
 
-Executing the integration tests triggers the `setUp()` function before each test, ensuring the
-tests are always executed on a fresh state after the proposals execution.
+Run the command from the repository root. Forge compiles the proposals before the test invokes the artifact-selection script.
 
 ```bash
-forge test --mc MultisigProposalIntegrationTest -vvv --ffi
+forge test \
+  --match-contract MultisigVaultIntegrationTestSepolia \
+  --ffi \
+  -vvv
 ```
+
+Forge creates a fresh test state and calls `setUp()` before each test. Each case receives a fresh proposal execution on a fresh fork.
