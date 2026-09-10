@@ -1,167 +1,200 @@
-# Optimism Multisig Proposal
+# Optimism Safe Proposal
 
-## Overview
+[`MockMultisigProposal`](../../mocks/MockMultisigProposal.sol) upgrades the
+Optimism L1 ERC-721 bridge proxy on a mainnet fork. The address registry uses
+the historical `NFT_BRIDGE` labels for this contract. Optimism's current
+[Superchain Registry](https://github.com/ethereum-optimism/superchain-registry/blob/main/superchain/extra/addresses/addresses.json)
+lists the same L1 ERC-721 bridge proxy, ProxyAdmin, and ProxyAdmin owner used by
+the example.
 
-This is an example where FPS is used to make proposals for the Optimism Multisig on mainnet. This example upgrades the L1 NFT Bridge contract. The Optimism Multisig calls `upgrade` on the proxy contract to upgrade the implementation to a new `MockUpgrade`.
+The proposal produces the transaction fields for a Safe batch and simulates
+that transaction from the configured `OPTIMISM_MULTISIG`.
 
-The following contract is present in the [mocks folder](../../mocks/MockMultisigProposal.sol).
+## Proposal setup
 
-Let's go through each of the functions that are overridden:
+The concrete `run()` function selects the fork and constructs the address
+registry before entering `Proposal.run()`.
 
--   `name()`: Defines the name of your proposal.
+```solidity
+function run() public override {
+    setPrimaryForkId(vm.createSelectFork("mainnet"));
 
-    ```solidity
-    function name() public pure override returns (string memory) {
-        return "OPTIMISM_MULTISIG_MOCK";
-    }
-    ```
+    uint256[] memory chainIds = new uint256[](1);
+    chainIds[0] = 1;
 
--   `description()`: Provides a detailed description of your proposal.
+    addresses = new Addresses(
+        vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
+    );
 
-    ```solidity
-    function description() public pure override returns (string memory) {
-        return "Mock proposal that upgrades the L1 NFT Bridge";
-    }
-    ```
-
--   `deploy()`: This example demonstrates the deployment of the new MockUpgrade, which will be used as the new implementation for the proxy.
-
-    ```solidity
-    function deploy() public override {
-        if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
-            address l1NFTBridgeImplementation = address(new MockUpgrade());
-
-            addresses.addAddress(
-                "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION",
-                l1NFTBridgeImplementation,
-                true
-            );
-        }
-    }
-    ```
-
-    Since these changes do not persist from runs themselves, after the contracts are deployed, the user must update the Addresses.json file with the newly deployed contract addresses.
-
--   `build()`: Add actions to the proposal contract. In this example, the L1 NFT Bridge is upgraded to a new implementation. The actions should be written in solidity code and in the order they should be executed. Any calls (except to the Addresses object) will be recorded and stored as actions to execute in the run function. The `caller` address is passed into `buildModifier` that will call actions in `build`. The caller is the Optimism Multisig for this example. The `buildModifier` is a necessary modifier for the `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
-
-    ```solidity
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
-    {
-        /// STATICCALL -- not recorded for the run stage
-        IProxyAdmin proxy = IProxyAdmin(
-            addresses.getAddress("OPTIMISM_PROXY_ADMIN")
-        );
-
-        /// CALLS -- mutative and recorded
-        proxy.upgrade(
-            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
-            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
-        );
-    }
-    ```
-
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId`, and calls `super.run()` to run the entire proposal. In this example, `primaryForkId` is set to `mainnet` and selecting the fork for running the proposal. Next, the `addresses` object is set by reading from the JSON file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
-
-    ```solidity
-    function run() public override {
-        // Create and select mainnet fork for proposal execution.
-        primaryForkId = vm.createFork("mainnet");
-        vm.selectFork(primaryForkId);
-
-        uint256[] memory chainIds = new uint256[](1);
-        chainIds[0] = 1;
-        // Set the addresses object by reading addresses from the JSON file.
-        setAddresses(
-            new Addresses(
-                vm.envOr("ADDRESSES_PATH", string("./addresses")), chainIds
-            )
-        );
-
-        // Call the run function of parent contract 'Proposal.sol'.
-        super.run();
-    }
-    ```
-
--   `simulate()`: Executes the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` simulates a call to the [Multicall3](https://www.multicall3.com/) contract with the calldata generated from the actions set up in the build step.
-
-    ```solidity
-    function simulate() public override {
-        // get multisig address
-        address multisig = addresses.getAddress("OPTIMISM_MULTISIG");
-
-        // simulate all actions in 'build' functions through multisig
-        _simulateActions(multisig);
-    }
-    ```
-
--   `validate()`: Validates that the implementation is upgraded correctly.
-
-    ```solidity
-    function validate() public override {
-        // get proxy address
-        IProxy proxy = IProxy(
-            addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY")
-        );
-
-        // implementation() caller must be the owner
-        vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
-
-        // ensure implementation is upgraded
-        require(
-            proxy.implementation() ==
-                addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"),
-            "Proxy implementation not set"
-        );
-        vm.stopPrank();
-    }
-    ```
-
-## Running the Proposal
-
-```sh
-forge script mocks/MockMultisigProposal.sol --fork-url mainnet
+    super.run();
+}
 ```
 
-All required addresses should be in the JSON file, including the `DEPLOYER_EOA` address, which will deploy the new contracts. If these do not align, the script execution will fail.
+The inherited lifecycle calls `deploy()`, `preBuildMock()`, `build()`,
+`simulate()`, `validate()`, and `print()` according to the environment flags.
+Address JSON persistence runs last when `DO_UPDATE_ADDRESS_JSON=true`. See
+[Proposal functions](../overview/architecture/proposal-functions.md) for the
+shared lifecycle.
 
-The script will output the following:
+## Metadata
 
-```sh
-== Logs ==
-
-
---------- Addresses added ---------
-  {
-          "addr": "0x714CB817EfD08fEe91558b07A924a87C3587F3C1",
-          "isContract": true,
-          "name": "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"
+```solidity
+function name() public pure override returns (string memory) {
+    return "OPTMISM_MULTISIG_MOCK";
 }
 
----------------- Proposal Description ----------------
-  Mock proposal that upgrade the L1 NFT Bridge
-
------------------- Proposal Actions ------------------
-  1). calling OPTIMISM_PROXY_ADMIN @0x543bA4AADBAb8f9025686Bd03993043599c6fB04 with 0 eth and 0x99a88ec40000000000000000000000005a7749f83b81b301cab5f48eb8516b986daef23d000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c1 data.
-  target: OPTIMISM_PROXY_ADMIN @0x543bA4AADBAb8f9025686Bd03993043599c6fB04
-payload
-  0x99a88ec40000000000000000000000005a7749f83b81b301cab5f48eb8516b986daef23d000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c1
-
-
-
------------------ Proposal Changes ---------------
-
-
- OPTIMISM_L1_NFT_BRIDGE_PROXY @0x5a7749f83b81B301cAb5f48EB8516B986DAef23D:
-
- State Changes:
-  Slot: 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc
-  -  0x000000000000000000000000ae2af01232a6c4a4d3012c5ec5b1b35059caf10d
-  +  0x000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c1
-
-
------------------- Proposal Calldata ------------------
-  0x174dea71000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000543ba4aadbab8f9025686bd03993043599c6fb04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004499a88ec40000000000000000000000005a7749f83b81b301cab5f48eb8516b986daef23d000000000000000000000000714cb817efd08fee91558b07a924a87c3587f3c100000000000000000000000000000000000000000000000000000000
+function description() public pure override returns (string memory) {
+    return "Mock proposal that upgrade the L1 NFT Bridge";
+}
 ```
+
+`OPTMISM_MULTISIG_MOCK` preserves the identifier in the example contract,
+including its spelling.
+
+## Deployment
+
+`deploy()` creates a mock implementation when the registry does not already
+contain one.
+
+```solidity
+function deploy() public override {
+    if (!addresses.isAddressSet("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")) {
+        address mockUpgrade = address(new MockUpgrade());
+
+        addresses.addAddress(
+            "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION", mockUpgrade, true
+        );
+    }
+}
+```
+
+The shared runner broadcasts `deploy()` from `DEPLOYER_EOA`. A normal script
+run prints the added address. Set `DO_UPDATE_ADDRESS_JSON=true` to persist it to
+the per-chain JSON file.
+
+## Build
+
+The Safe owns the ProxyAdmin, so `buildModifier` records the call with the Safe
+as `msg.sender`. It captures the implementation slot change and restores the
+pre-build fork state before simulation.
+
+```solidity
+function build()
+    public
+    override
+    buildModifier(addresses.getAddress("OPTIMISM_MULTISIG"))
+{
+    IProxyAdmin proxy =
+        IProxyAdmin(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
+
+    proxy.upgrade(
+        addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"),
+        addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION")
+    );
+}
+```
+
+## Safe batch encoding
+
+`MultisigProposal.getCalldata()` encodes every action in the Safe MultiSend
+packed format:
+
+```text
+operation (1 byte)
+to        (20 bytes)
+value     (32 bytes)
+data size (32 bytes)
+data      (data size bytes)
+```
+
+It concatenates the entries and wraps them in `multiSend(bytes)`. This layout
+matches Safe's
+[MultiSend contract](https://github.com/safe-fndn/safe-smart-account/blob/main/contracts/libraries/MultiSend.sol).
+
+`isDelegateCall()` controls the operation byte for every inner action. Its
+default value is `false`, so this proposal encodes the ProxyAdmin action as
+`CALL` (`0`). A proposal that overrides it to return `true` encodes every inner
+action as `DELEGATECALL` (`1`). Mixed inner operation types require a custom
+adapter.
+
+`getSafeTransaction()` returns the four fields required for this batch:
+
+| Field | Default call proposal | Delegatecall proposal |
+| --- | --- | --- |
+| `to` | `SAFE_MULTISEND_CALL_ONLY_CONTRACT` | `SAFE_MULTISEND_CONTRACT` |
+| `value` | `0` | `0` |
+| `data` | `getCalldata()` | `getCalldata()` |
+| `operation` | `DELEGATECALL` (`1`) | `DELEGATECALL` (`1`) |
+
+The outer Safe transaction uses delegatecall so MultiSend executes in the
+Safe's context. `MultiSendCallOnly` rejects inner delegatecalls, which is why
+FPS selects the full MultiSend contract when `isDelegateCall()` returns
+`true`. See Safe's
+[MultiSendCallOnly implementation](https://github.com/safe-fndn/safe-smart-account/blob/main/contracts/libraries/MultiSendCallOnly.sol).
+
+`MultisigProposal.getProposalId()` is unimplemented and reverts with
+`"Not implemented"`.
+
+## Simulation
+
+The example delegates to the inherited Safe simulator:
+
+```solidity
+function simulate() public override {
+    address multisig = addresses.getAddress("OPTIMISM_MULTISIG");
+
+    _simulateActions(multisig);
+}
+```
+
+`_simulateActions()` performs these steps:
+
+1. Save the Safe proxy's runtime bytecode.
+2. Replace it with the modified Safe v1.4.1 runtime stored in
+   `Constants.SAFE_RUNTIME_BYTECODE`. This runtime bypasses signature checks.
+3. Call `execTransaction` as the Safe itself with the fields from
+   `getSafeTransaction()`. The gas and payment fields are zero, the token and
+   receiver are zero addresses, and the signature bytes are empty.
+4. Restore the original runtime bytecode.
+5. Bubble up a revert from the Safe transaction.
+
+The replacement changes runtime code for the duration of the call and retains
+the Safe proxy's storage. Proposal effects therefore land in the same storage
+context used by an executed Safe transaction.
+
+## Validation
+
+The transparent proxy exposes `implementation()` to its admin. Validation
+reads the implementation while pranking the ProxyAdmin address.
+
+```solidity
+function validate() public override {
+    IProxy proxy =
+        IProxy(addresses.getAddress("OPTIMISM_L1_NFT_BRIDGE_PROXY"));
+
+    vm.startPrank(addresses.getAddress("OPTIMISM_PROXY_ADMIN"));
+    require(
+        proxy.implementation()
+            == addresses.getAddress(
+                "OPTIMISM_L1_NFT_BRIDGE_IMPLEMENTATION"
+            ),
+        "Proxy implementation not set"
+    );
+    vm.stopPrank();
+}
+```
+
+## Run the proposal
+
+The `mainnet` RPC alias must be configured in `foundry.toml` or supplied by the
+environment. `ADDRESSES_PATH` defaults to `./addresses`.
+
+```sh
+forge script mocks/MockMultisigProposal.sol:MockMultisigProposal \
+  --fork-url mainnet
+```
+
+The default output prints the deployed registry entry, the ProxyAdmin action,
+the recorded implementation slot change, and the Safe transaction fields.
+Enter the printed `to`, `value`, `data`, and `operation` in the Safe interface
+and verify the decoded inner action before collecting signatures.

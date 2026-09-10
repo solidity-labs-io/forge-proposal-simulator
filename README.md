@@ -1,61 +1,88 @@
-# Overview
+# Forge Proposal Simulator
 
-The Forge Proposal Simulator (FPS) offers a framework for creating secure governance proposals and deployment scripts, enhancing safety, and ensuring protocol health throughout the proposal lifecycle. The major benefits of using this tool are standardization of proposals, safe calldata generation, and preventing deployment and governance action bugs.
+Forge Proposal Simulator (FPS) records privileged Solidity calls as governance
+actions, encodes them for a supported governance system, and executes them on a
+fork for validation.
 
-For guidance on tool usage, please read the [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/).
+FPS includes proposal types for Safe multisigs, OpenZeppelin
+`TimelockController`, Compound Governor Bravo, and OpenZeppelin Governor. See
+the [documentation](https://solidity-labs.gitbook.io/forge-proposal-simulator/)
+for complete guides and mainnet examples.
 
-## Usage
+## Install
 
-### Proposal Simulation
-
-#### Step 1: Install
-
-Add `forge-proposal-simulator` to your project using Forge:
-
-```sh
-forge install https://github.com/solidity-labs-io/forge-proposal-simulator.git
-```
-
-#### Step 2: Set Remappings
-
-Update your remappings.txt to include:
+Install FPS as a Foundry dependency:
 
 ```sh
-echo @forge-proposal-simulator=lib/forge-proposal-simulator/ >> remappings.txt
+forge install solidity-labs-io/forge-proposal-simulator
 ```
 
-#### Step 3: Create Addresses File
+Add this entry to `remappings.txt`:
 
-Create a JSON file following the instructions provided in
-[Addresses.md](docs/overview/architecture/addresses.md). We recommend keeping the
-addresses file in a separate folder, for example `./addresses/addresses.json`.
-Once the file is created, be sure to allow read access to `addresses.json` inside of `foundry.toml`.
+```text
+@forge-proposal-simulator/=lib/forge-proposal-simulator/
+```
+
+Imports can then reference the repository root:
+
+```solidity
+import {
+    MultisigProposal
+} from "@forge-proposal-simulator/src/proposals/MultisigProposal.sol";
+import {
+    Addresses
+} from "@forge-proposal-simulator/addresses/Addresses.sol";
+```
+
+## Configure addresses
+
+FPS loads one JSON file per chain from an address directory. For example,
+`./addresses/1.json` stores mainnet entries and `./addresses/11155111.json`
+stores Sepolia entries. The proposal passes the directory and the chain IDs to
+the `Addresses` constructor.
+
+Grant Foundry read access to the directory:
 
 ```toml
 [profile.default]
-...
-fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
+fs_permissions = [{ access = "read", path = "./addresses" }]
 ```
 
-#### Step 4: Create a Proposal
+Use `read-write` when `DO_UPDATE_ADDRESS_JSON=true` will persist changes:
 
-Choose a model that fits your needs:
+```toml
+[profile.default]
+fs_permissions = [{ access = "read-write", path = "./addresses" }]
+```
 
--   [Multisig Proposal](docs/guides/multisig-proposal.md)
--   [Timelock Proposal](docs/guides/timelock-proposal.md)
--   [Governor Bravo Proposal](docs/guides/governor-bravo-proposal.md)
--   [OZ Governor proposal](docs/guides/oz-governor-proposal.md)
+See [Addresses](docs/overview/architecture/addresses.md) for the JSON schema,
+constructor setup, registry operations, and persistence behavior.
 
-#### Step 5: Implement Scripts and Tests
+## Write and run a proposal
 
-Create scripts and/or tests. Check [Guides](docs/guides/multisig-proposal.md) and [Integration Tests](docs/testing/integration-tests.md).
+Choose the proposal type for the target governance system:
 
-## Contribute
+- [Safe multisig](docs/guides/multisig-proposal.md)
+- [OpenZeppelin timelock](docs/guides/timelock-proposal.md)
+- [Governor Bravo](docs/guides/governor-bravo-proposal.md)
+- [OpenZeppelin Governor](docs/guides/oz-governor-proposal.md)
 
-There are many ways you can participate and help build the next version of FPS. Check out the [contribution guide](CONTRIBUTING.md)!
+A proposal configures its fork and address registry in `run()`, defines direct
+privileged calls in `build()`, and checks the executed state in `validate()`.
+The base lifecycle runs `deploy()`, `preBuildMock()`, `build()`, `simulate()`,
+`validate()`, and `print()`, followed by optional address JSON persistence.
+
+Use the [introduction](docs/guides/introduction.md) for project setup and the
+[integration test guide](docs/testing/integration-tests.md) to execute a
+proposal from a test suite.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for repository checks and pull request
+requirements.
 
 ## License
 
-Forge Proposal Simulator is made available under the MIT License, which disclaims all warranties in relation to the project and which limits the liability of those that contribute and maintain the project. As set out further in the Terms, you acknowledge that you are solely responsible for any use of Forge Proposal Simulator contracts and you assume all risks associated with any such use. The authors make no warranties about the safety, suitability, reliability, timeliness, and accuracy of the software.
-
-Further license details can be found in [LICENSE](LICENSE).
+FPS is available under the [MIT License](LICENSE). The software is provided
+without warranty. Users are responsible for reviewing proposal code, generated
+calldata, and execution results before submitting transactions.

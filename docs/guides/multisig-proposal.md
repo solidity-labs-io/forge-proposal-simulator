@@ -1,317 +1,191 @@
-# Multisig Proposal
+# Safe Multisig Proposal
 
-## Overview
-
-Following the addition of FPS to project dependencies, the next step is creating a Proposal contract. This example serves as a guide for drafting a proposal for a Multisig contract.
+`MultisigProposal` packs recorded actions into Safe MultiSend calldata and prints the fields required for a Safe transaction. The complete example is [`MultisigProposal_01`](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol).
 
 ## Proposal contract
 
-The `MultisigProposal_01` proposal is available in the [fps-example-repo](https://github.com/solidity-labs-io/fps-example-repo/blob/main/src/proposals/simple-vault-multisig/MultisigProposal_01.sol). This contract is used as a reference for this tutorial.
+Inherit `MultisigProposal`, select the fork, and initialize `Addresses` before calling `super.run()`:
 
-Let's go through each of the functions that are overridden.
-
--   `name()`: Define the name of your proposal.
-
-    ```solidity
+```solidity
+contract MultisigProposal_01 is MultisigProposal {
     function name() public pure override returns (string memory) {
         return "MULTISIG_MOCK";
     }
-    ```
 
--   `description()`: Provide a detailed description of your proposal.
-
-    ```solidity
     function description() public pure override returns (string memory) {
         return "Multisig proposal mock";
     }
-    ```
 
--   `deploy()`: Deploy any necessary contracts. This example demonstrates the deployment of Vault and an ERC20 token. Once the contracts are deployed, they are added to the `Addresses` contract by calling `addAddress()`.
-
-    ```solidity
-    function deploy() public override {
-        // get multisig address
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-
-        // Deploy vault address if not already deployed and transfer ownership to multisig.
-        if (!addresses.isAddressSet("MULTISIG_VAULT")) {
-            Vault multisigVault = new Vault();
-
-            addresses.addAddress(
-                "MULTISIG_VAULT",
-                address(multisigVault),
-                true
-            );
-            multisigVault.transferOwnership(multisig);
-        }
-
-        // Deploy token address if not already deployed, transfer ownership to multisig
-        // and transfer all initial minted tokens from deployer to multisig.
-        if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
-            Token token = new Token();
-            addresses.addAddress("MULTISIG_TOKEN", address(token), true);
-            token.transferOwnership(multisig);
-
-            // During forge script execution, the deployer of the contracts is
-            // the DEPLOYER_EOA. However, when running through forge test, the deployer of the contracts is this contract.
-            uint256 balance = token.balanceOf(address(this)) > 0
-                ? token.balanceOf(address(this))
-                : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
-
-            token.transfer(multisig, balance);
-        }
-    }
-    ```
-
--   `build()`: Add actions to the proposal contract. In this example, an ERC20 token is whitelisted on the Vault contract. Then the multisig approves the token to be spent by the vault, and calls deposit on the vault. The actions should be written in solidity code and in the order they should be executed in the proposal. Any calls (except to the Addresses and Foundry Vm contract) will be recorded and stored as actions to execute in the run function. The `caller` address that will call actions is passed into `buildModifier`, it is the multisig for this example. The `buildModifier` is necessary modifier for `build` function and will not work without it. For further reading, see the [build function](../overview/architecture/proposal-functions.md#build-function).
-
-    ```solidity
-    function build()
-        public
-        override
-        buildModifier(addresses.getAddress("DEV_MULTISIG"))
-    {
-        /// STATICCALL -- non-mutative and hence not recorded for the run stage
-
-        // Get multisig address
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-
-        // Get vault address
-        address multisigVault = addresses.getAddress("MULTISIG_VAULT");
-
-        // Get token address
-        address token = addresses.getAddress("MULTISIG_TOKEN");
-
-        // Get multisig's token balance
-        uint256 balance = Token(token).balanceOf(address(multisig));
-
-        /// CALLS -- mutative and recorded
-
-        // Whitelists the deployed token on the deployed vault.
-        Vault(multisigVault).whitelistToken(token, true);
-
-        // Approve the token for the vault.
-        Token(token).approve(multisigVault, balance);
-
-        // Deposit all tokens into the vault.
-        Vault(multisigVault).deposit(token, balance);
-    }
-    ```
-
--   `isDelegateCall()`: Override this only when the entire multisig action group must be encoded as Safe MultiSend delegatecalls. Regular calls are the default. This is a proposal-level setting, so every recorded action in `build()` uses the same operation.
-
-    ```solidity
-    function isDelegateCall()
-        public
-        view
-        override
-        returns (bool)
-    {
-        return true;
-    }
-    ```
-
--   `run()`: Sets up the environment for running the proposal, and executes all proposal actions. This sets `addresses`, `primaryForkId` and calls `super.run()` run the entire proposal. In this example, `primaryForkId` is set to `sepolia` and selecting the fork for running proposal. Next the `addresses` object is set by reading from the JSON file. For further reading, see the [run function](../overview/architecture/proposal-functions.md#run-function).
-
-    ```solidity
     function run() public override {
-        // Create and select sepolia fork for proposal execution
-        primaryForkId = vm.createFork("sepolia");
-        vm.selectFork(primaryForkId);
+        setPrimaryForkId(vm.createSelectFork("sepolia"));
 
-        string memory addressesFolderPath = "./addresses";
         uint256[] memory chainIds = new uint256[](1);
         chainIds[0] = 11155111;
-        // Set addresses object reading addresses from json file.
-        setAddresses(
-            new Addresses(addressesFolderPath, chainIds)
-        );
+        setAddresses(new Addresses("./addresses", chainIds));
 
-        // Call the run function of parent contract 'Proposal.sol'.
         super.run();
     }
-    ```
+}
+```
 
--   `simulate()`: Execute the proposal actions outlined in the `build()` step. This function performs a call to `_simulateActions()` from the inherited `MultisigProposal` contract. Internally, `_simulateActions()` temporarily etches a Safe runtime with signature checks bypassed onto the multisig address, then calls Safe `execTransaction(...)` with a delegatecall to the selected Safe MultiSend contract. FPS uses `MultiSendCallOnly` when `isDelegateCall()` is false and regular `MultiSend` when `isDelegateCall()` is true.
+### Deploy contracts
 
-    ```solidity
-    function simulate() public override {
-        // Get multisig address
-        address multisig = addresses.getAddress("DEV_MULTISIG");
+The example deploys a vault and token, then transfers their ownership and the token supply to the Safe:
 
-        // multisig is the caller for all the proposal actions
-        _simulateActions(multisig);
+```solidity
+function deploy() public override {
+    address multisig = addresses.getAddress("DEV_MULTISIG");
+
+    if (!addresses.isAddressSet("MULTISIG_VAULT")) {
+        Vault multisigVault = new Vault();
+        addresses.addAddress("MULTISIG_VAULT", address(multisigVault), true);
+        multisigVault.transferOwnership(multisig);
     }
-    ```
 
--   `validate()`: This final step validates the system in its post-execution state. It ensures that the multisig is the new owner of Vault and token, the tokens were transferred to the multisig, and the token was whitelisted on the Vault contract
+    if (!addresses.isAddressSet("MULTISIG_TOKEN")) {
+        Token token = new Token();
+        addresses.addAddress("MULTISIG_TOKEN", address(token), true);
+        token.transferOwnership(multisig);
 
-    ```solidity
-    function validate() public override {
-        // Get vault address
-        Vault multisigVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
-
-        // Get token address
-        Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
-
-        // Get multisig address
-        address multisig = addresses.getAddress("DEV_MULTISIG");
-
-        // Ensure token total supply is 10 million
-        assertEq(token.totalSupply(), 10_000_000e18);
-
-        // Ensure multisig is owner of deployed token.
-        assertEq(token.owner(), multisig);
-
-        // Ensure multisig is owner of deployed vault
-        assertEq(multisigVault.owner(), multisig);
-
-        // Ensure vault is not paused
-        assertFalse(multisigVault.paused());
-
-        // Ensure token is whitelisted on vault
-        assertTrue(multisigVault.tokenWhitelist(address(token)));
-
-        // Get vault's token balance
-        uint256 balance = token.balanceOf(address(multisigVault));
-
-        // Get multisig deposits in vault
-        (uint256 amount, ) = multisigVault.deposits(address(token), multisig);
-
-        // Ensure multisig deposit is same as vault's token balance
-        assertEq(amount, balance);
-
-        // Ensure all minted tokens are deposited into the vault
-        assertEq(token.balanceOf(address(multisigVault)), token.totalSupply());
+        uint256 balance = token.balanceOf(address(this)) > 0
+            ? token.balanceOf(address(this))
+            : token.balanceOf(addresses.getAddress("DEPLOYER_EOA"));
+        token.transfer(multisig, balance);
     }
-    ```
+}
+```
 
-## Proposal simulation
+### Build actions
 
-### Deploying a Gnosis Safe Multisig on Testnet
+Use the Safe as the caller passed to `buildModifier`:
 
-To kick off this tutorial, a Gnosis Safe Multisig contract is needed to be set up on the testnet.
+```solidity
+function build()
+    public
+    override
+    buildModifier(addresses.getAddress("DEV_MULTISIG"))
+{
+    address multisig = addresses.getAddress("DEV_MULTISIG");
+    address multisigVault = addresses.getAddress("MULTISIG_VAULT");
+    address token = addresses.getAddress("MULTISIG_TOKEN");
+    uint256 balance = Token(token).balanceOf(multisig);
 
-1. Go to [Gnosis Safe](https://app.safe.global/) and pick your preferred testnet (Sepolia is used for this tutorial). Follow the on-screen instructions to generate a new Safe Account.
+    Vault(multisigVault).whitelistToken(token, true);
+    Token(token).approve(multisigVault, balance);
+    Vault(multisigVault).deposit(token, balance);
+}
+```
 
-2. After setting up the Safe, its address can be found in the details section of the Safe Account. Make sure to copy this address and keep it handy for later steps.
+FPS records the direct `Call` accesses in order, captures state and transfer changes, and restores the pre-build snapshot. See [Proposal functions](../overview/architecture/proposal-functions.md#build-function) for the recording rules.
 
-### Setting Up the Addresses JSON
+### Select the action operation
 
-Set up `11155111.json` file and add the Gnosis Safe address and deployer address to it. The file should follow this structure:
+Every recorded action uses the same Safe operation. The default is `Call`:
+
+```solidity
+function isDelegateCall() public view virtual returns (bool) {
+    return false;
+}
+```
+
+Override it when every action must run as `DelegateCall`:
+
+```solidity
+function isDelegateCall() public pure override returns (bool) {
+    return true;
+}
+```
+
+Delegatecalled target code executes in the Safe's storage context. Use this mode only for contracts designed for Safe delegatecall execution.
+
+### Simulate the Safe transaction
+
+Call `_simulateActions()` with the Safe address:
+
+```solidity
+function simulate() public override {
+    _simulateActions(addresses.getAddress("DEV_MULTISIG"));
+}
+```
+
+The helper saves the Safe's runtime bytecode, installs a modified Safe v1.4.1 runtime that bypasses signature checks, calls `execTransaction(...)`, and restores the original runtime. Safe storage remains in place during the call.
+
+The simulated `execTransaction(...)` uses the values from `getSafeTransaction()`. `safeTxGas`, `baseGas`, and `gasPrice` are zero. `gasToken` and `refundReceiver` are the zero address, and `signatures` is empty. The call is sent as the Safe address so the nested actions execute with the same caller context as the submitted transaction.
+
+### Validate state
+
+The example checks ownership, vault configuration, deposit accounting, and final balances:
+
+```solidity
+function validate() public view override {
+    Vault multisigVault = Vault(addresses.getAddress("MULTISIG_VAULT"));
+    Token token = Token(addresses.getAddress("MULTISIG_TOKEN"));
+    address multisig = addresses.getAddress("DEV_MULTISIG");
+
+    uint256 balance = token.balanceOf(address(multisigVault));
+    (uint256 amount,) =
+        multisigVault.deposits(address(token), multisig);
+
+    assertEq(amount, balance);
+    assertTrue(multisigVault.tokenWhitelist(address(token)));
+    assertEq(balance, token.totalSupply());
+    assertEq(token.owner(), multisig);
+    assertEq(multisigVault.owner(), multisig);
+    assertFalse(multisigVault.paused());
+}
+```
+
+## MultiSend encoding
+
+`getCalldata()` packs each action with Safe's transaction format:
+
+```text
+uint8 operation | address target | uint256 value | uint256 dataLength | bytes data
+```
+
+It concatenates the packed actions and returns `multiSend(bytes)` calldata. The inner `operation` is `0` for the default call mode and `1` when `isDelegateCall()` returns `true`.
+
+Use `getSafeTransaction()` for the outer Safe transaction:
+
+| Field | Call actions | Delegatecall actions |
+| --- | --- | --- |
+| `to` | `MultiSendCallOnly` (`0x40A2aCCbd92BCA938b02010E17A5b8929b49130D`) | `MultiSend` (`0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761`) |
+| `value` | `0` | `0` |
+| `data` | `multiSend(bytes)` calldata | `multiSend(bytes)` calldata |
+| `operation` | `1` (`DelegateCall`) | `1` (`DelegateCall`) |
+
+The outer Safe transaction always delegatecalls the selected MultiSend contract. `MultiSendCallOnly` accepts call actions. Standard `MultiSend` is required when the packed actions use delegatecall.
+
+Safe transactions have no numeric proposal registry, so `getProposalId()` reverts with `Not implemented`.
+
+## Run the example
+
+Create a Sepolia Safe at [app.safe.global](https://app.safe.global/) and record its address in `addresses/11155111.json`:
 
 ```json
 [
-    {
-        "addr": "0x<YOUR_GNOSIS_SAFE_ADDRESS>",
-        "name": "DEV_MULTISIG",
-        "isContract": true
-    },
-    {
-        "addr": "0x<YOUR_DEV_EOA",
-        "name": "DEPLOYER_EOA",
-        "isContract": false
-    }
+  {
+    "addr": "0x<SAFE_ADDRESS>",
+    "name": "DEV_MULTISIG",
+    "isContract": true
+  },
+  {
+    "addr": "0x<DEPLOYER_ADDRESS>",
+    "name": "DEPLOYER_EOA",
+    "isContract": false
+  }
 ]
 ```
 
-Ensure that the `DEV_MULTISIG` address corresponds to a valid Multisig Gnosis Safe contract. If this is not the case, the script will fail with the error: `Multisig address doesn't match Gnosis Safe contract bytecode`.
-
-### Running the Proposal
+Run the proposal:
 
 ```sh
-forge script src/proposals/simple-vault-multisig/MultisigProposal_01.sol --account ${wallet_name} --broadcast --slow --sender ${wallet_address} -vvvv
+forge script \
+  src/proposals/simple-vault-multisig/MultisigProposal_01.sol:MultisigProposal_01 \
+  --fork-url sepolia \
+  --account "$WALLET_NAME" \
+  --sender "$WALLET_ADDRESS" \
+  --broadcast --slow -vvvv
 ```
 
-The script will output the following:
-
-```sh
-== Logs ==
-
-
---------- Addresses added ---------
-  {
-          "addr": "0x69A5DfCD97eF074108b480e369CecfD9335565A2",
-          "isContract": true,
-          "name": "MULTISIG_VAULT"
-},
-  {
-          "addr": "0x541234b61c081eaAE62c9EF52A633cD2aaf92A05",
-          "isContract": true,
-          "name": "MULTISIG_TOKEN"
-}
-
----------------- Proposal Description ----------------
-  Multisig proposal mock
-
------------------- Proposal Actions ------------------
-  1). calling MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2 with 0 eth and 0x0ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001 data.
-  target: MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2
-payload
-  0x0ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000001
-
-
-  2). calling MULTISIG_TOKEN @0x541234b61c081eaAE62c9EF52A633cD2aaf92A05 with 0 eth and 0x095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a000000 data.
-  target: MULTISIG_TOKEN @0x541234b61c081eaAE62c9EF52A633cD2aaf92A05
-payload
-  0x095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a000000
-
-
-  3). calling MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2 with 0 eth and 0x47e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a000000 data.
-  target: MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2
-payload
-  0x47e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a000000
-
-
-
------------------ Proposal Changes ---------------
-
-
- MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2:
-
- State Changes:
-  Slot: 0x0109a4c58357d68655b3b5dc2118952a94bd8ac20af5042c287646f3faf63d0e
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x0000000000000000000000000000000000000000000000000000000000000001
-  Slot: 0x5c89714d3d4b91fc2765de3ae9d78fa63c87d45455b314a1983c2aa9091d790a
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x000000000000000000000000000000000000000000084595161401484a000000
-  Slot: 0x5c89714d3d4b91fc2765de3ae9d78fa63c87d45455b314a1983c2aa9091d790b
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x0000000000000000000000000000000000000000000000000000000066b363b8
-
-
- MULTISIG_TOKEN @0x541234b61c081eaAE62c9EF52A633cD2aaf92A05:
-
- State Changes:
-  Slot: 0x718dfd4f53e9042ef07e2076db0bd95307c2640e8a375658915485d37fe05299
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x000000000000000000000000000000000000000000084595161401484a000000
-  Slot: 0x718dfd4f53e9042ef07e2076db0bd95307c2640e8a375658915485d37fe05299
-  -  0x000000000000000000000000000000000000000000084595161401484a000000
-  +  0x0000000000000000000000000000000000000000000000000000000000000000
-  Slot: 0x233078cbccee5fe4b8e098848f55eedd08e0fd43b7ddea16843770de9714b0bc
-  -  0x000000000000000000000000000000000000000000084595161401484a000000
-  +  0x0000000000000000000000000000000000000000000000000000000000000000
-  Slot: 0xdbde422d34765d6fa450f050d95a7072ade5d1938cc2a6df4441c92d8c263663
-  -  0x0000000000000000000000000000000000000000000000000000000000000000
-  +  0x000000000000000000000000000000000000000000084595161401484a000000
-
-
- DEV_MULTISIG @0x1c1A8861139C0126176bD1B0d01Bbf5E4c99591b:
-
- Transfers:
-  Sent 10000000000000000000000000 MULTISIG_TOKEN @0x541234b61c081eaAE62c9EF52A633cD2aaf92A05 to MULTISIG_VAULT @0x69A5DfCD97eF074108b480e369CecfD9335565A2
-
-
----------------- Safe Transaction Fields --------------
-  to: 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D
-  value: 0
-  data:
-  0x174dea710000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000160000000000000000000000000000000000000000000000000000000000000026000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000440ffb1d8b000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000044095ea7b300000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000084595161401484a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000069a5dfcd97ef074108b480e369cecfd9335565a2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000004447e7ef24000000000000000000000000541234b61c081eaae62c9ef52a633cd2aaf92a05000000000000000000000000000000000000000000084595161401484a00000000000000000000000000000000000000000000000000000000000000
-  operation: 1
-```
-
-A signer from the multisig address can check whether the calldata proposed on the multisig matches the calldata obtained from the call. It is crucial to note that two new addresses have been added to the `Addresses.sol` storage. These addresses are not included in the JSON files when proposal is run without the `DO_UPDATE_ADDRESS_JSON` flag set to true.
-
-The proposal script will deploy the contracts in the `deploy()` method and will generate action calldata for each individual action along with the Safe transaction fields. In the Safe UI, use the helper output directly: `to` is the selected MultiSend contract, `value` is `0`, `data` is the MultiSend calldata, and `operation` is `DelegateCall`.
+The output includes deployed-address changes, recorded actions, storage and transfer changes, and the `to`, `value`, `data`, and `operation` fields for the Safe transaction. Enter those four fields in the Safe transaction builder. Set `DO_UPDATE_ADDRESS_JSON=true` to persist the vault and token addresses when the address directory has write permission.

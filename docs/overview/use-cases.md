@@ -1,19 +1,37 @@
 # Use cases
 
-The framework is compatible with OpenZeppelin Timelock, Compound Governor Bravo, OZ Governor, and GnosisSafe Multisig wallet contracts. We encourage the submission of pull requests to accommodate different governance models.
+Select the proposal type that matches the contract which receives the final
+governance transaction.
 
-### OpenZeppelin Timelock Controller
+## Safe multisig
 
-The [Timelock Proposal](../guides/timelock-proposal.md) facilitates the creation of the scheduling and execution of calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from submission to execution, using foundry cheat codes to bypass the delay period.
+[Multisig proposals](../guides/multisig-proposal.md) encode recorded actions in
+Safe MultiSend format. The output contains the `to`, `value`, `data`, and
+`operation` fields required by a Safe transaction. Simulation temporarily
+installs a compatible Safe runtime at the configured Safe address and executes
+the same MultiSend payload.
 
-### Gnosis Safe Multisig
+## OpenZeppelin TimelockController
 
-The [Multisig Proposal](../guides/multisig-proposal.md) generates and simulates the Multicall calldata. This allows developers to check protocol health after calldata execution by using Foundry cheat codes to simulate actions from the actual Multisig address. Calldata generated from this module can be used directly in Gnosis Safe's UI.
+[Timelock proposals](../guides/timelock-proposal.md) generate
+`scheduleBatch(...)` and `executeBatch(...)` calldata. Simulation schedules the
+operation as the configured proposer, advances time by `getMinDelay()`, and
+executes it as the configured executor.
 
-### Compound Governor Bravo
+## Compound Governor Bravo
 
-The [Governor Bravo Proposal](../guides/governor-bravo-proposal.md) facilitates the creation of the governor `propose` calldata. It also allows developers to test the calldata by simulating the entire proposal lifecycle, from proposing, voting, queuing, and finally executing.
+[Governor Bravo proposals](../guides/governor-bravo-proposal.md) generate
+`propose(...)` calldata with empty signature strings and full action calldata.
+Simulation creates voting power on the fork, then runs the proposal through
+Pending, Active, Succeeded, Queued, and Executed states.
 
-### OZ Governor
+## OpenZeppelin Governor
 
-Similar to Compound Governor Bravo, [OZ Governor Proposal](../guides/oz-governor-proposal.md) simulates the entire proposal lifecycle for the governor with a timelock controller extension.
+[OpenZeppelin Governor proposals](../guides/oz-governor-proposal.md) generate
+`propose(...)` calldata and derive the proposal ID with `hashProposal(...)`.
+Simulation delegates voting power, votes, queues the successful proposal, waits
+for the attached timelock, and executes the action batch.
+
+Create a custom proposal type when the target governance system requires a
+different payload or lifecycle. The [customization guide](../guides/customizing-proposal.md)
+uses Arbitrum governance as an example.
