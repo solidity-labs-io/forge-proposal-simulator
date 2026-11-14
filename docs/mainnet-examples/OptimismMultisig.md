@@ -198,3 +198,14 @@ The default output prints the deployed registry entry, the ProxyAdmin action,
 the recorded implementation slot change, and the Safe transaction fields.
 Enter the printed `to`, `value`, `data`, and `operation` in the Safe interface
 and verify the decoded inner action before collecting signatures.
+
+
+### Executor-Sensitive Delegatecall Simulations
+
+By default, `_simulateActions(multisig)` pranks as the `multisig` address when calling `Safe.execTransaction`. While regular `CALL` targets always observe the Safe as `msg.sender`, `DELEGATECALL` actions executed through `MultiSend` preserve the external caller of `execTransaction` as `msg.sender`.
+
+If your proposal includes `DELEGATECALL` actions that inspect or store `msg.sender`, pass the expected signer or relayer address explicitly using the two-argument overload:
+
+```solidity
+_simulateActions(multisig, executor);
+```
