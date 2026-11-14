@@ -418,19 +418,20 @@ contract TestAddresses is Test {
         addresses.updateJson();
     }
 
-    function addressIsPresent() public {
+    function test_addressIsPresent() public {
         address test = vm.addr(1);
+        vm.etch(test, "0x01");
 
         addresses.addAddress("TEST", test, true);
 
         assertEq(addresses.isAddressSet("TEST"), true);
     }
 
-    function addressIsNotPresent() public view {
+    function test_addressIsNotPresent() public view {
         assertEq(addresses.isAddressSet("TEST"), false);
     }
 
-    function addressIsPresentOnChain() public {
+    function test_addressIsPresentOnChain() public {
         address test = vm.addr(1);
 
         addresses.addAddress("TEST", test, 123, true);
@@ -438,9 +439,27 @@ contract TestAddresses is Test {
         assertEq(addresses.isAddressSet("TEST", 123), true);
     }
 
-    function addressIsNotPresentOnChain() public view {
+    function test_addressIsNotPresentOnChain() public view {
         assertEq(addresses.isAddressSet("DEPLOYER_EOA", 31337), true);
         assertEq(addresses.isAddressSet("DEPLOYER_EOA", 123), false);
+    }
+
+    function test_printJSONChangesEmpty() public view {
+        addresses.printJSONChanges();
+    }
+
+    function test_printJSONChangesWithAddedAndChangedAddresses() public {
+        address added1 = vm.addr(10);
+        address added2 = vm.addr(11);
+        addresses.addAddress("ADDED_1", added1, false);
+        addresses.addAddress("ADDED_2", added2, false);
+
+        address changed1 = vm.addr(12);
+        address changed2 = vm.addr(13);
+        addresses.changeAddress("DEPLOYER_EOA", changed1, false);
+        addresses.changeAddress("ADDED_1", changed2, false);
+
+        addresses.printJSONChanges();
     }
 
     function test_checkAddressRevertIfNotContract() public {
@@ -458,7 +477,7 @@ contract TestAddresses is Test {
     }
 
     function test_revertAddingSameAddressToSameChain() public {
-        addressIsPresentOnChain();
+        test_addressIsPresentOnChain();
         address test = vm.addr(1);
 
         vm.expectRevert(
