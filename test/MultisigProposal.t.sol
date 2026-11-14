@@ -202,6 +202,35 @@ contract MultisigProposalIntegrationTest is Test {
         assertEq(operation, Constants.DELEGATE_CALL);
     }
 
+    function test_simulateRegularCallProposalWithExecutorSeesSafe() public {
+        (
+            MockAllCallMultisigProposal allCallProposal,
+            MockOperationTarget target,
+            address multisig,
+            bytes32 delegateSlot
+        ) = _createAllCallProposal();
+        address executor = makeAddr("safe-signer-executor");
+
+        allCallProposal.build();
+        allCallProposal.simulateWithExecutor(executor);
+
+        assertEq(
+            target.callSender(),
+            multisig,
+            "Regular CALL target did not see Safe as msg.sender"
+        );
+        assertEq(
+            target.callNumber(),
+            11,
+            "Regular CALL target did not record expected number"
+        );
+        assertEq(
+            vm.load(address(target), delegateSlot),
+            bytes32(uint256(1)),
+            "Regular CALL target did not write to its own storage"
+        );
+    }
+
     function test_simulateDelegateCallProposal() public {
         (
             MockDelegateCallMultisigProposal delegateCallProposal,
@@ -240,6 +269,55 @@ contract MultisigProposalIntegrationTest is Test {
             vm.load(multisig, delegateSlot),
             delegateValue,
             "Delegatecall did not write to multisig storage"
+        );
+        assertEq(
+            keccak256(multisig.code),
+            keccak256(originalBytecode),
+            "Multisig bytecode not restored"
+        );
+    }
+
+    function test_simulateDelegateCallProposalWithExecutorSeesExecutor()
+        public
+    {
+        (
+            MockDelegateCallMultisigProposal delegateCallProposal,
+            MockOperationTarget target,
+            address multisig,
+            bytes32 delegateSlot,
+            bytes32 delegateValue
+        ) = _createDelegateCallProposal();
+        address executor = makeAddr("safe-relayer-executor");
+
+        delegateCallProposal.build();
+        bytes memory originalBytecode = multisig.code;
+
+        delegateCallProposal.simulateWithExecutor(executor);
+
+        assertEq(
+            target.callSender(),
+            address(0),
+            "Delegatecall unexpectedly wrote target sender"
+        );
+        assertEq(
+            target.callNumber(),
+            0,
+            "Delegatecall unexpectedly wrote target number"
+        );
+        assertEq(
+            vm.load(multisig, bytes32(uint256(0))),
+            bytes32(uint256(uint160(executor))),
+            "Delegatecall did not record executor as msg.sender in Safe storage"
+        );
+        assertEq(
+            vm.load(multisig, bytes32(uint256(1))),
+            bytes32(uint256(22)),
+            "Delegatecall did not write number to Safe storage"
+        );
+        assertEq(
+            vm.load(multisig, delegateSlot),
+            delegateValue,
+            "Delegatecall did not write custom slot to Safe storage"
         );
         assertEq(
             keccak256(multisig.code),
@@ -399,6 +477,14 @@ contract MockAllCallMultisigProposal is MultisigProposal {
         target.recordCall(11);
         target.writeSlot(delegateSlot, delegateValue);
     }
+
+    function simulate() public virtual override {
+        _simulateActions(multisig);
+    }
+
+    function simulateWithExecutor(address executor) public virtual {
+        _simulateActions(multisig, executor);
+    }
 }
 
 contract MockDelegateCallMultisigProposal is MockAllCallMultisigProposal {
@@ -429,9 +515,5 @@ contract MockDelegateCallMultisigProposal is MockAllCallMultisigProposal {
 
     function isDelegateCall() public pure override returns (bool) {
         return true;
-    }
-
-    function simulate() public override {
-        _simulateActions(multisig);
     }
 }

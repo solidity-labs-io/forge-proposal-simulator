@@ -82,7 +82,20 @@ abstract contract MultisigProposal is Proposal {
         revert("Not implemented");
     }
 
+    /// @notice Simulate proposal actions using the multisig address as the default executor.
+    /// @dev Executor-sensitive simulations (such as delegatecall actions that inspect or store
+    /// `msg.sender`) must use `_simulateActions(address multisig, address executor)` with the
+    /// expected signer or relayer address.
     function _simulateActions(address multisig) internal {
+        _simulateActions(multisig, multisig);
+    }
+
+    /// @notice Simulate proposal actions with an explicit transaction executor.
+    /// @dev Because Safe delegatecalls MultiSend and MultiSend delegatecalls delegatecall
+    /// actions, `msg.sender` remains `executor` during delegatecall execution while
+    /// `address(this)` remains `multisig`. Executor-sensitive simulations must pass the
+    /// expected signer or relayer as `executor`.
+    function _simulateActions(address multisig, address executor) internal {
         bytes memory originalBytecode = multisig.code;
         vm.etch(multisig, Constants.SAFE_RUNTIME_BYTECODE);
 
@@ -103,7 +116,7 @@ abstract contract MultisigProposal is Proposal {
             ""
         );
 
-        vm.startPrank(multisig);
+        vm.startPrank(executor);
 
         (bool success, bytes memory returndata) = multisig.call(safeCalldata);
 
